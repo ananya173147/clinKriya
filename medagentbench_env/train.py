@@ -714,6 +714,29 @@ def main():
     dataset = build_dataset(Path(args.data_dir), args.num_tasks)
     print(f"Training dataset: {len(dataset)} tasks")
 
+    # Load model with Unsloth (full bfloat16, no 4-bit).
+    # load_in_4bit=True causes bnb to compute in fp16 even when dtype=bfloat16
+    # (Unsloth 2026.x bug), and bf16=True in GRPOConfig triggers an fp16
+    # autocaster in grpo_accumulated_loss.  Both produce Half/BFloat16 mismatches.
+    # Solution: full bfloat16 weights + no AMP.
+    import torch
+    from unsloth import FastLanguageModel
+    model, tokenizer = FastLanguageModel.from_pretrained(
+        model_name=args.model,
+        max_seq_length=4096,
+        load_in_4bit=False,
+        dtype=torch.bfloat16,
+    )
+    model = FastLanguageModel.get_peft_model(
+        model,
+        r=16,
+        lora_alpha=16,
+        lora_dropout=0,
+        target_modules=["q_proj", "k_proj", "v_proj", "o_proj",
+                        "gate_proj", "up_proj", "down_proj"],
+        use_gradient_checkpointing="unsloth",
+    )
+
     grpo_config = GRPOConfig(
         output_dir=args.output_dir,
         num_train_epochs=args.num_train_epochs,
@@ -721,19 +744,22 @@ def main():
         per_device_train_batch_size=args.per_device_batch_size,
         gradient_accumulation_steps=args.gradient_accumulation_steps,
         learning_rate=args.learning_rate,
+        warmup_steps=10,
         log_completions=True,
         num_completions_to_print=2,
         logging_steps=1,
         save_steps=50,
         save_total_limit=2,
-        bf16=True,
+        bf16=False,
+        fp16=False,
     )
 
     trainer = GRPOTrainer(
-        model=args.model,
+        model=model,
         reward_funcs=reward_func,
         train_dataset=dataset,
         environment_factory=MedAgentTrainEnv,
+        processing_class=tokenizer,
         args=grpo_config,
     )
 
