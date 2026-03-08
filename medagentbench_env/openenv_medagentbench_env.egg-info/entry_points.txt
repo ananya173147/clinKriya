@@ -1,0 +1,2 @@
+[console_scripts]
+server = medagentbench_env.server.app:main
