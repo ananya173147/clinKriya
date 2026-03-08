@@ -83,3 +83,30 @@ claude3.5:
     import: "./claude-chat.yaml"
     parameters:
         name: "claude3.5"
+claude-3.5-sonnet-v2:
+    import: "./openrouter-chat.yaml"
+    parameters:
+        name: "claude-3.5-sonnet-v2"
+        body:
+            model: "anthropic/claude-3.5-sonnet"
+
+gpt-5.2:
+    import: "./openrouter-chat.yaml"
+    parameters:
+        name: "gpt-5.2"
+        body:
+            model: "openai/gpt-5.2"
+
+deepseek-v3:
+    import: "./openrouter-chat.yaml"
+    parameters:
+        name: "deepseek-v3"
+        body:
+            model: "deepseek/deepseek-v3.2"
+
+gemini-1.5-pro:
+    import: "./openrouter-chat.yaml"
+    parameters:
+        name: "gemini-1.5-pro"
+        body:
+            model: "google/gemini-3.1-pro-preview"

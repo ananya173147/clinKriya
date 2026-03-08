@@ -46,7 +46,7 @@ agent = MedAgent(
 wrapper = MedAgentBenchWrapper(agent)
 
 
-tasks_path = "../src/MedAgentBench/data/medagentbench/new_patient_tasks.json"
+tasks_path = "../src/MedAgentBench/data/medagentbench/test_data_v2.json"
 api_base = "http://localhost:8080/fhir/"
 medagentbench = MedAgentBench(tasks_path=tasks_path, api_base=api_base)
 

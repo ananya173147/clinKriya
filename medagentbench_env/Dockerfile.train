@@ -1,0 +1,51 @@
+# Training Dockerfile for MedAgentBench + TRL/GRPO on GPU
+# Deploy on Northflank with GPU plan selected.
+#
+# Build:  docker build -f Dockerfile.train -t medagentbench-train .
+# Run:    docker run --gpus all -e ENV_URL=http://<env-server>:8000 medagentbench-train
+
+FROM nvidia/cuda:12.4.1-devel-ubuntu22.04
+
+# Prevent interactive prompts
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install Python 3.11 and system deps
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3.11 python3.11-venv python3.11-dev python3-pip \
+    curl git build-essential && \
+    rm -rf /var/lib/apt/lists/* && \
+    update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1 && \
+    update-alternatives --install /usr/bin/python python /usr/bin/python3.11 1
+
+# Install uv
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh && \
+    mv /root/.local/bin/uv /usr/local/bin/uv && \
+    mv /root/.local/bin/uvx /usr/local/bin/uvx
+
+WORKDIR /app
+
+# Copy project files
+COPY pyproject.toml uv.lock* ./
+COPY models.py client.py __init__.py train.py ./
+COPY server/ ./server/
+COPY data/ ./data/
+
+# Create venv and install deps (including training extras)
+RUN uv venv --python 3.11 && \
+    . .venv/bin/activate && \
+    uv pip install -e ".[train]"
+
+# Set PATH and PYTHONPATH
+ENV PATH="/app/.venv/bin:$PATH"
+ENV PYTHONPATH="/app:$PYTHONPATH"
+
+# Default output directory (mount a persistent volume here on Northflank)
+ENV OUTPUT_DIR=/output
+RUN mkdir -p /output
+
+# Environment server URL (set via Northflank env vars)
+ENV ENV_URL=http://localhost:8000
+
+EXPOSE 8000
+
+CMD ["python", "train.py"]

@@ -1,0 +1,99 @@
+assignments:
+- agent: gpt-5.2
+  task: medagentbench-std
+- agent: claude-3.5-sonnet-v2
+  task: medagentbench-std
+- agent: deepseek-v3
+  task: medagentbench-std
+- agent: gemini-1.5-pro
+  task: medagentbench-std
+concurrency:
+  agent:
+    claude-3.5-sonnet-v2: 5
+    deepseek-v3: 5
+    gemini-1.5-pro: 5
+    gpt-5.2: 5
+  task:
+    medagentbench-std: 20
+definition:
+  agent:
+    claude-3.5-sonnet-v2:
+      module: src.client.agents.HTTPAgent
+      parameters:
+        body:
+          max_tokens: 2048
+          model: anthropic/claude-3.5-sonnet
+          temperature: 0
+        headers:
+          Authorization: Bearer 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
+          Content-Type: application/json
+        name: claude-3.5-sonnet-v2
+        prompter:
+          args:
+            agent_role: assistant
+          name: role_content_dict
+        return_format: '{response[choices][0][message][content]}'
+        url: https://openrouter.ai/api/v1/chat/completions
+    deepseek-v3:
+      module: src.client.agents.HTTPAgent
+      parameters:
+        body:
+          max_tokens: 2048
+          model: deepseek/deepseek-v3.2
+          temperature: 0
+        headers:
+          Authorization: Bearer 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
+          Content-Type: application/json
+        name: deepseek-v3
+        prompter:
+          args:
+            agent_role: assistant
+          name: role_content_dict
+        return_format: '{response[choices][0][message][content]}'
+        url: https://openrouter.ai/api/v1/chat/completions
+    gemini-1.5-pro:
+      module: src.client.agents.HTTPAgent
+      parameters:
+        body:
+          max_tokens: 2048
+          model: google/gemini-3.1-pro-preview
+          temperature: 0
+        headers:
+          Authorization: Bearer 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
+          Content-Type: application/json
+        name: gemini-1.5-pro
+        prompter:
+          args:
+            agent_role: assistant
+          name: role_content_dict
+        return_format: '{response[choices][0][message][content]}'
+        url: https://openrouter.ai/api/v1/chat/completions
+    gpt-5.2:
+      module: src.client.agents.HTTPAgent
+      parameters:
+        body:
+          max_tokens: 2048
+          model: openai/gpt-5.2
+          temperature: 0
+        headers:
+          Authorization: Bearer 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
+          Content-Type: application/json
+        name: gpt-5.2
+        prompter:
+          args:
+            agent_role: assistant
+          name: role_content_dict
+        return_format: '{response[choices][0][message][content]}'
+        url: https://openrouter.ai/api/v1/chat/completions
+  task:
+    medagentbench-std:
+      module: src.client.TaskClient
+      parameters:
+        concurrency: 1
+        controller_address: http://localhost:5000/api
+        data_file: data/medagentbench/stratified_benchmark.json
+        fhir_api_base: http://localhost:8080/fhir/
+        func_file: data/medagentbench/funcs_v1.json
+        max_round: 8
+        name: medagentbench-std
+output: outputs/clinKriya-benchmark

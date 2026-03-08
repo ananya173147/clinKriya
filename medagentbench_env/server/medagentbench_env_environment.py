@@ -30,6 +30,7 @@ from medagentbench_env.models import (
     TaskSample,
     TaskStatus,
 )
+from medagentbench_env.server.reward import compute_shaped_reward
 
 # ---------------------------------------------------------------------------
 # Paths to MedAgentBench v2 data (relative to this repo)
@@ -92,7 +93,7 @@ def _send_get_request(url: str) -> Dict[str, Any]:
 
 
 # ---------------------------------------------------------------------------
-# Evaluation helpers (ported from medagentbenchv2 eval.py / new_refsol.py)
+# Evaluation helpers (ported from medagentbenchv2 eval.py / refsol.py)
 # ---------------------------------------------------------------------------
 
 def _load_eval_module():
@@ -116,7 +117,7 @@ def _load_eval_module():
             sys.path.insert(0, str(src_root))
     try:
         import importlib
-        refsol = importlib.import_module("new_refsol")
+        refsol = importlib.import_module("refsol")
         return refsol
     except ImportError:
         return None
@@ -153,7 +154,7 @@ class MedAgentBenchEnvironment(
         self._max_steps = max_steps
 
         # Load task data
-        data_path = Path(data_file) if data_file else _DEFAULT_DATA_DIR / "test_data_v2.json"
+        data_path = Path(data_file) if data_file else _DEFAULT_DATA_DIR / "stratified_benchmark.json"
         with open(data_path) as f:
             self._tasks: List[Dict[str, Any]] = json.load(f)
 
@@ -184,7 +185,7 @@ class MedAgentBenchEnvironment(
         """Start a new episode with a task from the benchmark.
 
         Keyword args:
-            task_index: int — select a specific task (0-299). Defaults to
+            task_index: int — select a specific task (0-119). Defaults to
                 sequential iteration through the dataset.
         """
         task_index = kwargs.get("task_index", self._task_index)
@@ -358,33 +359,16 @@ class MedAgentBenchEnvironment(
     # ------------------------------------------------------------------
 
     def _evaluate(self) -> float:
-        """Run the task-specific evaluation and return 1.0 or 0.0."""
+        """Run shaped reward evaluation.
+
+        Combines the binary refsol grader with partial-credit scoring
+        for field correctness, efficiency, and format compliance.
+        """
         task = self._state.task_sample
         if task is None:
             return 0.0
 
-        # Lazy-load the evaluation module
-        if self._refsol is None:
-            self._refsol = _load_eval_module()
-
-        if self._refsol is None:
-            # Can't evaluate without refsol — return 0 and log
-            print("WARNING: refsol module not found, cannot evaluate. Returning 0.")
-            return 0.0
-
-        task_type = task.id.split("_")[0]  # e.g. "task1"
-        grader_func = getattr(self._refsol, task_type, None)
-        if grader_func is None:
-            print(f"WARNING: No grader for {task_type}")
-            return 0.0
-
-        # Build a results-like object compatible with refsol expectations
-        eval_results = _EvalResults(
-            history=self._state.chat_history,
-            result=json.dumps(self._state.agent_answer)
-            if self._state.agent_answer is not None
-            else None,
-        )
+        task_type = task.id.split("_")[0]  # e.g. "task3"
 
         # Build case_data dict
         case_data = {
@@ -395,13 +379,46 @@ class MedAgentBenchEnvironment(
             "eval_MRN": task.eval_MRN,
         }
 
-        try:
-            if grader_func(case_data, eval_results, self._fhir_api_base) is True:
-                return 1.0
-        except Exception as e:
-            print(f"Evaluation error for {task.id}: {e}")
+        # --- Run binary refsol grader ---
+        refsol_pass = False
+        if self._refsol is None:
+            self._refsol = _load_eval_module()
 
-        return 0.0
+        if self._refsol is not None:
+            grader_func = getattr(self._refsol, task_type, None)
+            if grader_func is not None:
+                eval_results = _EvalResults(
+                    history=self._state.chat_history,
+                    result=json.dumps(self._state.agent_answer)
+                    if self._state.agent_answer is not None
+                    else None,
+                )
+                try:
+                    refsol_pass = grader_func(case_data, eval_results, self._fhir_api_base) is True
+                except Exception as e:
+                    print(f"Refsol error for {task.id}: {e}")
+
+        # --- Compute shaped reward ---
+        # Find the benchmark_type from the original task data
+        benchmark_type = ""
+        for t in self._tasks:
+            if t["id"] == task.id:
+                benchmark_type = t.get("_benchmark_type", "")
+                break
+
+        adapted_history = [_ChatAdapter(m.role, m.content) for m in self._state.chat_history]
+
+        return compute_shaped_reward(
+            task_type=task_type,
+            case_data=case_data,
+            history=adapted_history,
+            agent_answer=self._state.agent_answer,
+            fhir_api_base=self._fhir_api_base,
+            step_count=self._state.step_count,
+            max_steps=self._max_steps,
+            refsol_pass=refsol_pass,
+            benchmark_type=benchmark_type,
+        )
 
 
 class _EvalResults:

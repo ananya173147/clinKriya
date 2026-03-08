@@ -40,7 +40,7 @@ def parse_args():
     parser.add_argument(
         "--tasks-path",
         type=str,
-        default="../src/MedAgentBench/data/medagentbench/new_patient_tasks.json",
+        default="../src/MedAgentBench/data/medagentbench/test_data_v2.json",
         help="Path to tasks JSON file",
     )
     return parser.parse_args()

@@ -8,6 +8,5 @@ default:
 medagentbench-std:
   parameters:
     name: medagentbench-std
-    data_file: "data/medagentbench/test_data_v2.json"
-    # data_file: "data/medagentbench/new_patient_tasks.json"
+    data_file: "data/medagentbench/stratified_benchmark.json"
     func_file: "data/medagentbench/funcs_v1.json"
