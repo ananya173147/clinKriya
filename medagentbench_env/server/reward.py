@@ -104,7 +104,13 @@ def _check_task8_fields(payload: Dict, case_data: Dict) -> float:
     expected_ref = f"Patient/{case_data['eval_MRN']}"
     checks.append(payload.get("subject", {}).get("reference") == expected_ref)
     # Note (SBAR comment)
-    note_text = str(payload.get("note", {}).get("text", ""))
+    note = payload.get("note", {})
+    if isinstance(note, list):
+        note_text = " ".join(str(n.get("text", "")) if isinstance(n, dict) else str(n) for n in note)
+    elif isinstance(note, dict):
+        note_text = str(note.get("text", ""))
+    else:
+        note_text = str(note)
     checks.append("ACL tear" in note_text or "orthopedic" in note_text.lower())
     return sum(checks) / len(checks) if checks else 0.0
 

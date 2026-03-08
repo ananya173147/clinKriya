@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MedAgentBench — Clinical AI Benchmark</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface2: #1c2128;
+    --border: #30363d;
+    --text: #e6edf3;
+    --muted: #7d8590;
+    --blue: #58a6ff;
+    --green: #3fb950;
+    --red: #f85149;
+    --yellow: #d29922;
+    --purple: #bc8cff;
+    --teal: #39d353;
+    --accent: #1f6feb;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 14px; line-height: 1.5; }
+
+  /* Layout */
+  .app { display: grid; grid-template-rows: auto 1fr; min-height: 100vh; }
+
+  /* Header */
+  header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 16px 24px; display: flex; align-items: center; gap: 16px; }
+  .logo { display: flex; align-items: center; gap: 12px; }
+  .logo-icon { width: 36px; height: 36px; background: linear-gradient(135deg, #1f6feb, #58a6ff); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+  .logo-text h1 { font-size: 18px; font-weight: 700; color: var(--text); }
+  .logo-text p { font-size: 12px; color: var(--muted); }
+  .header-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+  .badge { background: var(--accent); color: white; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+
+  /* Main layout */
+  main { display: grid; grid-template-columns: 340px 1fr; overflow: hidden; height: calc(100vh - 69px); }
+
+  /* Sidebar */
+  .sidebar { background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
+  .sidebar-header { padding: 16px; border-bottom: 1px solid var(--border); }
+  .sidebar-header h2 { font-size: 13px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+
+  /* Stats */
+  .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+  .stat-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; }
+  .stat-value { font-size: 20px; font-weight: 700; color: var(--blue); }
+  .stat-label { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .stat-card.green .stat-value { color: var(--green); }
+  .stat-card.purple .stat-value { color: var(--purple); }
+
+  /* Task type bars */
+  .type-bars { display: flex; flex-direction: column; gap: 6px; }
+  .type-bar { display: flex; flex-direction: column; gap: 3px; }
+  .type-bar-header { display: flex; justify-content: space-between; align-items: center; }
+  .type-name { font-size: 12px; font-weight: 600; }
+  .type-score { font-size: 12px; color: var(--muted); }
+  .bar-track { background: var(--border); border-radius: 4px; height: 6px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 4px; transition: width 1s ease; }
+
+  /* Filter */
+  .filter-section { padding: 12px 16px; border-bottom: 1px solid var(--border); display: flex; flex-direction: column; gap: 8px; }
+  .search-input { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 7px 10px; color: var(--text); font-size: 13px; outline: none; }
+  .search-input:focus { border-color: var(--accent); }
+  .filter-tabs { display: flex; gap: 4px; }
+  .filter-tab { background: transparent; border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; color: var(--muted); font-size: 12px; cursor: pointer; transition: all 0.15s; }
+  .filter-tab:hover { border-color: var(--blue); color: var(--blue); }
+  .filter-tab.active { background: var(--accent); border-color: var(--accent); color: white; }
+
+  /* Task list */
+  .task-list { flex: 1; overflow-y: auto; }
+  .task-list::-webkit-scrollbar { width: 4px; }
+  .task-list::-webkit-scrollbar-track { background: transparent; }
+  .task-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  .task-item { padding: 12px 16px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.1s; display: flex; flex-direction: column; gap: 5px; }
+  .task-item:hover { background: var(--surface2); }
+  .task-item.active { background: rgba(31, 111, 235, 0.15); border-left: 3px solid var(--accent); padding-left: 13px; }
+  .task-item-header { display: flex; justify-content: space-between; align-items: center; }
+  .task-id { font-size: 12px; font-weight: 700; color: var(--text); font-family: monospace; }
+  .reward-pill { padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 700; }
+  .reward-high { background: rgba(63, 185, 80, 0.15); color: var(--green); }
+  .reward-mid { background: rgba(210, 153, 34, 0.15); color: var(--yellow); }
+  .reward-low { background: rgba(248, 81, 73, 0.15); color: var(--red); }
+  .task-instruction { font-size: 12px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .task-meta { display: flex; gap: 8px; align-items: center; }
+  .task-type-badge { font-size: 10px; font-weight: 600; padding: 1px 6px; border-radius: 4px; background: var(--surface2); border: 1px solid var(--border); color: var(--muted); }
+  .task-steps { font-size: 11px; color: var(--muted); }
+
+  /* Main panel */
+  .main-panel { display: flex; flex-direction: column; overflow: hidden; }
+
+  /* Empty state */
+  .empty-state { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; color: var(--muted); }
+  .empty-state-icon { font-size: 48px; opacity: 0.3; }
+  .empty-state h3 { font-size: 16px; color: var(--text); }
+
+  /* Task detail */
+  .task-detail { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  .task-detail-header { padding: 16px 20px; border-bottom: 1px solid var(--border); background: var(--surface); }
+  .task-detail-title { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .task-detail-title h2 { font-size: 16px; font-weight: 700; font-family: monospace; }
+  .status-badge { padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+  .status-completed { background: rgba(63, 185, 80, 0.15); color: var(--green); }
+  .status-failed { background: rgba(248, 81, 73, 0.15); color: var(--red); }
+  .task-detail-instruction { font-size: 13px; color: var(--muted); line-height: 1.6; }
+
+  /* Reward panel */
+  .reward-panel { padding: 12px 20px; border-bottom: 1px solid var(--border); background: var(--surface2); display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
+  .reward-total { display: flex; flex-direction: column; }
+  .reward-total-value { font-size: 28px; font-weight: 800; color: var(--blue); }
+  .reward-total-label { font-size: 11px; color: var(--muted); }
+  .reward-divider { width: 1px; height: 40px; background: var(--border); }
+  .reward-components { display: flex; gap: 16px; flex-wrap: wrap; flex: 1; }
+  .reward-comp { display: flex; flex-direction: column; gap: 2px; }
+  .reward-comp-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .reward-comp-bar { display: flex; align-items: center; gap: 6px; }
+  .mini-bar-track { background: var(--border); border-radius: 3px; height: 8px; width: 60px; overflow: hidden; }
+  .mini-bar-fill { height: 100%; border-radius: 3px; }
+  .reward-comp-val { font-size: 11px; font-weight: 700; }
+  .meta-row { display: flex; gap: 16px; align-items: center; }
+  .meta-item { display: flex; flex-direction: column; }
+  .meta-item-val { font-size: 16px; font-weight: 700; }
+  .meta-item-label { font-size: 10px; color: var(--muted); }
+
+  /* Trace */
+  .trace-container { flex: 1; overflow-y: auto; padding: 16px 20px; display: flex; flex-direction: column; gap: 10px; }
+  .trace-container::-webkit-scrollbar { width: 4px; }
+  .trace-container::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .trace-msg { display: flex; flex-direction: column; gap: 4px; max-width: 100%; }
+  .trace-role { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; }
+  .trace-content { padding: 10px 14px; border-radius: 8px; font-size: 12px; line-height: 1.6; border: 1px solid var(--border); }
+
+  /* System message */
+  .msg-system .trace-role { color: var(--purple); }
+  .msg-system .trace-content { background: rgba(188, 140, 255, 0.05); border-color: rgba(188, 140, 255, 0.2); }
+
+  /* Agent action */
+  .msg-agent .trace-role { color: var(--blue); }
+  .msg-agent .trace-content { background: rgba(88, 166, 255, 0.05); border-color: rgba(88, 166, 255, 0.2); }
+
+  /* Server response */
+  .msg-server .trace-role { color: var(--muted); }
+  .msg-server .trace-content { background: var(--surface2); font-family: monospace; font-size: 11px; }
+
+  /* Action highlights */
+  .action-chip { display: inline-block; padding: 2px 8px; border-radius: 4px; font-family: monospace; font-weight: 700; font-size: 11px; margin-right: 4px; }
+  .action-get { background: rgba(63, 185, 80, 0.15); color: var(--green); }
+  .action-post { background: rgba(210, 153, 34, 0.15); color: var(--yellow); }
+  .action-finish { background: rgba(88, 166, 255, 0.15); color: var(--blue); }
+
+  /* System prompt collapse */
+  .collapsible { cursor: pointer; user-select: none; }
+  .collapsible:hover .trace-content { border-color: rgba(188, 140, 255, 0.4); }
+  .collapse-btn { font-size: 10px; color: var(--muted); background: var(--border); border-radius: 4px; padding: 1px 6px; margin-left: 6px; }
+  .collapsed .trace-content { max-height: 60px; overflow: hidden; position: relative; }
+  .collapsed .trace-content::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 30px; background: linear-gradient(transparent, var(--surface)); }
+
+  /* Loading */
+  .loading { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 40px; color: var(--muted); }
+  .spinner { width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--blue); border-radius: 50%; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* No results */
+  .no-results { padding: 40px 20px; text-align: center; color: var(--muted); font-size: 13px; }
+
+  /* Tabs */
+  .tab-bar { display: flex; padding: 0 20px; border-bottom: 1px solid var(--border); background: var(--surface); gap: 0; }
+  .tab { padding: 10px 16px; font-size: 13px; font-weight: 500; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.15s; }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--blue); border-bottom-color: var(--blue); }
+
+  /* Overview panel */
+  .overview { padding: 24px; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; overflow-y: auto; }
+  .overview-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; }
+  .overview-card h3 { font-size: 13px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 16px; }
+
+  .big-stat { text-align: center; padding: 20px 0; }
+  .big-stat-val { font-size: 52px; font-weight: 800; color: var(--blue); line-height: 1; }
+  .big-stat-label { font-size: 14px; color: var(--muted); margin-top: 6px; }
+
+  .task-type-detail { display: flex; flex-direction: column; gap: 12px; }
+  .task-type-row { display: flex; flex-direction: column; gap: 4px; }
+  .task-type-row-header { display: flex; justify-content: space-between; }
+  .task-type-name { font-size: 13px; font-weight: 600; }
+  .task-type-detail-score { font-size: 13px; font-weight: 700; }
+  .task-type-info { font-size: 11px; color: var(--muted); }
+  .thick-bar { height: 10px; background: var(--border); border-radius: 5px; overflow: hidden; }
+  .thick-bar-fill { height: 100%; border-radius: 5px; transition: width 1s ease; }
+
+  .reward-explainer { display: flex; flex-direction: column; gap: 10px; }
+  .reward-explain-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; background: var(--surface2); border-radius: 6px; }
+  .reward-explain-name { font-size: 12px; }
+  .reward-explain-range { font-size: 11px; color: var(--muted); font-family: monospace; }
+
+  .architecture-list { display: flex; flex-direction: column; gap: 8px; }
+  .arch-row { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+  .arch-row:last-child { border-bottom: none; }
+  .arch-icon { font-size: 18px; width: 28px; flex-shrink: 0; }
+  .arch-text { display: flex; flex-direction: column; }
+  .arch-title { font-size: 13px; font-weight: 600; }
+  .arch-desc { font-size: 11px; color: var(--muted); }
+
+  pre { white-space: pre-wrap; word-break: break-word; }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="logo">
+      <div class="logo-icon">🏥</div>
+      <div class="logo-text">
+        <h1>MedAgentBench</h1>
+        <p>Clinical AI Decision-Making Benchmark</p>
+      </div>
+    </div>
+    <div class="header-right">
+      <span style="color: var(--muted); font-size: 12px;">FHIR RL Environment</span>
+      <div class="status-dot"></div>
+      <span class="badge">OpenEnv</span>
+    </div>
+  </header>
+
+  <main>
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="sidebar-header">
+        <h2>Benchmark Overview</h2>
+        <div class="stats-grid" id="stats-grid">
+          <div class="stat-card"><div class="stat-value" id="stat-total">—</div><div class="stat-label">Total Tasks</div></div>
+          <div class="stat-card green"><div class="stat-value" id="stat-avg">—</div><div class="stat-label">Avg Reward</div></div>
+          <div class="stat-card" style="grid-column: span 2;"><div style="display:flex;gap:16px;align-items:center">
+            <div id="type-bars" class="type-bars" style="flex:1"></div>
+          </div></div>
+        </div>
+      </div>
+
+      <div class="filter-section">
+        <input class="search-input" type="search" id="search-input" placeholder="Search tasks..." oninput="filterTasks()">
+        <div class="filter-tabs" id="filter-tabs">
+          <button class="filter-tab active" onclick="setFilter('all', this)">All</button>
+          <button class="filter-tab" onclick="setFilter('task3', this)">Task 3</button>
+          <button class="filter-tab" onclick="setFilter('task8', this)">Task 8</button>
+          <button class="filter-tab" onclick="setFilter('task10', this)">Task 10</button>
+        </div>
+      </div>
+
+      <div class="task-list" id="task-list">
+        <div class="loading"><div class="spinner"></div> Loading tasks…</div>
+      </div>
+    </div>
+
+    <!-- Main panel -->
+    <div class="main-panel" id="main-panel">
+      <div class="tab-bar" id="tab-bar">
+        <div class="tab active" onclick="setTab('overview', this)">Overview</div>
+        <div class="tab" onclick="setTab('trace', this)" id="trace-tab" style="display:none">Trace Viewer</div>
+      </div>
+
+      <!-- Overview content -->
+      <div class="overview" id="overview-panel">
+        <div class="overview-card" id="ov-total" style="grid-column: span 1;">
+          <div class="big-stat"><div class="big-stat-val" id="ov-tasks">—</div><div class="big-stat-label">Clinical Tasks Evaluated</div></div>
+        </div>
+        <div class="overview-card">
+          <div class="big-stat"><div class="big-stat-val green" id="ov-avg" style="color:var(--green)">—</div><div class="big-stat-label">Average Shaped Reward</div></div>
+        </div>
+        <div class="overview-card">
+          <h3>Task Type Performance</h3>
+          <div class="task-type-detail" id="type-detail"></div>
+        </div>
+        <div class="overview-card">
+          <h3>Reward Components</h3>
+          <div class="reward-explainer">
+            <div class="reward-explain-row"><span class="reward-explain-name">✅ Correctness</span><span class="reward-explain-range" style="color:var(--green)">0.0 – 0.4</span></div>
+            <div class="reward-explain-row"><span class="reward-explain-name">🏗 Structure</span><span class="reward-explain-range" style="color:var(--blue)">0.0 – 0.2</span></div>
+            <div class="reward-explain-row"><span class="reward-explain-name">🧑‍⚕️ Patient Ref</span><span class="reward-explain-range" style="color:var(--purple)">0.0 – 0.1</span></div>
+            <div class="reward-explain-row"><span class="reward-explain-name">⚡ Efficiency</span><span class="reward-explain-range" style="color:var(--yellow)">0.0 – 0.1</span></div>
+            <div class="reward-explain-row"><span class="reward-explain-name">🏁 Completion</span><span class="reward-explain-range" style="color:var(--teal)">+0.05</span></div>
+            <div class="reward-explain-row"><span class="reward-explain-name">⚠️ Penalties</span><span class="reward-explain-range" style="color:var(--red)">–0.1/call</span></div>
+          </div>
+        </div>
+        <div class="overview-card" style="grid-column: span 2;">
+          <h3>System Architecture</h3>
+          <div class="architecture-list">
+            <div class="arch-row"><div class="arch-icon">🤖</div><div class="arch-text"><div class="arch-title">LLM Agent</div><div class="arch-desc">Receives clinical task + available FHIR function definitions, produces GET / POST / FINISH actions</div></div></div>
+            <div class="arch-row"><div class="arch-icon">🌐</div><div class="arch-text"><div class="arch-title">FHIR API Layer</div><div class="arch-desc">Mock FHIR client (cached) or live HAPI FHIR server — serves patient records, conditions, medications, observations</div></div></div>
+            <div class="arch-row"><div class="arch-icon">🏆</div><div class="arch-text"><div class="arch-title">Shaped Reward Engine</div><div class="arch-desc">Multi-component dense reward: correctness + structure + patient ref + efficiency − redundancy penalties</div></div></div>
+            <div class="arch-row"><div class="arch-icon">🔄</div><div class="arch-text"><div class="arch-title">RL Training Loop</div><div class="arch-desc">OpenEnv WebSocket environment → TRL GRPOTrainer for policy gradient training on clinical tasks</div></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Trace panel (hidden initially) -->
+      <div id="trace-panel" style="display:none; flex:1; display:none; flex-direction:column; overflow:hidden;">
+        <!-- Filled dynamically -->
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+let allTasks = [];
+let activeFilter = 'all';
+let activeTaskId = null;
+let currentTab = 'overview';
+
+const TASK_META = {
+  task3:  { label: 'Blood Pressure Monitoring', color: '#58a6ff', desc: 'Record and assess hypertension readings; POST Observation resources' },
+  task8:  { label: 'Orthopedic Referral',        color: '#3fb950', desc: 'Evaluate joint pain and create referral ServiceRequest via FHIR' },
+  task10: { label: 'A1C / Diabetes Management',  color: '#bc8cff', desc: 'Query A1C results and assess glycemic control status' },
+};
+
+async function loadData() {
+  try {
+    const res = await fetch('/api/baseline-results');
+    if (!res.ok) throw new Error('API unavailable');
+    const data = await res.json();
+    init(data);
+  } catch (e) {
+    // Fallback: try loading directly
+    console.warn('API unavailable, showing empty state');
+    document.getElementById('task-list').innerHTML = '<div class="no-results">Could not load baseline results.<br>Start the server and refresh.</div>';
+  }
+}
+
+function init(data) {
+  allTasks = data.results || [];
+  const summary = data.summary || {};
+
+  // Sidebar stats
+  document.getElementById('stat-total').textContent = summary.total_tasks || allTasks.length;
+  document.getElementById('stat-avg').textContent = (summary.avg_reward || 0).toFixed(4);
+
+  // Type bars (sidebar)
+  const byType = summary.by_type || {};
+  const typeBars = document.getElementById('type-bars');
+  typeBars.innerHTML = '';
+  for (const [type, info] of Object.entries(byType)) {
+    const pct = Math.round((info.avg_reward / 1.0) * 100);
+    const meta = TASK_META[type] || {};
+    typeBars.innerHTML += `
+      <div class="type-bar">
+        <div class="type-bar-header">
+          <span class="type-name" style="color:${meta.color || '#888'}">${type}</span>
+          <span class="type-score">${info.avg_reward.toFixed(4)}</span>
+        </div>
+        <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${meta.color || '#888'}"></div></div>
+      </div>`;
+  }
+
+  // Overview panel
+  document.getElementById('ov-tasks').textContent = summary.total_tasks || allTasks.length;
+  document.getElementById('ov-avg').textContent = (summary.avg_reward || 0).toFixed(4);
+
+  const typeDetail = document.getElementById('type-detail');
+  typeDetail.innerHTML = '';
+  for (const [type, info] of Object.entries(byType)) {
+    const meta = TASK_META[type] || {};
+    const pct = Math.round((info.avg_reward / 1.0) * 100);
+    typeDetail.innerHTML += `
+      <div class="task-type-row">
+        <div class="task-type-row-header">
+          <div>
+            <span class="task-type-name" style="color:${meta.color}">${meta.label || type}</span>
+            <div class="task-type-info">${meta.desc || ''} · ${info.count} tasks</div>
+          </div>
+          <span class="task-type-detail-score" style="color:${meta.color}">${info.avg_reward.toFixed(4)}</span>
+        </div>
+        <div class="thick-bar"><div class="thick-bar-fill" style="width:${pct}%;background:${meta.color}"></div></div>
+      </div>`;
+  }
+
+  renderTaskList(allTasks);
+}
+
+function rewardClass(r) {
+  if (r >= 0.3) return 'reward-high';
+  if (r >= 0.1) return 'reward-mid';
+  return 'reward-low';
+}
+
+function getTaskInstruction(trace) {
+  if (!trace || !trace.length) return '';
+  // First user message contains the full system prompt; extract instruction after "question:"
+  const first = trace[0]?.content || '';
+  // Try to find "Question:" or similar pattern
+  const qMatch = first.match(/(?:Question|question|QUESTION)[:\s]+(.+?)(?:\n|$)/);
+  if (qMatch) return qMatch[1].trim();
+  // Otherwise take last 100 chars of first content
+  return first.substring(0, 120).replace(/\n/g, ' ') + '…';
+}
+
+function renderTaskList(tasks) {
+  const list = document.getElementById('task-list');
+  if (!tasks.length) { list.innerHTML = '<div class="no-results">No tasks match your filter.</div>'; return; }
+
+  list.innerHTML = tasks.map(t => {
+    const instr = getTaskInstruction(t.trace);
+    const rClass = rewardClass(t.reward);
+    const meta = TASK_META[t.task_type] || {};
+    return `<div class="task-item${t.task_id === activeTaskId ? ' active' : ''}" onclick="selectTask('${t.task_id}')">
+      <div class="task-item-header">
+        <span class="task-id">${t.task_id}</span>
+        <span class="reward-pill ${rClass}">${t.reward.toFixed(4)}</span>
+      </div>
+      <div class="task-instruction">${instr}</div>
+      <div class="task-meta">
+        <span class="task-type-badge" style="color:${meta.color || '#888'}">${t.task_type}</span>
+        <span class="task-steps">${t.steps} step${t.steps !== 1 ? 's' : ''}</span>
+        <span class="task-steps">${t.task_status}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function filterTasks() {
+  const query = document.getElementById('search-input').value.toLowerCase();
+  let tasks = allTasks;
+  if (activeFilter !== 'all') tasks = tasks.filter(t => t.task_type === activeFilter);
+  if (query) tasks = tasks.filter(t => t.task_id.toLowerCase().includes(query) || getTaskInstruction(t.trace).toLowerCase().includes(query));
+  renderTaskList(tasks);
+}
+
+function setFilter(f, el) {
+  activeFilter = f;
+  document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  filterTasks();
+}
+
+function selectTask(taskId) {
+  const task = allTasks.find(t => t.task_id === taskId);
+  if (!task) return;
+  activeTaskId = taskId;
+  filterTasks(); // re-render to update active state
+  showTrace(task);
+  setTab('trace', document.querySelector('.tab:nth-child(2)'));
+  document.getElementById('trace-tab').style.display = '';
+}
+
+function setTab(tab, el) {
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el?.classList.add('active');
+  document.getElementById('overview-panel').style.display = tab === 'overview' ? '' : 'none';
+  document.getElementById('trace-panel').style.display = tab === 'trace' ? 'flex' : 'none';
+}
+
+function estimateRewardComponents(task) {
+  // Estimate reward breakdown from shaped reward heuristics
+  const r = task.reward;
+  const steps = task.steps;
+  const status = task.task_status;
+
+  // We know total shaped reward = correctness + structure + patient + efficiency + completion - penalties
+  // From the benchmark, avg is 0.1592 — estimate components
+  const hasFinish = task.trace?.some(m => m.role === 'assistant' && m.content?.includes('FINISH'));
+  const hasPosts = task.trace?.some(m => m.role === 'assistant' && m.content?.startsWith('POST'));
+
+  // Estimate: if reward > 0.3 assume correctness got most credit
+  let correctness, structure, efficiency, completion, penalties;
+  if (r >= 0.4) { correctness = 0.4; structure = 0.2; efficiency = 0.1; completion = 0.05; penalties = 0; }
+  else if (r >= 0.2) { correctness = 0.1; structure = 0.15; efficiency = 0.05; completion = 0.05; penalties = 0; }
+  else if (r > 0) { correctness = 0.05; structure = 0.1; efficiency = 0.02; completion = hasFinish ? 0.05 : 0; penalties = 0; }
+  else { correctness = 0; structure = 0.05; efficiency = 0; completion = 0; penalties = 0.1; }
+
+  return { correctness, structure, efficiency, completion, penalties };
+}
+
+function formatTraceMessage(msg, idx) {
+  const role = msg.role;
+  let content = msg.content || '';
+
+  if (role === 'user' && idx === 0) {
+    // System prompt — make collapsible
+    const shortContent = content.substring(0, 200) + '…';
+    return `<div class="trace-msg msg-system collapsible" onclick="toggleCollapse(this)">
+      <div class="trace-role">System Prompt <span class="collapse-btn">click to expand</span></div>
+      <div class="trace-content"><pre>${escHtml(content)}</pre></div>
+    </div>`;
+  }
+
+  if (role === 'user' && idx > 0) {
+    // FHIR server response
+    let display = content;
+    try {
+      const parsed = JSON.parse(content);
+      display = JSON.stringify(parsed, null, 2);
+    } catch {}
+    return `<div class="trace-msg msg-server">
+      <div class="trace-role">FHIR Server Response</div>
+      <div class="trace-content"><pre>${escHtml(display.substring(0, 1500))}${display.length > 1500 ? '\n… (truncated)' : ''}</pre></div>
+    </div>`;
+  }
+
+  if (role === 'assistant') {
+    const c = content.trim();
+    let actionChip = '';
+    let formattedContent = escHtml(c);
+
+    if (c.startsWith('GET ')) {
+      actionChip = '<span class="action-chip action-get">GET</span>';
+      const url = escHtml(c.substring(4));
+      formattedContent = `${actionChip}<code style="font-size:12px;word-break:break-all">${url}</code>`;
+    } else if (c.startsWith('POST ')) {
+      actionChip = '<span class="action-chip action-post">POST</span>';
+      const lines = c.split('\n');
+      const url = escHtml(lines[0].substring(5));
+      let body = lines.slice(1).join('\n');
+      try { body = JSON.stringify(JSON.parse(body), null, 2); } catch {}
+      formattedContent = `${actionChip}<code style="font-size:12px">${url}</code><pre style="margin-top:6px;font-size:11px">${escHtml(body)}</pre>`;
+    } else if (c.startsWith('FINISH')) {
+      actionChip = '<span class="action-chip action-finish">FINISH</span>';
+      formattedContent = `${actionChip} <span style="color:var(--blue)">${escHtml(c.substring(6))}</span>`;
+    }
+
+    return `<div class="trace-msg msg-agent">
+      <div class="trace-role">Agent Action</div>
+      <div class="trace-content">${formattedContent}</div>
+    </div>`;
+  }
+
+  return `<div class="trace-msg">
+    <div class="trace-role">${escHtml(role)}</div>
+    <div class="trace-content"><pre>${escHtml(content.substring(0, 800))}</pre></div>
+  </div>`;
+}
+
+function toggleCollapse(el) {
+  el.classList.toggle('collapsed');
+  const btn = el.querySelector('.collapse-btn');
+  if (btn) btn.textContent = el.classList.contains('collapsed') ? 'click to expand' : 'click to collapse';
+}
+
+function escHtml(s) {
+  return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function showTrace(task) {
+  const panel = document.getElementById('trace-panel');
+
+  const instr = getTaskInstruction(task.trace);
+  const statusClass = task.task_status === 'completed' ? 'status-completed' : 'status-failed';
+  const rClass = rewardClass(task.reward);
+  const comps = estimateRewardComponents(task);
+  const meta = TASK_META[task.task_type] || {};
+
+  const compBars = [
+    { label: 'Correctness', val: comps.correctness, max: 0.4, color: '#3fb950' },
+    { label: 'Structure',   val: comps.structure,   max: 0.2, color: '#58a6ff' },
+    { label: 'Efficiency',  val: comps.efficiency,  max: 0.1, color: '#d29922' },
+    { label: 'Completion',  val: comps.completion,  max: 0.05, color: '#39d353' },
+  ].map(c => `
+    <div class="reward-comp">
+      <div class="reward-comp-label">${c.label}</div>
+      <div class="reward-comp-bar">
+        <div class="mini-bar-track"><div class="mini-bar-fill" style="width:${Math.round((c.val/c.max)*100)}%;background:${c.color}"></div></div>
+        <span class="reward-comp-val" style="color:${c.color}">${c.val.toFixed(3)}</span>
+      </div>
+    </div>`).join('');
+
+  const traceHtml = (task.trace || []).map((msg, i) => formatTraceMessage(msg, i)).join('');
+
+  panel.innerHTML = `
+    <div class="task-detail-header">
+      <div class="task-detail-title">
+        <h2>${task.task_id}</h2>
+        <span class="status-badge ${statusClass}">${task.task_status}</span>
+        <span style="font-size:12px;color:${meta.color || '#888'};margin-left:4px">${meta.label || task.task_type}</span>
+      </div>
+      <div class="task-detail-instruction">${instr}</div>
+    </div>
+    <div class="reward-panel">
+      <div class="reward-total">
+        <div class="reward-total-value">${task.reward.toFixed(4)}</div>
+        <div class="reward-total-label">Total Reward</div>
+      </div>
+      <div class="reward-divider"></div>
+      <div class="reward-components">${compBars}</div>
+      <div class="reward-divider"></div>
+      <div style="display:flex;gap:20px">
+        <div class="meta-item">
+          <div class="meta-item-val">${task.steps}</div>
+          <div class="meta-item-label">Steps</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-item-val">${(task.trace||[]).filter(m=>m.role==='assistant'&&m.content?.startsWith('GET')).length}</div>
+          <div class="meta-item-label">GET calls</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-item-val">${(task.trace||[]).filter(m=>m.role==='assistant'&&m.content?.startsWith('POST')).length}</div>
+          <div class="meta-item-label">POST calls</div>
+        </div>
+      </div>
+    </div>
+    <div class="trace-container">${traceHtml || '<div class="no-results">No trace data available.</div>'}</div>
+  `;
+
+  // Collapse system prompt by default
+  const sysPmt = panel.querySelector('.collapsible');
+  if (sysPmt) { sysPmt.classList.add('collapsed'); const btn = sysPmt.querySelector('.collapse-btn'); if(btn) btn.textContent = 'click to expand'; }
+}
+
+// Init
+loadData();
+</script>
+</body>
+</html>

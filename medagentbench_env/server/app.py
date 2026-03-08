@@ -18,6 +18,9 @@ Usage:
     uvicorn server.app:app --reload --host 0.0.0.0 --port 8000
 """
 
+import json
+from pathlib import Path
+
 try:
     from openenv.core.env_server.http_server import create_app
 except Exception as e:  # pragma: no cover
@@ -25,9 +28,13 @@ except Exception as e:  # pragma: no cover
         "openenv is required. Install dependencies with 'uv sync'"
     ) from e
 
+from fastapi import HTTPException
+from fastapi.responses import HTMLResponse, JSONResponse
+
 from medagentbench_env.models import MedAgentBenchAction, MedAgentBenchObservation
 from .medagentbench_env_environment import MedAgentBenchEnvironment
 
+_ROOT = Path(__file__).parent.parent
 
 app = create_app(
     MedAgentBenchEnvironment,
@@ -36,6 +43,26 @@ app = create_app(
     env_name="medagentbench_env",
     max_concurrent_envs=1,
 )
+
+
+@app.get("/api/baseline-results")
+async def get_baseline_results():
+    """Return pre-computed baseline evaluation results."""
+    results_path = _ROOT / "data" / "baseline_results.json"
+    if not results_path.exists():
+        raise HTTPException(status_code=404, detail="baseline_results.json not found")
+    with open(results_path) as f:
+        return JSONResponse(content=json.load(f))
+
+
+@app.get("/", response_class=HTMLResponse)
+@app.get("/ui", response_class=HTMLResponse)
+async def serve_ui():
+    """Serve the MedAgentBench dashboard UI."""
+    ui_path = _ROOT / "ui" / "index.html"
+    if not ui_path.exists():
+        raise HTTPException(status_code=404, detail="UI not found")
+    return HTMLResponse(content=ui_path.read_text())
 
 
 def main(host: str = "0.0.0.0", port: int = 8000):
