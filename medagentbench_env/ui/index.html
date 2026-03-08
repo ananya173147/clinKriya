@@ -765,11 +765,13 @@ async function sendAction() {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
       body: JSON.stringify({
-        action_type: currentActionType,
-        url: url,
-        body: body,
-        answer: answer,
-        raw_response: rawResponse
+        action: {
+          action_type: currentActionType,
+          url: url,
+          body: body,
+          answer: answer,
+          raw_response: rawResponse
+        }
       })
     });
     if (!r.ok) throw new Error(await r.text());

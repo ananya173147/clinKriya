@@ -593,24 +593,59 @@ class MedAgentTrainEnv:
 # Reward function
 # ---------------------------------------------------------------------------
 
-def reward_func(completions, environments=None, **kwargs):
-    """Return shaped reward from each episode's environment.
+# def reward_func(completions, environments=None, **kwargs):
+#     """Return shaped reward from each episode's environment.
 
-    Standard TRL passes `environments` directly. Unsloth's patched
-    _calculate_rewards does not forward it, so we fall back to the
-    class-level registry which tracks every instance in creation order.
+#     Standard TRL passes `environments` directly. Unsloth's patched
+#     _calculate_rewards does not forward it, so we fall back to the
+#     class-level registry which tracks every instance in creation order.
+#     """
+#     if environments is None:
+#         environments = kwargs.get("environments")
+
+#     if environments is not None:
+#         return [float(env.reward) for env in environments]
+
+#     # Unsloth fallback: pop the oldest N envs from the class registry
+#     n = len(completions)
+#     envs = MedAgentTrainEnv._registry[:n]
+#     del MedAgentTrainEnv._registry[:n]
+#     return [float(env.reward) for env in envs]
+
+def reward_func(prompts, completions, environments=None, **kwargs):
     """
+    GRPO calls this with len(completions) = num_prompts * num_generations.
+    Each env executes once per prompt, so we must tile rewards across generations.
+    """
+    num_completions = len(completions)
+    
     if environments is None:
         environments = kwargs.get("environments")
 
     if environments is not None:
-        return [float(env.reward) for env in environments]
+        envs = environments
+    else:
+        # Unsloth fallback: registry has one env per prompt
+        num_envs = len(MedAgentTrainEnv._registry)
+        # num_generations = completions / envs
+        n_prompts = num_envs  # one env was created per prompt
+        envs = MedAgentTrainEnv._registry[:n_prompts]
+        del MedAgentTrainEnv._registry[:n_prompts]
 
-    # Unsloth fallback: pop the oldest N envs from the class registry
-    n = len(completions)
-    envs = MedAgentTrainEnv._registry[:n]
-    del MedAgentTrainEnv._registry[:n]
-    return [float(env.reward) for env in envs]
+    # Tile: each env's reward repeats num_generations times
+    n_prompts = len(envs)
+    if n_prompts == 0:
+        return [0.0] * num_completions
+    
+    num_generations = num_completions // n_prompts  # e.g. 4 // 2 = 2
+    rewards = []
+    for env in envs:
+        rewards.extend([float(env.reward)] * num_generations)
+    
+    # Safety: pad or truncate to exact length GRPO expects
+    if len(rewards) < num_completions:
+        rewards.extend([0.0] * (num_completions - len(rewards)))
+    return rewards[:num_completions]    
 
 
 # ---------------------------------------------------------------------------

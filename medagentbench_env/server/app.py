@@ -29,12 +29,25 @@ except Exception as e:  # pragma: no cover
     ) from e
 
 from fastapi import HTTPException
-from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, JSONResponse
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.requests import Request
 
 from medagentbench_env.models import MedAgentBenchAction, MedAgentBenchObservation
 from .medagentbench_env_environment import MedAgentBenchEnvironment
 
 _ROOT = Path(__file__).parent.parent
+_UI_HTML = (_ROOT / "ui" / "index.html").read_text()
+
+
+class _UIMiddleware(BaseHTTPMiddleware):
+    """Serve custom UI for /web and / before OpenEnv's default handler."""
+    async def dispatch(self, request: Request, call_next):
+        p = request.url.path
+        if p == "/" or p == "/ui" or p == "/web" or p.startswith("/web/"):
+            return HTMLResponse(content=_UI_HTML)
+        return await call_next(request)
+
 
 app = create_app(
     MedAgentBenchEnvironment,
@@ -43,6 +56,8 @@ app = create_app(
     env_name="medagentbench_env",
     max_concurrent_envs=1,
 )
+
+app.add_middleware(_UIMiddleware)
 
 
 @app.get("/api/tasks")
@@ -76,21 +91,6 @@ async def get_baseline_results():
         return JSONResponse(content=json.load(f))
 
 
-@app.get("/web")
-@app.get("/web/{path:path}")
-async def web_redirect():
-    """Redirect HF Space base_path /web to our dashboard."""
-    return RedirectResponse(url="/ui")
-
-
-@app.get("/", response_class=HTMLResponse)
-@app.get("/ui", response_class=HTMLResponse)
-async def serve_ui():
-    """Serve the MedAgentBench dashboard UI."""
-    ui_path = _ROOT / "ui" / "index.html"
-    if not ui_path.exists():
-        raise HTTPException(status_code=404, detail="UI not found")
-    return HTMLResponse(content=ui_path.read_text())
 
 
 def main(host: str = "0.0.0.0", port: int = 8000):
