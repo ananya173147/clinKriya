@@ -668,8 +668,8 @@ def main():
         help="Number of tasks to use (default: all 90)",
     )
     parser.add_argument(
-        "--max-completion-length", type=int, default=2048,
-        help="Max tokens per generation",
+        "--max-completion-length", type=int, default=512,
+        help="Max tokens per generation (tool calls are short; 512 is enough)",
     )
     parser.add_argument(
         "--output-dir", type=str,
@@ -754,6 +754,16 @@ def main():
         save_total_limit=2,
         fp16=True,
         bf16=False,
+        # Group size: 4 completions per prompt keeps epochs completable.
+        # Default (8) means 8×90=720 full episodes before any gradient update.
+        num_generations=4,
+        # KL penalty against the frozen reference policy.
+        # Without this (beta=0 default) the policy can collapse freely.
+        beta=0.01,
+        # Temperature for diverse rollouts within each group.
+        # Greedy (temp=0) makes all 4 completions identical → zero variance
+        # in advantages → GRPO gradient is zero on every step.
+        temperature=0.9,
     )
 
     trainer = GRPOTrainer(
