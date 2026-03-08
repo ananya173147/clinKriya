@@ -29,7 +29,7 @@ except Exception as e:  # pragma: no cover
     ) from e
 
 from fastapi import HTTPException
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 
 from medagentbench_env.models import MedAgentBenchAction, MedAgentBenchObservation
 from .medagentbench_env_environment import MedAgentBenchEnvironment
@@ -45,6 +45,27 @@ app = create_app(
 )
 
 
+@app.get("/api/tasks")
+async def get_tasks():
+    """Return the task list (instruction, context, MRN, type) for the UI."""
+    tasks_path = _ROOT / "data" / "stratified_benchmark.json"
+    if not tasks_path.exists():
+        raise HTTPException(status_code=404, detail="stratified_benchmark.json not found")
+    with open(tasks_path) as f:
+        tasks = json.load(f)
+    return JSONResponse(content=[
+        {
+            "index": i,
+            "id": t["id"],
+            "task_type": t["id"].split("_")[0],
+            "instruction": t["instruction"],
+            "context": t.get("context", ""),
+            "eval_MRN": t.get("eval_MRN", ""),
+        }
+        for i, t in enumerate(tasks)
+    ])
+
+
 @app.get("/api/baseline-results")
 async def get_baseline_results():
     """Return pre-computed baseline evaluation results."""
@@ -53,6 +74,13 @@ async def get_baseline_results():
         raise HTTPException(status_code=404, detail="baseline_results.json not found")
     with open(results_path) as f:
         return JSONResponse(content=json.load(f))
+
+
+@app.get("/web")
+@app.get("/web/{path:path}")
+async def web_redirect():
+    """Redirect HF Space base_path /web to our dashboard."""
+    return RedirectResponse(url="/ui")
 
 
 @app.get("/", response_class=HTMLResponse)

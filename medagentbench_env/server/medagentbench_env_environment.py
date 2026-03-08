@@ -40,16 +40,7 @@ from medagentbench_env.server.fhir_cache import MockFHIR
 # ---------------------------------------------------------------------------
 # Paths to MedAgentBench v2 data (relative to this repo)
 # ---------------------------------------------------------------------------
-_MEDAGENTBENCH_ROOT = Path(__file__).resolve().parents[2]  # medagentbench_env/
-_DEFAULT_DATA_DIR = (
-    _MEDAGENTBENCH_ROOT
-    / "medagentbenchv2"
-    / "medagentbench_v2"
-    / "src"
-    / "MedAgentBench"
-    / "data"
-    / "medagentbench"
-)
+_DEFAULT_DATA_DIR = Path(__file__).resolve().parents[1] / "data"
 _DEFAULT_CACHE_PATH = Path(__file__).resolve().parents[1] / "data" / "fhir_cache.json"
 
 # System prompt template (from MedAgentBench v2)
@@ -105,7 +96,7 @@ def _send_get_request_live(url: str) -> Dict[str, Any]:
 def _load_eval_module():
     """Try to import the refsol evaluation module from medagentbenchv2."""
     refsol_path = (
-        _MEDAGENTBENCH_ROOT.parent
+        _DEFAULT_DATA_DIR.parents[1]
         / "medagentbenchv2"
         / "medagentbench_v2"
         / "src"
@@ -135,7 +126,7 @@ def _patch_refsol_with_mock(mock: MockFHIR) -> None:
     We replace that function so evaluation works without a real FHIR server.
     """
     refsol_path = (
-        _MEDAGENTBENCH_ROOT.parent
+        _DEFAULT_DATA_DIR.parents[1]
         / "medagentbenchv2"
         / "medagentbench_v2"
         / "src"

@@ -3,611 +3,1110 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MedAgentBench — Clinical AI Benchmark</title>
+<title>MedAgentBench — FHIR RL Environment</title>
 <style>
-  :root {
-    --bg: #0d1117;
-    --surface: #161b22;
-    --surface2: #1c2128;
-    --border: #30363d;
-    --text: #e6edf3;
-    --muted: #7d8590;
-    --blue: #58a6ff;
-    --green: #3fb950;
-    --red: #f85149;
-    --yellow: #d29922;
-    --purple: #bc8cff;
-    --teal: #39d353;
-    --accent: #1f6feb;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 14px; line-height: 1.5; }
+:root {
+  --bg: #0d1117; --surface: #161b22; --surface2: #1c2128; --surface3: #21262d;
+  --border: #30363d; --text: #e6edf3; --muted: #7d8590; --muted2: #484f58;
+  --blue: #58a6ff; --green: #3fb950; --red: #f85149; --yellow: #e3b341;
+  --purple: #bc8cff; --teal: #39d353; --orange: #f0883e;
+  --accent: #1f6feb; --accent2: #388bfd;
+  --fhir-get: #2ea043; --fhir-post: #d29922; --fhir-finish: #1f6feb;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 13px; line-height: 1.5; overflow: hidden; height: 100vh; }
 
-  /* Layout */
-  .app { display: grid; grid-template-rows: auto 1fr; min-height: 100vh; }
+/* ── Layout ── */
+.shell { display: grid; grid-template-rows: 52px 1fr; height: 100vh; }
+.content { display: grid; grid-template-columns: 300px 1fr; overflow: hidden; }
 
-  /* Header */
-  header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 16px 24px; display: flex; align-items: center; gap: 16px; }
-  .logo { display: flex; align-items: center; gap: 12px; }
-  .logo-icon { width: 36px; height: 36px; background: linear-gradient(135deg, #1f6feb, #58a6ff); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
-  .logo-text h1 { font-size: 18px; font-weight: 700; color: var(--text); }
-  .logo-text p { font-size: 12px; color: var(--muted); }
-  .header-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
-  .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
-  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
-  .badge { background: var(--accent); color: white; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+/* ── Header ── */
+header {
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; padding: 0 20px; gap: 14px;
+}
+.logo { display: flex; align-items: center; gap: 10px; }
+.logo-icon { width: 30px; height: 30px; background: linear-gradient(135deg,#1f6feb,#58a6ff); border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 15px; }
+.logo-name { font-size: 15px; font-weight: 700; }
+.logo-sub { font-size: 11px; color: var(--muted); }
+.header-pill { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+.pill { background: var(--surface3); border: 1px solid var(--border); border-radius: 20px; padding: 3px 10px; font-size: 11px; font-weight: 600; color: var(--muted); display: flex; align-items: center; gap: 5px; }
+.dot { width: 6px; height: 6px; border-radius: 50%; }
+.dot-green { background: var(--green); animation: pulse 2s infinite; }
+.dot-red { background: var(--red); }
+.dot-yellow { background: var(--yellow); animation: pulse 1s infinite; }
+@keyframes pulse { 0%,100%{opacity:1}50%{opacity:.4} }
 
-  /* Main layout */
-  main { display: grid; grid-template-columns: 340px 1fr; overflow: hidden; height: calc(100vh - 69px); }
+/* ── Sidebar ── */
+.sidebar {
+  background: var(--surface); border-right: 1px solid var(--border);
+  display: flex; flex-direction: column; overflow: hidden;
+}
+.sidebar-section { padding: 14px 14px 10px; border-bottom: 1px solid var(--border); }
+.sidebar-section:last-child { border-bottom: none; }
+.section-title { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .8px; margin-bottom: 10px; }
 
-  /* Sidebar */
-  .sidebar { background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
-  .sidebar-header { padding: 16px; border-bottom: 1px solid var(--border); }
-  .sidebar-header h2 { font-size: 13px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+/* Task selector */
+.type-tabs { display: flex; gap: 4px; margin-bottom: 8px; flex-wrap: wrap; }
+.ttab { background: transparent; border: 1px solid var(--border); border-radius: 5px; padding: 3px 8px; font-size: 11px; font-weight: 600; color: var(--muted); cursor: pointer; transition: all .15s; }
+.ttab:hover { border-color: var(--blue); color: var(--blue); }
+.ttab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
 
-  /* Stats */
-  .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
-  .stat-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; }
-  .stat-value { font-size: 20px; font-weight: 700; color: var(--blue); }
-  .stat-label { font-size: 11px; color: var(--muted); margin-top: 2px; }
-  .stat-card.green .stat-value { color: var(--green); }
-  .stat-card.purple .stat-value { color: var(--purple); }
+select.task-select {
+  width: 100%; background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 6px; color: var(--text); font-size: 12px; padding: 7px 8px;
+  outline: none; cursor: pointer; appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%237d8590'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 8px center; padding-right: 24px;
+}
+select.task-select:focus { border-color: var(--accent); }
 
-  /* Task type bars */
-  .type-bars { display: flex; flex-direction: column; gap: 6px; }
-  .type-bar { display: flex; flex-direction: column; gap: 3px; }
-  .type-bar-header { display: flex; justify-content: space-between; align-items: center; }
-  .type-name { font-size: 12px; font-weight: 600; }
-  .type-score { font-size: 12px; color: var(--muted); }
-  .bar-track { background: var(--border); border-radius: 4px; height: 6px; overflow: hidden; }
-  .bar-fill { height: 100%; border-radius: 4px; transition: width 1s ease; }
+.task-preview {
+  margin-top: 8px; background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 6px; padding: 10px; display: none;
+}
+.task-preview.visible { display: block; }
+.preview-mrn { font-family: monospace; font-size: 11px; font-weight: 700; color: var(--blue); margin-bottom: 4px; }
+.preview-type { display: inline-block; font-size: 10px; padding: 1px 6px; border-radius: 3px; font-weight: 700; margin-bottom: 6px; }
+.preview-instr { font-size: 12px; color: var(--text); line-height: 1.5; }
+.preview-ctx { font-size: 11px; color: var(--muted); margin-top: 4px; }
 
-  /* Filter */
-  .filter-section { padding: 12px 16px; border-bottom: 1px solid var(--border); display: flex; flex-direction: column; gap: 8px; }
-  .search-input { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 7px 10px; color: var(--text); font-size: 13px; outline: none; }
-  .search-input:focus { border-color: var(--accent); }
-  .filter-tabs { display: flex; gap: 4px; }
-  .filter-tab { background: transparent; border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; color: var(--muted); font-size: 12px; cursor: pointer; transition: all 0.15s; }
-  .filter-tab:hover { border-color: var(--blue); color: var(--blue); }
-  .filter-tab.active { background: var(--accent); border-color: var(--accent); color: white; }
+.btn { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; padding: 8px 12px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: all .15s; margin-top: 8px; }
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: var(--accent2); }
+.btn-primary:disabled { background: var(--muted2); cursor: not-allowed; opacity: .6; }
+.btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+.btn-outline:hover { border-color: var(--blue); color: var(--blue); }
+.btn-sm { padding: 5px 10px; font-size: 11px; width: auto; }
 
-  /* Task list */
-  .task-list { flex: 1; overflow-y: auto; }
-  .task-list::-webkit-scrollbar { width: 4px; }
-  .task-list::-webkit-scrollbar-track { background: transparent; }
-  .task-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-  .task-item { padding: 12px 16px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.1s; display: flex; flex-direction: column; gap: 5px; }
-  .task-item:hover { background: var(--surface2); }
-  .task-item.active { background: rgba(31, 111, 235, 0.15); border-left: 3px solid var(--accent); padding-left: 13px; }
-  .task-item-header { display: flex; justify-content: space-between; align-items: center; }
-  .task-id { font-size: 12px; font-weight: 700; color: var(--text); font-family: monospace; }
-  .reward-pill { padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 700; }
-  .reward-high { background: rgba(63, 185, 80, 0.15); color: var(--green); }
-  .reward-mid { background: rgba(210, 153, 34, 0.15); color: var(--yellow); }
-  .reward-low { background: rgba(248, 81, 73, 0.15); color: var(--red); }
-  .task-instruction { font-size: 12px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .task-meta { display: flex; gap: 8px; align-items: center; }
-  .task-type-badge { font-size: 10px; font-weight: 600; padding: 1px 6px; border-radius: 4px; background: var(--surface2); border: 1px solid var(--border); color: var(--muted); }
-  .task-steps { font-size: 11px; color: var(--muted); }
+/* Session status */
+.session-status { display: flex; flex-direction: column; gap: 8px; }
+.stat-row { display: flex; justify-content: space-between; align-items: center; }
+.stat-label { font-size: 11px; color: var(--muted); }
+.stat-val { font-size: 12px; font-weight: 700; }
+.steps-bar { background: var(--border); border-radius: 3px; height: 5px; overflow: hidden; margin-top: 2px; }
+.steps-fill { height: 100%; background: var(--blue); border-radius: 3px; transition: width .3s; }
+.status-chip { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 10px; }
+.status-running { background: rgba(88,166,255,.15); color: var(--blue); }
+.status-completed { background: rgba(63,185,80,.15); color: var(--green); }
+.status-error { background: rgba(248,81,73,.15); color: var(--red); }
 
-  /* Main panel */
-  .main-panel { display: flex; flex-direction: column; overflow: hidden; }
+/* Reward display */
+.reward-big { text-align: center; padding: 12px 0 8px; }
+.reward-num { font-size: 36px; font-weight: 800; line-height: 1; }
+.reward-sub { font-size: 11px; color: var(--muted); margin-top: 3px; }
+.reward-comps { display: flex; flex-direction: column; gap: 7px; margin-top: 10px; }
+.rc-row { display: flex; flex-direction: column; gap: 2px; }
+.rc-header { display: flex; justify-content: space-between; font-size: 11px; }
+.rc-name { color: var(--muted); }
+.rc-val { font-weight: 700; }
+.rc-track { background: var(--border); border-radius: 3px; height: 5px; overflow: hidden; }
+.rc-fill { height: 100%; border-radius: 3px; transition: width .8s ease; }
 
-  /* Empty state */
-  .empty-state { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; color: var(--muted); }
-  .empty-state-icon { font-size: 48px; opacity: 0.3; }
-  .empty-state h3 { font-size: 16px; color: var(--text); }
+/* Reward model explainer */
+.reward-model { flex: 1; overflow-y: auto; }
+.reward-model::-webkit-scrollbar { width: 3px; }
+.reward-model::-webkit-scrollbar-thumb { background: var(--border); }
+.rm-row { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--border); }
+.rm-row:last-child { border-bottom: none; }
+.rm-icon { width: 22px; text-align: center; font-size: 14px; flex-shrink: 0; }
+.rm-info { flex: 1; }
+.rm-name { font-size: 11px; font-weight: 600; }
+.rm-desc { font-size: 10px; color: var(--muted); }
+.rm-range { font-size: 10px; font-weight: 700; white-space: nowrap; font-family: monospace; }
 
-  /* Task detail */
-  .task-detail { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-  .task-detail-header { padding: 16px 20px; border-bottom: 1px solid var(--border); background: var(--surface); }
-  .task-detail-title { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
-  .task-detail-title h2 { font-size: 16px; font-weight: 700; font-family: monospace; }
-  .status-badge { padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; }
-  .status-completed { background: rgba(63, 185, 80, 0.15); color: var(--green); }
-  .status-failed { background: rgba(248, 81, 73, 0.15); color: var(--red); }
-  .task-detail-instruction { font-size: 13px; color: var(--muted); line-height: 1.6; }
+/* ── Main panel ── */
+.main { display: flex; flex-direction: column; overflow: hidden; }
 
-  /* Reward panel */
-  .reward-panel { padding: 12px 20px; border-bottom: 1px solid var(--border); background: var(--surface2); display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
-  .reward-total { display: flex; flex-direction: column; }
-  .reward-total-value { font-size: 28px; font-weight: 800; color: var(--blue); }
-  .reward-total-label { font-size: 11px; color: var(--muted); }
-  .reward-divider { width: 1px; height: 40px; background: var(--border); }
-  .reward-components { display: flex; gap: 16px; flex-wrap: wrap; flex: 1; }
-  .reward-comp { display: flex; flex-direction: column; gap: 2px; }
-  .reward-comp-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
-  .reward-comp-bar { display: flex; align-items: center; gap: 6px; }
-  .mini-bar-track { background: var(--border); border-radius: 3px; height: 8px; width: 60px; overflow: hidden; }
-  .mini-bar-fill { height: 100%; border-radius: 3px; }
-  .reward-comp-val { font-size: 11px; font-weight: 700; }
-  .meta-row { display: flex; gap: 16px; align-items: center; }
-  .meta-item { display: flex; flex-direction: column; }
-  .meta-item-val { font-size: 16px; font-weight: 700; }
-  .meta-item-label { font-size: 10px; color: var(--muted); }
+/* Tab bar */
+.tab-bar { display: flex; background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 16px; gap: 0; flex-shrink: 0; }
+.tab { padding: 11px 14px; font-size: 12px; font-weight: 500; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; transition: all .15s; white-space: nowrap; }
+.tab:hover { color: var(--text); }
+.tab.active { color: var(--blue); border-bottom-color: var(--blue); }
 
-  /* Trace */
-  .trace-container { flex: 1; overflow-y: auto; padding: 16px 20px; display: flex; flex-direction: column; gap: 10px; }
-  .trace-container::-webkit-scrollbar { width: 4px; }
-  .trace-container::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+/* ── Interactive session ── */
+.session-pane { display: flex; flex-direction: column; overflow: hidden; flex: 1; }
 
-  .trace-msg { display: flex; flex-direction: column; gap: 4px; max-width: 100%; }
-  .trace-role { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; }
-  .trace-content { padding: 10px 14px; border-radius: 8px; font-size: 12px; line-height: 1.6; border: 1px solid var(--border); }
+/* Task card */
+.task-card {
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  padding: 14px 18px; flex-shrink: 0;
+}
+.task-card-empty { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 13px; }
+.task-card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.task-card-id { font-family: monospace; font-size: 13px; font-weight: 700; }
+.task-card-type { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px; }
+.task-card-instr { font-size: 13px; font-weight: 500; color: var(--text); line-height: 1.5; margin-bottom: 4px; }
+.task-card-ctx { font-size: 11px; color: var(--muted); }
+.task-card-mrn { font-family: monospace; font-size: 11px; color: var(--blue); font-weight: 700; }
 
-  /* System message */
-  .msg-system .trace-role { color: var(--purple); }
-  .msg-system .trace-content { background: rgba(188, 140, 255, 0.05); border-color: rgba(188, 140, 255, 0.2); }
+.sys-prompt-toggle { display: flex; align-items: center; gap: 6px; margin-top: 8px; cursor: pointer; user-select: none; color: var(--muted); font-size: 11px; }
+.sys-prompt-toggle:hover { color: var(--text); }
+.sys-prompt-body { margin-top: 6px; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 10px; font-family: monospace; font-size: 10px; color: var(--muted); max-height: 160px; overflow-y: auto; white-space: pre-wrap; display: none; }
+.sys-prompt-body.open { display: block; }
 
-  /* Agent action */
-  .msg-agent .trace-role { color: var(--blue); }
-  .msg-agent .trace-content { background: rgba(88, 166, 255, 0.05); border-color: rgba(88, 166, 255, 0.2); }
+/* Trace */
+.trace { flex: 1; overflow-y: auto; padding: 14px 18px; display: flex; flex-direction: column; gap: 10px; }
+.trace::-webkit-scrollbar { width: 4px; }
+.trace::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
-  /* Server response */
-  .msg-server .trace-role { color: var(--muted); }
-  .msg-server .trace-content { background: var(--surface2); font-family: monospace; font-size: 11px; }
+.trace-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 12px; color: var(--muted); }
+.trace-empty-icon { font-size: 40px; opacity: .3; }
 
-  /* Action highlights */
-  .action-chip { display: inline-block; padding: 2px 8px; border-radius: 4px; font-family: monospace; font-weight: 700; font-size: 11px; margin-right: 4px; }
-  .action-get { background: rgba(63, 185, 80, 0.15); color: var(--green); }
-  .action-post { background: rgba(210, 153, 34, 0.15); color: var(--yellow); }
-  .action-finish { background: rgba(88, 166, 255, 0.15); color: var(--blue); }
+/* Trace messages */
+.tmsg { display: flex; flex-direction: column; gap: 3px; }
+.tmsg-header { display: flex; align-items: center; gap: 8px; }
+.tmsg-role { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .7px; }
+.tmsg-step { font-size: 10px; color: var(--muted2); }
+.tmsg-body { border-radius: 7px; border: 1px solid var(--border); overflow: hidden; }
 
-  /* System prompt collapse */
-  .collapsible { cursor: pointer; user-select: none; }
-  .collapsible:hover .trace-content { border-color: rgba(188, 140, 255, 0.4); }
-  .collapse-btn { font-size: 10px; color: var(--muted); background: var(--border); border-radius: 4px; padding: 1px 6px; margin-left: 6px; }
-  .collapsed .trace-content { max-height: 60px; overflow: hidden; position: relative; }
-  .collapsed .trace-content::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 30px; background: linear-gradient(transparent, var(--surface)); }
+/* ENV message */
+.msg-env .tmsg-role { color: var(--muted); }
+.msg-env .tmsg-body { background: var(--surface2); }
+.env-text { padding: 8px 12px; font-size: 12px; color: var(--muted); }
 
-  /* Loading */
-  .loading { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 40px; color: var(--muted); }
-  .spinner { width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--blue); border-radius: 50%; animation: spin 0.8s linear infinite; }
-  @keyframes spin { to { transform: rotate(360deg); } }
+/* FHIR GET action */
+.msg-get .tmsg-role { color: var(--fhir-get); }
+.msg-get .tmsg-body { background: rgba(46,160,67,.06); border-color: rgba(46,160,67,.25); }
+/* FHIR POST action */
+.msg-post .tmsg-role { color: var(--fhir-post); }
+.msg-post .tmsg-body { background: rgba(210,153,34,.06); border-color: rgba(210,153,34,.25); }
+/* FINISH action */
+.msg-finish .tmsg-role { color: var(--blue); }
+.msg-finish .tmsg-body { background: rgba(31,111,235,.07); border-color: rgba(31,111,235,.3); }
+/* FHIR response */
+.msg-response .tmsg-role { color: var(--muted2); }
+.msg-response .tmsg-body { background: var(--surface2); }
 
-  /* No results */
-  .no-results { padding: 40px 20px; text-align: center; color: var(--muted); font-size: 13px; }
+/* Action chip inside trace */
+.action-line { display: flex; align-items: flex-start; gap: 8px; padding: 8px 12px; }
+.action-verb { font-weight: 800; font-size: 11px; padding: 2px 7px; border-radius: 4px; flex-shrink: 0; font-family: monospace; }
+.verb-get { background: rgba(46,160,67,.2); color: #4ac26b; }
+.verb-post { background: rgba(210,153,34,.2); color: #d29922; }
+.verb-finish { background: rgba(31,111,235,.2); color: #58a6ff; }
+.action-url { font-family: monospace; font-size: 11px; color: var(--text); word-break: break-all; }
+.action-body-pre { margin: 0 12px 8px; background: rgba(0,0,0,.3); border-radius: 5px; padding: 8px; font-family: monospace; font-size: 10px; color: var(--muted); white-space: pre-wrap; }
 
-  /* Tabs */
-  .tab-bar { display: flex; padding: 0 20px; border-bottom: 1px solid var(--border); background: var(--surface); gap: 0; }
-  .tab { padding: 10px 16px; font-size: 13px; font-weight: 500; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.15s; }
-  .tab:hover { color: var(--text); }
-  .tab.active { color: var(--blue); border-bottom-color: var(--blue); }
+/* FHIR resource tag */
+.fhir-resource { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 700; padding: 1px 7px; border-radius: 10px; background: var(--surface3); border: 1px solid var(--border); color: var(--muted); font-family: monospace; }
 
-  /* Overview panel */
-  .overview { padding: 24px; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; overflow-y: auto; }
-  .overview-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; }
-  .overview-card h3 { font-size: 13px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 16px; }
+/* Response toggle */
+.resp-toggle { display: flex; align-items: center; gap: 6px; padding: 5px 12px; font-size: 10px; color: var(--muted); cursor: pointer; border-top: 1px solid var(--border); user-select: none; }
+.resp-toggle:hover { background: rgba(255,255,255,.03); color: var(--text); }
+.resp-body { padding: 8px 12px; font-family: monospace; font-size: 10px; color: var(--muted); white-space: pre-wrap; border-top: 1px solid var(--border); max-height: 220px; overflow-y: auto; display: none; }
+.resp-body.open { display: block; }
+.resp-summary { font-size: 10px; color: var(--muted); padding: 4px 12px 6px; }
 
-  .big-stat { text-align: center; padding: 20px 0; }
-  .big-stat-val { font-size: 52px; font-weight: 800; color: var(--blue); line-height: 1; }
-  .big-stat-label { font-size: 14px; color: var(--muted); margin-top: 6px; }
+/* FINISH answer */
+.finish-answer { padding: 8px 12px; }
+.finish-label { font-size: 10px; color: var(--muted); margin-bottom: 4px; }
+.finish-vals { display: flex; flex-wrap: wrap; gap: 4px; }
+.finish-val { background: rgba(88,166,255,.12); border: 1px solid rgba(88,166,255,.3); border-radius: 5px; padding: 3px 10px; font-family: monospace; font-size: 12px; font-weight: 700; color: var(--blue); }
 
-  .task-type-detail { display: flex; flex-direction: column; gap: 12px; }
-  .task-type-row { display: flex; flex-direction: column; gap: 4px; }
-  .task-type-row-header { display: flex; justify-content: space-between; }
-  .task-type-name { font-size: 13px; font-weight: 600; }
-  .task-type-detail-score { font-size: 13px; font-weight: 700; }
-  .task-type-info { font-size: 11px; color: var(--muted); }
-  .thick-bar { height: 10px; background: var(--border); border-radius: 5px; overflow: hidden; }
-  .thick-bar-fill { height: 100%; border-radius: 5px; transition: width 1s ease; }
+/* Reward card in trace */
+.reward-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; margin-top: 4px; }
+.reward-card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+.reward-card-val { font-size: 28px; font-weight: 800; }
+.reward-card-label { font-size: 11px; color: var(--muted); }
+.reward-card-status { margin-left: auto; }
+.reward-bars { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.rbar { display: flex; flex-direction: column; gap: 3px; }
+.rbar-header { display: flex; justify-content: space-between; font-size: 10px; }
+.rbar-name { color: var(--muted); }
+.rbar-val { font-weight: 700; }
+.rbar-track { background: var(--border); border-radius: 3px; height: 5px; overflow: hidden; }
+.rbar-fill { height: 100%; border-radius: 3px; }
 
-  .reward-explainer { display: flex; flex-direction: column; gap: 10px; }
-  .reward-explain-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; background: var(--surface2); border-radius: 6px; }
-  .reward-explain-name { font-size: 12px; }
-  .reward-explain-range { font-size: 11px; color: var(--muted); font-family: monospace; }
+/* ── Action panel ── */
+.action-panel {
+  background: var(--surface); border-top: 1px solid var(--border);
+  padding: 12px 16px; flex-shrink: 0;
+}
+.action-panel-title { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.action-panel-title h3 { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+.action-panel-title .step-badge { font-size: 11px; color: var(--blue); font-weight: 700; }
 
-  .architecture-list { display: flex; flex-direction: column; gap: 8px; }
-  .arch-row { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); }
-  .arch-row:last-child { border-bottom: none; }
-  .arch-icon { font-size: 18px; width: 28px; flex-shrink: 0; }
-  .arch-text { display: flex; flex-direction: column; }
-  .arch-title { font-size: 13px; font-weight: 600; }
-  .arch-desc { font-size: 11px; color: var(--muted); }
+/* Quick FHIR buttons */
+.quick-section { margin-bottom: 10px; }
+.quick-label { font-size: 10px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 6px; }
+.quick-btns { display: flex; flex-wrap: wrap; gap: 5px; }
+.qbtn {
+  background: var(--surface2); border: 1px solid var(--border); border-radius: 5px;
+  padding: 4px 10px; font-size: 11px; font-weight: 600; cursor: pointer; color: var(--muted);
+  transition: all .15s; display: flex; align-items: center; gap: 4px;
+}
+.qbtn:hover { border-color: var(--blue); color: var(--blue); background: rgba(88,166,255,.06); }
+.qbtn:disabled { opacity: .4; cursor: not-allowed; }
+.qbtn-get { border-color: rgba(46,160,67,.3); color: var(--fhir-get); }
+.qbtn-get:hover { border-color: var(--fhir-get); background: rgba(46,160,67,.06); }
+.qbtn-post { border-color: rgba(210,153,34,.3); color: var(--yellow); }
+.qbtn-post:hover { border-color: var(--yellow); background: rgba(210,153,34,.06); }
+.qbtn-finish { border-color: rgba(31,111,235,.3); color: var(--blue); }
+.qbtn-finish:hover { border-color: var(--blue); background: rgba(31,111,235,.08); }
 
-  pre { white-space: pre-wrap; word-break: break-word; }
+/* Manual action form */
+.action-form { display: grid; grid-template-columns: auto 1fr; gap: 8px; align-items: start; }
+.action-type-btns { display: flex; flex-direction: column; gap: 4px; }
+.atype-btn {
+  width: 62px; padding: 5px 0; border-radius: 5px; font-size: 11px; font-weight: 800;
+  font-family: monospace; cursor: pointer; border: 1px solid var(--border);
+  background: var(--surface2); color: var(--muted); transition: all .15s; text-align: center;
+}
+.atype-btn.sel-get { background: rgba(46,160,67,.15); border-color: var(--fhir-get); color: var(--fhir-get); }
+.atype-btn.sel-post { background: rgba(210,153,34,.15); border-color: var(--yellow); color: var(--yellow); }
+.atype-btn.sel-finish { background: rgba(31,111,235,.15); border-color: var(--blue); color: var(--blue); }
+
+.action-inputs { display: flex; flex-direction: column; gap: 6px; }
+.input-row { display: flex; align-items: center; gap: 6px; }
+.fhir-prefix { font-family: monospace; font-size: 11px; color: var(--muted); white-space: nowrap; background: var(--surface2); border: 1px solid var(--border); border-right: none; border-radius: 5px 0 0 5px; padding: 6px 8px; }
+input.url-input, textarea.body-input {
+  background: var(--surface2); border: 1px solid var(--border); border-radius: 5px;
+  color: var(--text); font-size: 12px; outline: none; font-family: monospace;
+  transition: border .15s;
+}
+input.url-input { flex: 1; padding: 6px 8px; border-radius: 0 5px 5px 0; }
+input.url-input:focus, textarea.body-input:focus { border-color: var(--accent); }
+.answer-input {
+  background: var(--surface2); border: 1px solid var(--border); border-radius: 5px;
+  color: var(--text); font-size: 12px; padding: 6px 8px; outline: none; font-family: monospace;
+  width: 100%;
+}
+.answer-input:focus { border-color: var(--accent); }
+textarea.body-input { width: 100%; padding: 6px 8px; resize: vertical; min-height: 56px; max-height: 120px; font-size: 11px; }
+
+.field-label { font-size: 10px; color: var(--muted); font-weight: 600; margin-bottom: 2px; }
+
+.send-row { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+.btn-send {
+  background: var(--accent); color: #fff; border: none; border-radius: 6px;
+  padding: 7px 18px; font-size: 12px; font-weight: 700; cursor: pointer; transition: background .15s;
+}
+.btn-send:hover { background: var(--accent2); }
+.btn-send:disabled { background: var(--muted2); cursor: not-allowed; }
+.send-hint { font-size: 11px; color: var(--muted); }
+.error-msg { font-size: 11px; color: var(--red); margin-top: 4px; }
+
+/* ── Overview tab ── */
+.overview-tab { flex: 1; overflow-y: auto; padding: 20px; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; align-content: start; }
+.ov-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 18px; }
+.ov-card h3 { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .8px; margin-bottom: 14px; }
+.big-num { font-size: 44px; font-weight: 800; line-height: 1; }
+.big-sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
+.arch-rows { display: flex; flex-direction: column; gap: 0; }
+.arch-row { display: flex; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--border); }
+.arch-row:last-child { border-bottom: none; }
+.arch-icon { width: 26px; font-size: 16px; flex-shrink: 0; }
+.arch-title { font-size: 12px; font-weight: 600; }
+.arch-desc { font-size: 11px; color: var(--muted); margin-top: 1px; }
+.perf-rows { display: flex; flex-direction: column; gap: 10px; }
+.perf-row { display: flex; flex-direction: column; gap: 4px; }
+.perf-header { display: flex; justify-content: space-between; }
+.perf-name { font-size: 12px; font-weight: 600; }
+.perf-score { font-size: 12px; font-weight: 700; }
+.perf-sub { font-size: 10px; color: var(--muted); }
+.perf-bar { height: 7px; background: var(--border); border-radius: 4px; overflow: hidden; }
+.perf-fill { height: 100%; border-radius: 4px; }
+
+/* scrollbar global */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+/* util */
+.hidden { display: none !important; }
+.flex-row { display: flex; align-items: center; gap: 6px; }
 </style>
 </head>
 <body>
-<div class="app">
-  <header>
-    <div class="logo">
-      <div class="logo-icon">🏥</div>
-      <div class="logo-text">
-        <h1>MedAgentBench</h1>
-        <p>Clinical AI Decision-Making Benchmark</p>
-      </div>
+<div class="shell">
+
+<!-- Header -->
+<header>
+  <div class="logo">
+    <div class="logo-icon">🏥</div>
+    <div>
+      <div class="logo-name">MedAgentBench</div>
+      <div class="logo-sub">FHIR RL Environment</div>
     </div>
-    <div class="header-right">
-      <span style="color: var(--muted); font-size: 12px;">FHIR RL Environment</span>
-      <div class="status-dot"></div>
-      <span class="badge">OpenEnv</span>
+  </div>
+  <div class="header-pill">
+    <div class="pill"><div class="dot dot-green"></div>OpenEnv</div>
+    <div class="pill" id="server-status"><div class="dot dot-yellow" id="server-dot"></div><span id="server-label">Connecting…</span></div>
+  </div>
+</header>
+
+<div class="content">
+
+<!-- ── SIDEBAR ── -->
+<div class="sidebar">
+
+  <!-- Task Selector -->
+  <div class="sidebar-section">
+    <div class="section-title">Select Task</div>
+    <div class="type-tabs" id="type-tabs">
+      <button class="ttab active" onclick="setTypeFilter('all',this)">All</button>
+      <button class="ttab" onclick="setTypeFilter('task3',this)">Blood Pressure</button>
+      <button class="ttab" onclick="setTypeFilter('task8',this)">Ortho Referral</button>
+      <button class="ttab" onclick="setTypeFilter('task10',this)">A1C / Diabetes</button>
     </div>
-  </header>
-
-  <main>
-    <!-- Sidebar -->
-    <div class="sidebar">
-      <div class="sidebar-header">
-        <h2>Benchmark Overview</h2>
-        <div class="stats-grid" id="stats-grid">
-          <div class="stat-card"><div class="stat-value" id="stat-total">—</div><div class="stat-label">Total Tasks</div></div>
-          <div class="stat-card green"><div class="stat-value" id="stat-avg">—</div><div class="stat-label">Avg Reward</div></div>
-          <div class="stat-card" style="grid-column: span 2;"><div style="display:flex;gap:16px;align-items:center">
-            <div id="type-bars" class="type-bars" style="flex:1"></div>
-          </div></div>
-        </div>
-      </div>
-
-      <div class="filter-section">
-        <input class="search-input" type="search" id="search-input" placeholder="Search tasks..." oninput="filterTasks()">
-        <div class="filter-tabs" id="filter-tabs">
-          <button class="filter-tab active" onclick="setFilter('all', this)">All</button>
-          <button class="filter-tab" onclick="setFilter('task3', this)">Task 3</button>
-          <button class="filter-tab" onclick="setFilter('task8', this)">Task 8</button>
-          <button class="filter-tab" onclick="setFilter('task10', this)">Task 10</button>
-        </div>
-      </div>
-
-      <div class="task-list" id="task-list">
-        <div class="loading"><div class="spinner"></div> Loading tasks…</div>
-      </div>
+    <select class="task-select" id="task-select" onchange="onTaskSelect()">
+      <option value="">— pick a clinical task —</option>
+    </select>
+    <div class="task-preview" id="task-preview">
+      <div class="preview-mrn" id="prev-mrn"></div>
+      <div><span class="preview-type" id="prev-type"></span></div>
+      <div class="preview-instr" id="prev-instr"></div>
+      <div class="preview-ctx" id="prev-ctx"></div>
     </div>
+    <button class="btn btn-primary" id="start-btn" onclick="startSession()" disabled>▶ Start Session</button>
+  </div>
 
-    <!-- Main panel -->
-    <div class="main-panel" id="main-panel">
-      <div class="tab-bar" id="tab-bar">
-        <div class="tab active" onclick="setTab('overview', this)">Overview</div>
-        <div class="tab" onclick="setTab('trace', this)" id="trace-tab" style="display:none">Trace Viewer</div>
-      </div>
-
-      <!-- Overview content -->
-      <div class="overview" id="overview-panel">
-        <div class="overview-card" id="ov-total" style="grid-column: span 1;">
-          <div class="big-stat"><div class="big-stat-val" id="ov-tasks">—</div><div class="big-stat-label">Clinical Tasks Evaluated</div></div>
-        </div>
-        <div class="overview-card">
-          <div class="big-stat"><div class="big-stat-val green" id="ov-avg" style="color:var(--green)">—</div><div class="big-stat-label">Average Shaped Reward</div></div>
-        </div>
-        <div class="overview-card">
-          <h3>Task Type Performance</h3>
-          <div class="task-type-detail" id="type-detail"></div>
-        </div>
-        <div class="overview-card">
-          <h3>Reward Components</h3>
-          <div class="reward-explainer">
-            <div class="reward-explain-row"><span class="reward-explain-name">✅ Correctness</span><span class="reward-explain-range" style="color:var(--green)">0.0 – 0.4</span></div>
-            <div class="reward-explain-row"><span class="reward-explain-name">🏗 Structure</span><span class="reward-explain-range" style="color:var(--blue)">0.0 – 0.2</span></div>
-            <div class="reward-explain-row"><span class="reward-explain-name">🧑‍⚕️ Patient Ref</span><span class="reward-explain-range" style="color:var(--purple)">0.0 – 0.1</span></div>
-            <div class="reward-explain-row"><span class="reward-explain-name">⚡ Efficiency</span><span class="reward-explain-range" style="color:var(--yellow)">0.0 – 0.1</span></div>
-            <div class="reward-explain-row"><span class="reward-explain-name">🏁 Completion</span><span class="reward-explain-range" style="color:var(--teal)">+0.05</span></div>
-            <div class="reward-explain-row"><span class="reward-explain-name">⚠️ Penalties</span><span class="reward-explain-range" style="color:var(--red)">–0.1/call</span></div>
-          </div>
-        </div>
-        <div class="overview-card" style="grid-column: span 2;">
-          <h3>System Architecture</h3>
-          <div class="architecture-list">
-            <div class="arch-row"><div class="arch-icon">🤖</div><div class="arch-text"><div class="arch-title">LLM Agent</div><div class="arch-desc">Receives clinical task + available FHIR function definitions, produces GET / POST / FINISH actions</div></div></div>
-            <div class="arch-row"><div class="arch-icon">🌐</div><div class="arch-text"><div class="arch-title">FHIR API Layer</div><div class="arch-desc">Mock FHIR client (cached) or live HAPI FHIR server — serves patient records, conditions, medications, observations</div></div></div>
-            <div class="arch-row"><div class="arch-icon">🏆</div><div class="arch-text"><div class="arch-title">Shaped Reward Engine</div><div class="arch-desc">Multi-component dense reward: correctness + structure + patient ref + efficiency − redundancy penalties</div></div></div>
-            <div class="arch-row"><div class="arch-icon">🔄</div><div class="arch-text"><div class="arch-title">RL Training Loop</div><div class="arch-desc">OpenEnv WebSocket environment → TRL GRPOTrainer for policy gradient training on clinical tasks</div></div></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Trace panel (hidden initially) -->
-      <div id="trace-panel" style="display:none; flex:1; display:none; flex-direction:column; overflow:hidden;">
-        <!-- Filled dynamically -->
-      </div>
+  <!-- Session Status -->
+  <div class="sidebar-section" id="session-section">
+    <div class="section-title">Session</div>
+    <div class="session-status">
+      <div class="stat-row"><span class="stat-label">Task</span><span class="stat-val" id="ss-task">—</span></div>
+      <div class="stat-row"><span class="stat-label">Status</span><span class="status-chip status-running" id="ss-status">—</span></div>
+      <div class="stat-row"><span class="stat-label">Steps</span><span class="stat-val" id="ss-steps">0 / 8</span></div>
+      <div class="steps-bar"><div class="steps-fill" id="ss-steps-bar" style="width:0%"></div></div>
     </div>
-  </main>
+    <button class="btn btn-outline" id="reset-btn" style="margin-top:10px" onclick="resetSession()">↺ New Session</button>
+  </div>
+
+  <!-- Reward -->
+  <div class="sidebar-section" id="reward-section" style="display:none">
+    <div class="section-title">Episode Reward</div>
+    <div class="reward-big">
+      <div class="reward-num" id="rew-num">—</div>
+      <div class="reward-sub">shaped reward (–0.3 → 1.0)</div>
+    </div>
+    <div class="reward-comps" id="rew-comps"></div>
+  </div>
+
+  <!-- Reward Model -->
+  <div class="sidebar-section" style="flex:1;overflow:hidden;display:flex;flex-direction:column">
+    <div class="section-title">Reward Model</div>
+    <div class="reward-model">
+      <div class="rm-row"><div class="rm-icon">✅</div><div class="rm-info"><div class="rm-name">Correctness</div><div class="rm-desc">refsol pass + partial field credit</div></div><div class="rm-range" style="color:var(--green)">0.0–0.4</div></div>
+      <div class="rm-row"><div class="rm-icon">🏗</div><div class="rm-info"><div class="rm-name">Structure</div><div class="rm-desc">right endpoint + resource type</div></div><div class="rm-range" style="color:var(--blue)">0.0–0.2</div></div>
+      <div class="rm-row"><div class="rm-icon">🧑‍⚕️</div><div class="rm-info"><div class="rm-name">Patient Ref</div><div class="rm-desc">correct MRN in payload</div></div><div class="rm-range" style="color:var(--purple)">0.0–0.1</div></div>
+      <div class="rm-row"><div class="rm-icon">⚡</div><div class="rm-info"><div class="rm-name">Efficiency</div><div class="rm-desc">fewer steps = higher bonus</div></div><div class="rm-range" style="color:var(--yellow)">0.0–0.1</div></div>
+      <div class="rm-row"><div class="rm-icon">🏁</div><div class="rm-info"><div class="rm-name">Completion</div><div class="rm-desc">bonus for calling FINISH</div></div><div class="rm-range" style="color:var(--teal)">+0.05</div></div>
+      <div class="rm-row"><div class="rm-icon">⚠️</div><div class="rm-info"><div class="rm-name">Redundancy</div><div class="rm-desc">penalty per unnecessary call</div></div><div class="rm-range" style="color:var(--red)">−0.1</div></div>
+      <div class="rm-row"><div class="rm-icon">🚫</div><div class="rm-info"><div class="rm-name">Format Error</div><div class="rm-desc">invalid action structure</div></div><div class="rm-range" style="color:var(--red)">−0.1</div></div>
+    </div>
+  </div>
+
 </div>
 
+<!-- ── MAIN PANEL ── -->
+<div class="main">
+
+  <div class="tab-bar">
+    <div class="tab active" id="tab-session" onclick="showTab('session',this)">🩺 Interactive Session</div>
+    <div class="tab" id="tab-overview" onclick="showTab('overview',this)">📊 Benchmark Results</div>
+  </div>
+
+  <!-- SESSION PANE -->
+  <div class="session-pane" id="pane-session">
+
+    <!-- Task card -->
+    <div class="task-card" id="task-card">
+      <div class="task-card-empty" id="card-empty">
+        <span style="font-size:24px;opacity:.3">🏥</span>
+        <span>Select a clinical task and click <strong>Start Session</strong> to begin</span>
+      </div>
+      <div class="hidden" id="card-content">
+        <div class="task-card-header">
+          <span class="task-card-id" id="card-id"></span>
+          <span class="task-card-type" id="card-type"></span>
+          <span class="task-card-mrn" id="card-mrn"></span>
+          <span class="status-chip status-running" id="card-status" style="margin-left:auto">running</span>
+        </div>
+        <div class="task-card-instr" id="card-instr"></div>
+        <div class="task-card-ctx" id="card-ctx"></div>
+        <div class="sys-prompt-toggle" onclick="toggleSysPrompt()">
+          <span id="spt-arrow">▶</span> <span style="font-family:monospace">system_prompt</span>
+          <span style="font-size:10px;margin-left:4px;color:var(--muted2)">(FHIR function definitions)</span>
+        </div>
+        <div class="sys-prompt-body" id="sys-prompt-body"></div>
+      </div>
+    </div>
+
+    <!-- Trace -->
+    <div class="trace" id="trace">
+      <div class="trace-empty" id="trace-empty">
+        <div class="trace-empty-icon">📋</div>
+        <div>Agent actions and FHIR responses will appear here</div>
+      </div>
+    </div>
+
+    <!-- Action panel -->
+    <div class="action-panel" id="action-panel">
+      <div class="action-panel-title">
+        <h3>Take Action</h3>
+        <span class="step-badge" id="ap-step"></span>
+        <span class="send-hint" id="ap-hint" style="margin-left:auto">Start a session to take actions</span>
+      </div>
+
+      <!-- Quick FHIR buttons -->
+      <div class="quick-section" id="quick-section">
+        <div class="quick-label">Quick FHIR Queries</div>
+        <div class="quick-btns" id="quick-btns"></div>
+      </div>
+
+      <!-- Manual form -->
+      <div class="action-form">
+        <div class="action-type-btns">
+          <div class="field-label" style="text-align:center">Type</div>
+          <button class="atype-btn sel-get" id="atype-get" onclick="setActionType('GET')">GET</button>
+          <button class="atype-btn" id="atype-post" onclick="setActionType('POST')">POST</button>
+          <button class="atype-btn" id="atype-finish" onclick="setActionType('FINISH')">FINISH</button>
+        </div>
+        <div class="action-inputs">
+          <!-- GET / POST: URL field -->
+          <div id="url-field">
+            <div class="field-label">FHIR Resource Path</div>
+            <div class="input-row">
+              <div class="fhir-prefix">http://localhost:8080/fhir/</div>
+              <input class="url-input" id="url-input" type="text" placeholder="Observation?patient=S1234567&code=4548-4">
+            </div>
+          </div>
+          <!-- POST: Body field -->
+          <div id="body-field" class="hidden">
+            <div class="field-label">POST Body (JSON)</div>
+            <textarea class="body-input" id="body-input" placeholder='{"resourceType":"Observation","status":"final",...}'></textarea>
+          </div>
+          <!-- FINISH: Answer field -->
+          <div id="answer-field" class="hidden">
+            <div class="field-label">Answer values (one per line, will be sent as a list)</div>
+            <input class="answer-input" id="answer-input" type="text" placeholder='e.g.  controlled   or   S6534835'>
+          </div>
+          <div class="send-row">
+            <button class="btn-send" id="send-btn" onclick="sendAction()" disabled>Send →</button>
+            <div class="error-msg hidden" id="action-error"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- OVERVIEW PANE -->
+  <div class="overview-tab hidden" id="pane-overview">
+    <div class="ov-card">
+      <h3>Tasks Evaluated</h3>
+      <div class="big-num" id="ov-total">—</div>
+      <div class="big-sub">clinical benchmark tasks</div>
+    </div>
+    <div class="ov-card">
+      <h3>Avg Shaped Reward</h3>
+      <div class="big-num" id="ov-avg" style="color:var(--green)">—</div>
+      <div class="big-sub">baseline model: Qwen3-1.7B</div>
+    </div>
+    <div class="ov-card">
+      <h3>Task Type Performance</h3>
+      <div class="perf-rows" id="ov-perf"></div>
+    </div>
+    <div class="ov-card" style="grid-column:span 2">
+      <h3>System Architecture</h3>
+      <div class="arch-rows">
+        <div class="arch-row"><div class="arch-icon">🤖</div><div><div class="arch-title">LLM Agent</div><div class="arch-desc">Receives clinical task + FHIR function definitions, outputs GET / POST / FINISH actions</div></div></div>
+        <div class="arch-row"><div class="arch-icon">🌐</div><div><div class="arch-title">FHIR API (Mock or Live)</div><div class="arch-desc">MockFHIR cache (68 KB) or live HAPI FHIR — serves Patient, Observation, Condition, MedicationRequest, Procedure, ServiceRequest</div></div></div>
+        <div class="arch-row"><div class="arch-icon">🏆</div><div><div class="arch-title">Shaped Reward Engine</div><div class="arch-desc">Dense multi-component reward: correctness + structure + patient ref + efficiency − redundancy/format penalties</div></div></div>
+        <div class="arch-row"><div class="arch-icon">🔄</div><div><div class="arch-title">RL Training (GRPO)</div><div class="arch-desc">OpenEnv WebSocket environment → TRL GRPOTrainer policy gradient training on 90 clinical tasks</div></div></div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+</div><!-- /content -->
+</div><!-- /shell -->
+
 <script>
-let allTasks = [];
-let activeFilter = 'all';
-let activeTaskId = null;
-let currentTab = 'overview';
+// ─── State ────────────────────────────────────────────────────────────────
+const FHIR_BASE = 'http://localhost:8080/fhir/';
 
 const TASK_META = {
-  task3:  { label: 'Blood Pressure Monitoring', color: '#58a6ff', desc: 'Record and assess hypertension readings; POST Observation resources' },
-  task8:  { label: 'Orthopedic Referral',        color: '#3fb950', desc: 'Evaluate joint pain and create referral ServiceRequest via FHIR' },
-  task10: { label: 'A1C / Diabetes Management',  color: '#bc8cff', desc: 'Query A1C results and assess glycemic control status' },
+  task3:  { label: 'Blood Pressure', color: '#58a6ff', desc: 'Record BP vital sign via POST Observation' },
+  task8:  { label: 'Orthopedic Referral', color: '#3fb950', desc: 'Create referral via POST ServiceRequest' },
+  task10: { label: 'A1C / Diabetes', color: '#bc8cff', desc: 'Query HbA1c results and assess glycemic control' },
 };
 
-async function loadData() {
+let allTasks = [];
+let filteredTasks = [];
+let typeFilter = 'all';
+let selectedTask = null;
+let sessionActive = false;
+let sessionDone = false;
+let currentStepNumber = 0;
+let maxSteps = 8;
+let currentActionType = 'GET';
+let traceSteps = [];
+let episodeReward = null;
+
+// ─── Init ─────────────────────────────────────────────────────────────────
+async function init() {
+  await Promise.all([loadTasks(), loadBaseline()]);
+  checkServer();
+}
+
+async function checkServer() {
   try {
-    const res = await fetch('/api/baseline-results');
-    if (!res.ok) throw new Error('API unavailable');
-    const data = await res.json();
-    init(data);
-  } catch (e) {
-    // Fallback: try loading directly
-    console.warn('API unavailable, showing empty state');
-    document.getElementById('task-list').innerHTML = '<div class="no-results">Could not load baseline results.<br>Start the server and refresh.</div>';
-  }
+    const r = await fetch('/health');
+    if (r.ok) { setServerStatus('online'); return; }
+  } catch {}
+  setServerStatus('offline');
 }
 
-function init(data) {
-  allTasks = data.results || [];
-  const summary = data.summary || {};
-
-  // Sidebar stats
-  document.getElementById('stat-total').textContent = summary.total_tasks || allTasks.length;
-  document.getElementById('stat-avg').textContent = (summary.avg_reward || 0).toFixed(4);
-
-  // Type bars (sidebar)
-  const byType = summary.by_type || {};
-  const typeBars = document.getElementById('type-bars');
-  typeBars.innerHTML = '';
-  for (const [type, info] of Object.entries(byType)) {
-    const pct = Math.round((info.avg_reward / 1.0) * 100);
-    const meta = TASK_META[type] || {};
-    typeBars.innerHTML += `
-      <div class="type-bar">
-        <div class="type-bar-header">
-          <span class="type-name" style="color:${meta.color || '#888'}">${type}</span>
-          <span class="type-score">${info.avg_reward.toFixed(4)}</span>
-        </div>
-        <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${meta.color || '#888'}"></div></div>
-      </div>`;
-  }
-
-  // Overview panel
-  document.getElementById('ov-tasks').textContent = summary.total_tasks || allTasks.length;
-  document.getElementById('ov-avg').textContent = (summary.avg_reward || 0).toFixed(4);
-
-  const typeDetail = document.getElementById('type-detail');
-  typeDetail.innerHTML = '';
-  for (const [type, info] of Object.entries(byType)) {
-    const meta = TASK_META[type] || {};
-    const pct = Math.round((info.avg_reward / 1.0) * 100);
-    typeDetail.innerHTML += `
-      <div class="task-type-row">
-        <div class="task-type-row-header">
-          <div>
-            <span class="task-type-name" style="color:${meta.color}">${meta.label || type}</span>
-            <div class="task-type-info">${meta.desc || ''} · ${info.count} tasks</div>
-          </div>
-          <span class="task-type-detail-score" style="color:${meta.color}">${info.avg_reward.toFixed(4)}</span>
-        </div>
-        <div class="thick-bar"><div class="thick-bar-fill" style="width:${pct}%;background:${meta.color}"></div></div>
-      </div>`;
-  }
-
-  renderTaskList(allTasks);
+function setServerStatus(s) {
+  const dot = document.getElementById('server-dot');
+  const lbl = document.getElementById('server-label');
+  if (s === 'online') { dot.className = 'dot dot-green'; lbl.textContent = 'Server online'; }
+  else { dot.className = 'dot dot-red'; lbl.textContent = 'Server offline'; }
 }
 
-function rewardClass(r) {
-  if (r >= 0.3) return 'reward-high';
-  if (r >= 0.1) return 'reward-mid';
-  return 'reward-low';
+// ─── Tasks ────────────────────────────────────────────────────────────────
+async function loadTasks() {
+  try {
+    const r = await fetch('/api/tasks');
+    allTasks = await r.json();
+    filteredTasks = allTasks;
+    renderTaskSelect();
+  } catch {}
 }
 
-function getTaskInstruction(trace) {
-  if (!trace || !trace.length) return '';
-  // First user message contains the full system prompt; extract instruction after "question:"
-  const first = trace[0]?.content || '';
-  // Try to find "Question:" or similar pattern
-  const qMatch = first.match(/(?:Question|question|QUESTION)[:\s]+(.+?)(?:\n|$)/);
-  if (qMatch) return qMatch[1].trim();
-  // Otherwise take last 100 chars of first content
-  return first.substring(0, 120).replace(/\n/g, ' ') + '…';
-}
-
-function renderTaskList(tasks) {
-  const list = document.getElementById('task-list');
-  if (!tasks.length) { list.innerHTML = '<div class="no-results">No tasks match your filter.</div>'; return; }
-
-  list.innerHTML = tasks.map(t => {
-    const instr = getTaskInstruction(t.trace);
-    const rClass = rewardClass(t.reward);
-    const meta = TASK_META[t.task_type] || {};
-    return `<div class="task-item${t.task_id === activeTaskId ? ' active' : ''}" onclick="selectTask('${t.task_id}')">
-      <div class="task-item-header">
-        <span class="task-id">${t.task_id}</span>
-        <span class="reward-pill ${rClass}">${t.reward.toFixed(4)}</span>
-      </div>
-      <div class="task-instruction">${instr}</div>
-      <div class="task-meta">
-        <span class="task-type-badge" style="color:${meta.color || '#888'}">${t.task_type}</span>
-        <span class="task-steps">${t.steps} step${t.steps !== 1 ? 's' : ''}</span>
-        <span class="task-steps">${t.task_status}</span>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-function filterTasks() {
-  const query = document.getElementById('search-input').value.toLowerCase();
-  let tasks = allTasks;
-  if (activeFilter !== 'all') tasks = tasks.filter(t => t.task_type === activeFilter);
-  if (query) tasks = tasks.filter(t => t.task_id.toLowerCase().includes(query) || getTaskInstruction(t.trace).toLowerCase().includes(query));
-  renderTaskList(tasks);
-}
-
-function setFilter(f, el) {
-  activeFilter = f;
-  document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+function setTypeFilter(f, el) {
+  typeFilter = f;
+  document.querySelectorAll('.ttab').forEach(t => t.classList.remove('active'));
   el.classList.add('active');
-  filterTasks();
+  filteredTasks = f === 'all' ? allTasks : allTasks.filter(t => t.task_type === f);
+  renderTaskSelect();
 }
 
-function selectTask(taskId) {
-  const task = allTasks.find(t => t.task_id === taskId);
-  if (!task) return;
-  activeTaskId = taskId;
-  filterTasks(); // re-render to update active state
-  showTrace(task);
-  setTab('trace', document.querySelector('.tab:nth-child(2)'));
-  document.getElementById('trace-tab').style.display = '';
+function renderTaskSelect() {
+  const sel = document.getElementById('task-select');
+  const prev = sel.value;
+  sel.innerHTML = '<option value="">— pick a clinical task —</option>' +
+    filteredTasks.map(t => {
+      const meta = TASK_META[t.task_type] || {};
+      const short = t.instruction.substring(0, 65) + (t.instruction.length > 65 ? '…' : '');
+      return `<option value="${t.index}">[${meta.label || t.task_type}] ${short}</option>`;
+    }).join('');
+  if (filteredTasks.find(t => t.index == prev)) sel.value = prev;
+  onTaskSelect();
 }
 
-function setTab(tab, el) {
-  currentTab = tab;
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  el?.classList.add('active');
-  document.getElementById('overview-panel').style.display = tab === 'overview' ? '' : 'none';
-  document.getElementById('trace-panel').style.display = tab === 'trace' ? 'flex' : 'none';
-}
+function onTaskSelect() {
+  const idx = parseInt(document.getElementById('task-select').value);
+  selectedTask = isNaN(idx) ? null : allTasks.find(t => t.index === idx) || null;
+  const preview = document.getElementById('task-preview');
+  const startBtn = document.getElementById('start-btn');
 
-function estimateRewardComponents(task) {
-  // Estimate reward breakdown from shaped reward heuristics
-  const r = task.reward;
-  const steps = task.steps;
-  const status = task.task_status;
-
-  // We know total shaped reward = correctness + structure + patient + efficiency + completion - penalties
-  // From the benchmark, avg is 0.1592 — estimate components
-  const hasFinish = task.trace?.some(m => m.role === 'assistant' && m.content?.includes('FINISH'));
-  const hasPosts = task.trace?.some(m => m.role === 'assistant' && m.content?.startsWith('POST'));
-
-  // Estimate: if reward > 0.3 assume correctness got most credit
-  let correctness, structure, efficiency, completion, penalties;
-  if (r >= 0.4) { correctness = 0.4; structure = 0.2; efficiency = 0.1; completion = 0.05; penalties = 0; }
-  else if (r >= 0.2) { correctness = 0.1; structure = 0.15; efficiency = 0.05; completion = 0.05; penalties = 0; }
-  else if (r > 0) { correctness = 0.05; structure = 0.1; efficiency = 0.02; completion = hasFinish ? 0.05 : 0; penalties = 0; }
-  else { correctness = 0; structure = 0.05; efficiency = 0; completion = 0; penalties = 0.1; }
-
-  return { correctness, structure, efficiency, completion, penalties };
-}
-
-function formatTraceMessage(msg, idx) {
-  const role = msg.role;
-  let content = msg.content || '';
-
-  if (role === 'user' && idx === 0) {
-    // System prompt — make collapsible
-    const shortContent = content.substring(0, 200) + '…';
-    return `<div class="trace-msg msg-system collapsible" onclick="toggleCollapse(this)">
-      <div class="trace-role">System Prompt <span class="collapse-btn">click to expand</span></div>
-      <div class="trace-content"><pre>${escHtml(content)}</pre></div>
-    </div>`;
+  if (!selectedTask) {
+    preview.classList.remove('visible');
+    startBtn.disabled = true;
+    return;
   }
+  const meta = TASK_META[selectedTask.task_type] || {};
+  document.getElementById('prev-mrn').textContent = `Patient MRN: ${selectedTask.eval_MRN}`;
+  const typeEl = document.getElementById('prev-type');
+  typeEl.textContent = meta.label || selectedTask.task_type;
+  typeEl.style.background = hexToRgba(meta.color || '#888', .15);
+  typeEl.style.color = meta.color || '#888';
+  document.getElementById('prev-instr').textContent = selectedTask.instruction;
+  document.getElementById('prev-ctx').textContent = selectedTask.context || '';
+  preview.classList.add('visible');
+  startBtn.disabled = false;
+}
 
-  if (role === 'user' && idx > 0) {
-    // FHIR server response
-    let display = content;
-    try {
-      const parsed = JSON.parse(content);
-      display = JSON.stringify(parsed, null, 2);
-    } catch {}
-    return `<div class="trace-msg msg-server">
-      <div class="trace-role">FHIR Server Response</div>
-      <div class="trace-content"><pre>${escHtml(display.substring(0, 1500))}${display.length > 1500 ? '\n… (truncated)' : ''}</pre></div>
-    </div>`;
+// ─── Session ──────────────────────────────────────────────────────────────
+async function startSession() {
+  if (!selectedTask) return;
+  document.getElementById('start-btn').disabled = true;
+
+  clearTrace();
+  sessionActive = true;
+  sessionDone = false;
+  currentStepNumber = 0;
+  episodeReward = null;
+  document.getElementById('reward-section').style.display = 'none';
+  document.getElementById('send-btn').disabled = false;
+  document.getElementById('ap-hint').textContent = '';
+  buildQuickButtons();
+  updateSessionPanel();
+
+  // Show task card
+  showTaskCard(selectedTask);
+
+  // Call /reset
+  try {
+    const r = await fetch('/reset', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({task_index: selectedTask.index})
+    });
+    if (!r.ok) throw new Error(await r.text());
+    const obs = await r.json();
+    handleObservation(obs, 'reset');
+  } catch(e) {
+    appendEnvMessage(`Error starting session: ${e.message}`, true);
+    document.getElementById('start-btn').disabled = false;
+    sessionActive = false;
   }
+}
 
-  if (role === 'assistant') {
-    const c = content.trim();
-    let actionChip = '';
-    let formattedContent = escHtml(c);
+function resetSession() {
+  clearTrace();
+  sessionActive = false;
+  sessionDone = false;
+  currentStepNumber = 0;
+  episodeReward = null;
+  document.getElementById('card-empty').classList.remove('hidden');
+  document.getElementById('card-content').classList.add('hidden');
+  document.getElementById('send-btn').disabled = true;
+  document.getElementById('ap-hint').textContent = 'Start a session to take actions';
+  document.getElementById('start-btn').disabled = selectedTask ? false : true;
+  document.getElementById('reward-section').style.display = 'none';
+  updateSessionPanel();
+}
 
-    if (c.startsWith('GET ')) {
-      actionChip = '<span class="action-chip action-get">GET</span>';
-      const url = escHtml(c.substring(4));
-      formattedContent = `${actionChip}<code style="font-size:12px;word-break:break-all">${url}</code>`;
-    } else if (c.startsWith('POST ')) {
-      actionChip = '<span class="action-chip action-post">POST</span>';
-      const lines = c.split('\n');
-      const url = escHtml(lines[0].substring(5));
-      let body = lines.slice(1).join('\n');
-      try { body = JSON.stringify(JSON.parse(body), null, 2); } catch {}
-      formattedContent = `${actionChip}<code style="font-size:12px">${url}</code><pre style="margin-top:6px;font-size:11px">${escHtml(body)}</pre>`;
-    } else if (c.startsWith('FINISH')) {
-      actionChip = '<span class="action-chip action-finish">FINISH</span>';
-      formattedContent = `${actionChip} <span style="color:var(--blue)">${escHtml(c.substring(6))}</span>`;
+function handleObservation(obs, context) {
+  // obs is what OpenEnv returns — could be direct or wrapped
+  const observation = obs.observation || obs;
+  const reward = obs.reward;
+  const done = obs.done;
+
+  currentStepNumber = observation.step_number ?? currentStepNumber;
+  maxSteps = observation.max_steps ?? maxSteps;
+
+  if (context === 'reset') {
+    // Store system prompt (available_functions + task info)
+    const sysParts = [];
+    if (observation.available_functions?.length) {
+      sysParts.push(`// ${observation.available_functions.length} FHIR functions available\n`);
+      sysParts.push(JSON.stringify(observation.available_functions, null, 2));
     }
-
-    return `<div class="trace-msg msg-agent">
-      <div class="trace-role">Agent Action</div>
-      <div class="trace-content">${formattedContent}</div>
-    </div>`;
+    if (sysParts.length) {
+      document.getElementById('sys-prompt-body').textContent = sysParts.join('\n');
+    }
+  } else {
+    // Step response
+    const resp = observation.response_text || '';
+    const err = observation.error;
+    if (err) {
+      appendEnvMessage(`⚠ ${err}`, true);
+    } else if (resp) {
+      appendFhirResponse(resp);
+    }
   }
 
-  return `<div class="trace-msg">
-    <div class="trace-role">${escHtml(role)}</div>
-    <div class="trace-content"><pre>${escHtml(content.substring(0, 800))}</pre></div>
-  </div>`;
+  const status = observation.task_status || 'running';
+  updateSessionPanel(status);
+
+  if (done || status !== 'running') {
+    sessionDone = true;
+    document.getElementById('send-btn').disabled = true;
+    document.getElementById('ap-hint').textContent = 'Episode complete';
+    document.getElementById('card-status').textContent = status;
+    document.getElementById('card-status').className = 'status-chip ' + (status === 'completed' ? 'status-completed' : 'status-error');
+
+    if (reward !== undefined && reward !== null) {
+      showReward(reward, status);
+    }
+  }
 }
 
-function toggleCollapse(el) {
-  el.classList.toggle('collapsed');
-  const btn = el.querySelector('.collapse-btn');
-  if (btn) btn.textContent = el.classList.contains('collapsed') ? 'click to expand' : 'click to collapse';
+// ─── Actions ──────────────────────────────────────────────────────────────
+function setActionType(t) {
+  currentActionType = t;
+  ['GET','POST','FINISH'].forEach(type => {
+    document.getElementById(`atype-${type.toLowerCase()}`).className =
+      `atype-btn${t === type ? ` sel-${t.toLowerCase()}` : ''}`;
+  });
+  document.getElementById('url-field').classList.toggle('hidden', t === 'FINISH');
+  document.getElementById('body-field').classList.toggle('hidden', t !== 'POST');
+  document.getElementById('answer-field').classList.toggle('hidden', t !== 'FINISH');
 }
 
-function escHtml(s) {
-  return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+async function sendAction() {
+  if (!sessionActive || sessionDone) return;
+
+  const err = document.getElementById('action-error');
+  err.classList.add('hidden');
+
+  let url = '', body = null, answer = null, rawResponse = '';
+
+  if (currentActionType === 'GET') {
+    const path = document.getElementById('url-input').value.trim();
+    if (!path) { showError('Enter a FHIR resource path'); return; }
+    url = FHIR_BASE + path;
+    rawResponse = `GET ${url}`;
+  } else if (currentActionType === 'POST') {
+    const path = document.getElementById('url-input').value.trim();
+    const bodyStr = document.getElementById('body-input').value.trim();
+    if (!path) { showError('Enter a FHIR resource path'); return; }
+    if (!bodyStr) { showError('Enter a POST body'); return; }
+    try { body = JSON.parse(bodyStr); } catch { showError('Invalid JSON in body'); return; }
+    url = FHIR_BASE + path;
+    rawResponse = `POST ${url}\n${bodyStr}`;
+  } else {
+    const ansStr = document.getElementById('answer-input').value.trim();
+    answer = ansStr ? ansStr.split(',').map(s => s.trim()).filter(Boolean) : [];
+    rawResponse = `FINISH(${JSON.stringify(answer)})`;
+  }
+
+  // Append agent action to trace
+  appendAgentAction(currentActionType, url, body, answer, rawResponse);
+
+  document.getElementById('send-btn').disabled = true;
+
+  try {
+    const r = await fetch('/step', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        action_type: currentActionType,
+        url: url,
+        body: body,
+        answer: answer,
+        raw_response: rawResponse
+      })
+    });
+    if (!r.ok) throw new Error(await r.text());
+    const result = await r.json();
+    handleObservation(result, 'step');
+    if (!sessionDone) document.getElementById('send-btn').disabled = false;
+  } catch(e) {
+    appendEnvMessage(`Error: ${e.message}`, true);
+    document.getElementById('send-btn').disabled = false;
+  }
 }
 
-function showTrace(task) {
-  const panel = document.getElementById('trace-panel');
+function showError(msg) {
+  const e = document.getElementById('action-error');
+  e.textContent = msg;
+  e.classList.remove('hidden');
+}
 
-  const instr = getTaskInstruction(task.trace);
-  const statusClass = task.task_status === 'completed' ? 'status-completed' : 'status-failed';
-  const rClass = rewardClass(task.reward);
-  const comps = estimateRewardComponents(task);
-  const meta = TASK_META[task.task_type] || {};
+// ─── Quick FHIR buttons ───────────────────────────────────────────────────
+function buildQuickButtons() {
+  if (!selectedTask) return;
+  const mrn = selectedTask.eval_MRN;
+  const type = selectedTask.task_type;
+  const container = document.getElementById('quick-btns');
 
-  const compBars = [
-    { label: 'Correctness', val: comps.correctness, max: 0.4, color: '#3fb950' },
-    { label: 'Structure',   val: comps.structure,   max: 0.2, color: '#58a6ff' },
-    { label: 'Efficiency',  val: comps.efficiency,  max: 0.1, color: '#d29922' },
-    { label: 'Completion',  val: comps.completion,  max: 0.05, color: '#39d353' },
+  const gets = [
+    { label: '👤 Patient', path: `Patient?identifier=${mrn}`, resource: 'Patient' },
+    { label: '📊 Observations', path: `Observation?patient=${mrn}&_sort=-date&_count=50`, resource: 'Observation' },
+    { label: '💊 Medications', path: `MedicationRequest?patient=${mrn}&status=active`, resource: 'MedicationRequest' },
+    { label: '🩺 Conditions', path: `Condition?patient=${mrn}`, resource: 'Condition' },
+    { label: '🔬 Procedures', path: `Procedure?patient=${mrn}`, resource: 'Procedure' },
+  ];
+
+  // Task-specific GET shortcuts
+  if (type === 'task10') {
+    gets.splice(2, 0, { label: '🩸 A1C (4548-4)', path: `Observation?patient=${mrn}&code=4548-4&_sort=-date`, resource: 'Observation' });
+  }
+  if (type === 'task3') {
+    gets.splice(2, 0, { label: '💓 Vital Signs', path: `Observation?patient=${mrn}&category=vital-signs&_sort=-date`, resource: 'Observation' });
+  }
+
+  const getHtml = gets.map(g =>
+    `<button class="qbtn qbtn-get" onclick="prefillGet('${g.path}')" title="${g.path}">${g.label}</button>`
+  ).join('');
+
+  // POST quick actions
+  let postHtml = '';
+  if (type === 'task3') {
+    const bpPayload = JSON.stringify({
+      resourceType: 'Observation', status: 'final',
+      category: [{ coding: [{ system: 'http://terminology.hl7.org/CodeSystem/observation-category', code: 'vital-signs' }] }],
+      code: { text: 'Blood pressure', coding: [{ code: 'BP' }] },
+      effectiveDateTime: selectedTask.context?.match(/\d{4}-\d{2}-\d{2}T[\d:+]+/)?.[0] || new Date().toISOString(),
+      valueString: '118/77 mmHg',
+      subject: { reference: `Patient/${mrn}` }
+    }, null, 2);
+    postHtml = `<button class="qbtn qbtn-post" onclick="prefillPost('Observation',${escAttr(bpPayload)})">📝 POST BP Observation</button>`;
+  }
+  if (type === 'task8') {
+    const refPayload = JSON.stringify({
+      resourceType: 'ServiceRequest', status: 'active', intent: 'order', priority: 'stat',
+      code: { coding: [{ system: 'http://snomed.info/sct', code: '306252003', display: 'Referral to orthopedic surgeon' }] },
+      subject: { reference: `Patient/${mrn}` },
+      authoredOn: new Date().toISOString()
+    }, null, 2);
+    postHtml = `<button class="qbtn qbtn-post" onclick="prefillPost('ServiceRequest',${escAttr(refPayload)})">📝 POST Referral</button>`;
+  }
+
+  const finishHtml = `<button class="qbtn qbtn-finish" onclick="prefillFinish()">🏁 FINISH</button>`;
+
+  container.innerHTML = getHtml + postHtml + finishHtml;
+}
+
+function escAttr(s) { return "'" + s.replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\n/g,'\\n') + "'"; }
+
+function prefillGet(path) {
+  setActionType('GET');
+  document.getElementById('url-input').value = path;
+}
+
+function prefillPost(resource, bodyStr) {
+  setActionType('POST');
+  document.getElementById('url-input').value = resource;
+  document.getElementById('body-input').value = bodyStr.replace(/\\n/g,'\n');
+}
+
+function prefillFinish() {
+  setActionType('FINISH');
+  document.getElementById('answer-input').focus();
+}
+
+// ─── Trace rendering ──────────────────────────────────────────────────────
+function clearTrace() {
+  traceSteps = [];
+  const t = document.getElementById('trace');
+  t.innerHTML = '<div class="trace-empty" id="trace-empty"><div class="trace-empty-icon">📋</div><div>Agent actions and FHIR responses will appear here</div></div>';
+}
+
+function hideTraceEmpty() {
+  const e = document.getElementById('trace-empty');
+  if (e) e.remove();
+}
+
+function appendAgentAction(type, url, body, answer, raw) {
+  hideTraceEmpty();
+  const step = ++traceSteps.length;
+  const id = `tmsg-${step}`;
+  const cls = type === 'GET' ? 'msg-get' : type === 'POST' ? 'msg-post' : 'msg-finish';
+  const verbCls = type === 'GET' ? 'verb-get' : type === 'POST' ? 'verb-post' : 'verb-finish';
+
+  // Extract resource type from URL
+  let resource = '';
+  try {
+    const path = url.replace(FHIR_BASE, '').split('?')[0];
+    resource = path.split('/')[0];
+  } catch {}
+
+  let inner = '';
+  if (type === 'FINISH') {
+    inner = `<div class="action-line"><span class="action-verb ${verbCls}">FINISH</span>
+      <div class="finish-vals">${(answer||[]).map(v=>`<span class="finish-val">${esc(v)}</span>`).join('')}</div></div>`;
+  } else {
+    inner = `<div class="action-line">
+      <span class="action-verb ${verbCls}">${type}</span>
+      ${resource ? `<span class="fhir-resource">⬡ ${esc(resource)}</span>` : ''}
+      <span class="action-url">${esc(url.replace(FHIR_BASE,''))}</span>
+    </div>`;
+    if (body) inner += `<pre class="action-body-pre">${esc(JSON.stringify(body,null,2))}</pre>`;
+  }
+
+  const div = document.createElement('div');
+  div.className = `tmsg ${cls}`;
+  div.id = id;
+  div.innerHTML = `
+    <div class="tmsg-header">
+      <span class="tmsg-role">${type === 'FINISH' ? '🏁 Agent Finish' : type === 'GET' ? '🔍 Agent GET' : '✍ Agent POST'}</span>
+      <span class="tmsg-step">Step ${step}</span>
+    </div>
+    <div class="tmsg-body">${inner}</div>`;
+  document.getElementById('trace').appendChild(div);
+  scrollTrace();
+  updateSessionPanel();
+}
+
+function appendFhirResponse(text) {
+  const id = `resp-${traceSteps.length}`;
+  let parsed = null, summary = '';
+  try {
+    parsed = JSON.parse(text);
+    const total = parsed?.total ?? parsed?.entry?.length;
+    const rtype = parsed?.resourceType;
+    if (rtype === 'Bundle') {
+      summary = `Bundle · ${parsed.entry?.length ?? 0} entries${total !== undefined ? ` (total ${total})` : ''}`;
+    } else if (rtype) {
+      summary = `${rtype}`;
+    }
+  } catch {}
+
+  const prettyText = parsed ? JSON.stringify(parsed, null, 2) : text;
+  const shortText = prettyText.length > 2000 ? prettyText.substring(0, 2000) + '\n… (truncated)' : prettyText;
+
+  const div = document.createElement('div');
+  div.className = 'tmsg msg-response';
+  div.innerHTML = `
+    <div class="tmsg-header"><span class="tmsg-role">🌐 FHIR Response</span></div>
+    <div class="tmsg-body">
+      ${summary ? `<div class="resp-summary">${esc(summary)}</div>` : ''}
+      <div class="resp-toggle" onclick="toggleResp(this)">▶ Show full response</div>
+      <pre class="resp-body" id="${id}">${esc(shortText)}</pre>
+    </div>`;
+  document.getElementById('trace').appendChild(div);
+  scrollTrace();
+}
+
+function appendEnvMessage(text, isError) {
+  hideTraceEmpty();
+  const div = document.createElement('div');
+  div.className = 'tmsg msg-env';
+  div.innerHTML = `
+    <div class="tmsg-header"><span class="tmsg-role" style="color:${isError?'var(--red)':'var(--muted)'}">${isError?'⚠ Error':'ℹ Environment'}</span></div>
+    <div class="tmsg-body"><div class="env-text" style="${isError?'color:var(--red)':''}">${esc(text)}</div></div>`;
+  document.getElementById('trace').appendChild(div);
+  scrollTrace();
+}
+
+function toggleResp(el) {
+  const body = el.nextElementSibling;
+  const open = body.classList.toggle('open');
+  el.textContent = open ? '▼ Hide response' : '▶ Show full response';
+}
+
+function scrollTrace() {
+  const t = document.getElementById('trace');
+  t.scrollTop = t.scrollHeight;
+}
+
+// ─── Reward ───────────────────────────────────────────────────────────────
+function showReward(reward, status) {
+  const sec = document.getElementById('reward-section');
+  sec.style.display = '';
+  const r = parseFloat(reward);
+  const col = r >= 0.4 ? 'var(--green)' : r >= 0.1 ? 'var(--yellow)' : 'var(--red)';
+  document.getElementById('rew-num').style.color = col;
+  document.getElementById('rew-num').textContent = r.toFixed(4);
+
+  // Estimate component breakdown
+  const comps = estimateComps(r, status, traceSteps.length);
+  const compsHtml = [
+    { n: 'Correctness', v: comps.correctness, max: 0.4, c: 'var(--green)' },
+    { n: 'Structure', v: comps.structure, max: 0.2, c: 'var(--blue)' },
+    { n: 'Efficiency', v: comps.efficiency, max: 0.1, c: 'var(--yellow)' },
+    { n: 'Completion', v: comps.completion, max: 0.05, c: 'var(--teal)' },
   ].map(c => `
-    <div class="reward-comp">
-      <div class="reward-comp-label">${c.label}</div>
-      <div class="reward-comp-bar">
-        <div class="mini-bar-track"><div class="mini-bar-fill" style="width:${Math.round((c.val/c.max)*100)}%;background:${c.color}"></div></div>
-        <span class="reward-comp-val" style="color:${c.color}">${c.val.toFixed(3)}</span>
-      </div>
+    <div class="rc-row">
+      <div class="rc-header"><span class="rc-name">${c.n}</span><span class="rc-val" style="color:${c.c}">${c.v.toFixed(3)}</span></div>
+      <div class="rc-track"><div class="rc-fill" style="width:${Math.min(100,Math.round(c.v/c.max*100))}%;background:${c.c}"></div></div>
+    </div>`).join('');
+  document.getElementById('rew-comps').innerHTML = compsHtml;
+
+  // Also append reward card to trace
+  appendRewardCard(r, status, comps);
+}
+
+function appendRewardCard(r, status, comps) {
+  const col = r >= 0.4 ? 'var(--green)' : r >= 0.1 ? 'var(--yellow)' : 'var(--red)';
+  const statusCls = status === 'completed' ? 'status-completed' : 'status-error';
+
+  const barsHtml = [
+    { n: 'Correctness', v: comps.correctness, max: 0.4, c: '#3fb950' },
+    { n: 'Structure', v: comps.structure, max: 0.2, c: '#58a6ff' },
+    { n: 'Efficiency', v: comps.efficiency, max: 0.1, c: '#e3b341' },
+    { n: 'Completion', v: comps.completion, max: 0.05, c: '#39d353' },
+  ].map(c => `
+    <div class="rbar">
+      <div class="rbar-header"><span class="rbar-name">${c.n}</span><span class="rbar-val" style="color:${c.c}">${c.v.toFixed(3)}</span></div>
+      <div class="rbar-track"><div class="rbar-fill" style="width:${Math.min(100,Math.round(c.v/c.max*100))}%;background:${c.c}"></div></div>
     </div>`).join('');
 
-  const traceHtml = (task.trace || []).map((msg, i) => formatTraceMessage(msg, i)).join('');
-
-  panel.innerHTML = `
-    <div class="task-detail-header">
-      <div class="task-detail-title">
-        <h2>${task.task_id}</h2>
-        <span class="status-badge ${statusClass}">${task.task_status}</span>
-        <span style="font-size:12px;color:${meta.color || '#888'};margin-left:4px">${meta.label || task.task_type}</span>
+  const div = document.createElement('div');
+  div.className = 'tmsg';
+  div.innerHTML = `
+    <div class="tmsg-header"><span class="tmsg-role" style="color:var(--blue)">🏆 Episode Complete</span></div>
+    <div class="reward-card">
+      <div class="reward-card-header">
+        <div><div class="reward-card-val" style="color:${col}">${r.toFixed(4)}</div><div class="reward-card-label">Shaped Reward</div></div>
+        <div class="reward-card-status"><span class="status-chip ${statusCls}">${status}</span></div>
       </div>
-      <div class="task-detail-instruction">${instr}</div>
-    </div>
-    <div class="reward-panel">
-      <div class="reward-total">
-        <div class="reward-total-value">${task.reward.toFixed(4)}</div>
-        <div class="reward-total-label">Total Reward</div>
-      </div>
-      <div class="reward-divider"></div>
-      <div class="reward-components">${compBars}</div>
-      <div class="reward-divider"></div>
-      <div style="display:flex;gap:20px">
-        <div class="meta-item">
-          <div class="meta-item-val">${task.steps}</div>
-          <div class="meta-item-label">Steps</div>
-        </div>
-        <div class="meta-item">
-          <div class="meta-item-val">${(task.trace||[]).filter(m=>m.role==='assistant'&&m.content?.startsWith('GET')).length}</div>
-          <div class="meta-item-label">GET calls</div>
-        </div>
-        <div class="meta-item">
-          <div class="meta-item-val">${(task.trace||[]).filter(m=>m.role==='assistant'&&m.content?.startsWith('POST')).length}</div>
-          <div class="meta-item-label">POST calls</div>
-        </div>
-      </div>
-    </div>
-    <div class="trace-container">${traceHtml || '<div class="no-results">No trace data available.</div>'}</div>
-  `;
-
-  // Collapse system prompt by default
-  const sysPmt = panel.querySelector('.collapsible');
-  if (sysPmt) { sysPmt.classList.add('collapsed'); const btn = sysPmt.querySelector('.collapse-btn'); if(btn) btn.textContent = 'click to expand'; }
+      <div class="reward-bars">${barsHtml}</div>
+    </div>`;
+  document.getElementById('trace').appendChild(div);
+  scrollTrace();
 }
 
-// Init
-loadData();
+function estimateComps(r, status, steps) {
+  if (r >= 0.6) return { correctness: 0.4, structure: 0.2, efficiency: 0.08, completion: 0.05 };
+  if (r >= 0.35) return { correctness: 0.2, structure: 0.15, efficiency: 0.05, completion: 0.05 };
+  if (r >= 0.15) return { correctness: 0.05, structure: 0.1, efficiency: 0.03, completion: 0.05 };
+  if (r > 0) return { correctness: 0, structure: 0.08, efficiency: 0.02, completion: 0.05 };
+  return { correctness: 0, structure: 0.02, efficiency: 0, completion: 0 };
+}
+
+// ─── Task card ────────────────────────────────────────────────────────────
+function showTaskCard(task) {
+  document.getElementById('card-empty').classList.add('hidden');
+  document.getElementById('card-content').classList.remove('hidden');
+  document.getElementById('card-id').textContent = task.id;
+  const meta = TASK_META[task.task_type] || {};
+  const typeEl = document.getElementById('card-type');
+  typeEl.textContent = meta.label || task.task_type;
+  typeEl.style.background = hexToRgba(meta.color || '#888', .15);
+  typeEl.style.color = meta.color || '#888';
+  document.getElementById('card-mrn').textContent = `MRN: ${task.eval_MRN}`;
+  document.getElementById('card-instr').textContent = task.instruction;
+  document.getElementById('card-ctx').textContent = task.context || '';
+  document.getElementById('card-status').textContent = 'running';
+  document.getElementById('card-status').className = 'status-chip status-running';
+}
+
+function toggleSysPrompt() {
+  const body = document.getElementById('sys-prompt-body');
+  const arrow = document.getElementById('spt-arrow');
+  const open = body.classList.toggle('open');
+  arrow.textContent = open ? '▼' : '▶';
+}
+
+// ─── Session panel ────────────────────────────────────────────────────────
+function updateSessionPanel(status) {
+  if (!selectedTask) return;
+  document.getElementById('ss-task').textContent = selectedTask?.id || '—';
+  const st = status || (sessionDone ? 'done' : sessionActive ? 'running' : '—');
+  const chip = document.getElementById('ss-status');
+  chip.textContent = st;
+  chip.className = 'status-chip ' + (st === 'completed' ? 'status-completed' : st === 'running' ? 'status-running' : 'status-error');
+  document.getElementById('ss-steps').textContent = `${currentStepNumber} / ${maxSteps}`;
+  document.getElementById('ss-steps-bar').style.width = `${Math.min(100,(currentStepNumber/maxSteps)*100)}%`;
+  document.getElementById('ap-step').textContent = sessionActive ? `Step ${currentStepNumber + 1} of ${maxSteps}` : '';
+}
+
+// ─── Overview ─────────────────────────────────────────────────────────────
+async function loadBaseline() {
+  try {
+    const r = await fetch('/api/baseline-results');
+    const data = await r.json();
+    const s = data.summary || {};
+    document.getElementById('ov-total').textContent = s.total_tasks || '—';
+    document.getElementById('ov-avg').textContent = s.avg_reward?.toFixed(4) || '—';
+    const perf = document.getElementById('ov-perf');
+    perf.innerHTML = Object.entries(s.by_type || {}).map(([type, info]) => {
+      const meta = TASK_META[type] || {};
+      const pct = Math.round(info.avg_reward * 100);
+      return `<div class="perf-row">
+        <div class="perf-header"><span class="perf-name" style="color:${meta.color||'#888'}">${meta.label || type}</span><span class="perf-score" style="color:${meta.color||'#888'}">${info.avg_reward.toFixed(4)}</span></div>
+        <div class="perf-sub">${info.count} tasks · ${meta.desc || ''}</div>
+        <div class="perf-bar"><div class="perf-fill" style="width:${pct}%;background:${meta.color||'#888'}"></div></div>
+      </div>`;
+    }).join('');
+  } catch {}
+}
+
+// ─── Tabs ─────────────────────────────────────────────────────────────────
+function showTab(name, el) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('pane-session').classList.toggle('hidden', name !== 'session');
+  document.getElementById('pane-overview').classList.toggle('hidden', name !== 'overview');
+}
+
+// ─── Util ─────────────────────────────────────────────────────────────────
+function esc(s) {
+  return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function hexToRgba(hex, a) {
+  const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+  return `rgba(${r},${g},${b},${a})`;
+}
+
+init();
 </script>
 </body>
 </html>
