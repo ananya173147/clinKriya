@@ -79,10 +79,6 @@ _SYSTEM_PROMPT: str = ""
 _TASKS: List[Dict] = []
 _TASK_INDEX: int = 0
 
-# Global env tracker — Unsloth's patched _calculate_rewards does not forward
-# the `environments` kwarg to reward_func, so we track every created env in
-# order and pop them in reward_func to match rewards to completions.
-_ENV_REGISTRY: List["MedAgentTrainEnv"] = []
 
 
 def _get_mock_fhir() -> MockFHIR:
@@ -121,8 +117,14 @@ class MedAgentTrainEnv:
     GRPOTrainer's environment_factory creates one instance per rollout.
     """
 
+    # Class-level registry — survives module reloads as long as the same
+    # class object is used by both environment_factory and reward_func.
+    # Unsloth's _calculate_rewards does not forward `environments` to
+    # reward_func, so we track instances here and pop them in order.
+    _registry: "List[MedAgentTrainEnv]" = []
+
     def __init__(self):
-        _ENV_REGISTRY.append(self)  # register for reward_func fallback
+        MedAgentTrainEnv._registry.append(self)
         self._mock = _get_mock_fhir()
         self._history: List[_HistoryItem] = []
         self._post_requests: List[Dict] = []
@@ -595,8 +597,8 @@ def reward_func(completions, environments=None, **kwargs):
     """Return shaped reward from each episode's environment.
 
     Standard TRL passes `environments` directly. Unsloth's patched
-    _calculate_rewards does not, so we fall back to the global registry
-    which tracks every MedAgentTrainEnv in creation order.
+    _calculate_rewards does not forward it, so we fall back to the
+    class-level registry which tracks every instance in creation order.
     """
     if environments is None:
         environments = kwargs.get("environments")
@@ -604,10 +606,10 @@ def reward_func(completions, environments=None, **kwargs):
     if environments is not None:
         return [float(env.reward) for env in environments]
 
-    # Unsloth fallback: pop the oldest N envs from the registry
+    # Unsloth fallback: pop the oldest N envs from the class registry
     n = len(completions)
-    envs = _ENV_REGISTRY[:n]
-    del _ENV_REGISTRY[:n]
+    envs = MedAgentTrainEnv._registry[:n]
+    del MedAgentTrainEnv._registry[:n]
     return [float(env.reward) for env in envs]
 
 
