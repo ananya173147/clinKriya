@@ -1,7 +1,8 @@
-# Single Dockerfile for Northflank CI/CD.
+# Dockerfile for Northflank CI/CD.
 #
-# Starts the OpenEnv environment server (with cached mock FHIR — no real
-# FHIR Docker container needed), then runs GRPO training against it.
+# The combined service runs the OpenEnv environment server — it exposes
+# the /reset, /step, /state, /schema, and /ws endpoints that training
+# connects to.  Training is triggered separately (Northflank job or local).
 #
 # Prerequisites before building:
 #   Build the FHIR cache once against the real server (run locally):
@@ -9,11 +10,6 @@
 #         --fhir-url http://localhost:8080/fhir/ \
 #         --output data/fhir_cache.json
 #   Then commit data/fhir_cache.json — it will be baked into the image.
-#
-# Northflank env vars (set in service settings):
-#   HF_TOKEN         — HuggingFace token (for downloading Qwen weights)
-#   WANDB_API_KEY    — optional, for experiment tracking
-#   TRAIN_ARGS       — optional extra args forwarded to train.py
 
 FROM nvidia/cuda:12.4.1-devel-ubuntu22.04
 
@@ -34,73 +30,29 @@ RUN curl -LsSf https://astral.sh/uv/install.sh | sh && \
 
 WORKDIR /app
 
-# ── Python package + deps ─────────────────────────────────────────────────
-# Copy package manifest first for better layer caching
-COPY medagentbench_env/pyproject.toml medagentbench_env/uv.lock* ./medagentbench_env/
-
-RUN uv venv --python 3.11 /app/.venv && \
-    . /app/.venv/bin/activate && \
-    uv pip install -e "medagentbench_env[train]"
-
 # ── Source code ───────────────────────────────────────────────────────────
 COPY medagentbench_env/ ./medagentbench_env/
 
 # ── MedAgentBench data (FHIR functions + eval module) ─────────────────────
-# Only copy the data + evaluation source — skip large output dirs
 COPY medagentbenchv2/medagentbench_v2/src/ ./medagentbenchv2/medagentbench_v2/src/
+
+# ── Python package + deps ─────────────────────────────────────────────────
+RUN uv venv --python 3.11 /app/.venv && \
+    . /app/.venv/bin/activate && \
+    uv pip install -e "medagentbench_env[train]"
 
 # ── Runtime environment ───────────────────────────────────────────────────
 ENV PATH="/app/.venv/bin:$PATH"
 ENV PYTHONPATH="/app:$PYTHONPATH"
 ENV OUTPUT_DIR=/output
-ENV ENV_URL=http://localhost:8000
 
 RUN mkdir -p /output
 
-# ── Startup script ────────────────────────────────────────────────────────
-# 1. Launch OpenEnv server (auto-detects fhir_cache.json → uses mock FHIR)
-# 2. Wait until the server is ready
-# 3. Run GRPO training against it
-RUN cat > /app/start.sh <<'SCRIPT'
-#!/bin/bash
-set -euo pipefail
-
-echo "=== Starting OpenEnv environment server ==="
-python -m uvicorn medagentbench_env.server.app:app \
-    --host 0.0.0.0 --port 8000 --log-level warning &
-SERVER_PID=$!
-
-echo "Waiting for env server..."
-for i in $(seq 1 60); do
-    if curl -sf http://localhost:8000/schema > /dev/null 2>&1; then
-        echo "Env server ready (${i}s)."
-        break
-    fi
-    if [ "$i" -eq 60 ]; then
-        echo "ERROR: Env server did not start within 60s." >&2
-        kill $SERVER_PID 2>/dev/null || true
-        exit 1
-    fi
-    sleep 1
-done
-
-echo "=== Starting GRPO training ==="
-python medagentbench_env/train.py \
-    --env-url  http://localhost:8000 \
-    --data-dir /app/medagentbench_env/data \
-    --output-dir "${OUTPUT_DIR:-/output}" \
-    ${TRAIN_ARGS:-}
-
-EXIT_CODE=$?
-echo "=== Training finished (exit $EXIT_CODE) ==="
-kill $SERVER_PID 2>/dev/null || true
-exit $EXIT_CODE
-SCRIPT
-
-RUN chmod +x /app/start.sh
-
-# Northflank reads EXPOSE to create the public port definition.
-# The env server listens here; training talks to it over localhost.
+# ── Expose env server port ────────────────────────────────────────────────
 EXPOSE 8000
 
-CMD ["/app/start.sh"]
+# Run the OpenEnv environment server.
+# Training connects to this service via the ENV_URL env var set in the
+# training job (e.g. http://<northflank-service-url>:8000).
+CMD ["python", "-m", "uvicorn", "medagentbench_env.server.app:app", \
+     "--host", "0.0.0.0", "--port", "8000"]
