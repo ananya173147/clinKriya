@@ -725,7 +725,7 @@ def main():
     tokenizer = AutoTokenizer.from_pretrained(args.model)
     model = AutoModelForCausalLM.from_pretrained(
         args.model,
-        torch_dtype=torch.bfloat16,
+        torch_dtype=torch.float16,  # match Unsloth's fp16 autocaster
         device_map="auto",
     )
     lora_config = LoraConfig(
@@ -752,7 +752,8 @@ def main():
         logging_steps=1,
         save_steps=50,
         save_total_limit=2,
-        bf16=True,
+        fp16=True,
+        bf16=False,
     )
 
     trainer = GRPOTrainer(
