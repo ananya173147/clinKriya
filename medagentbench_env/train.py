@@ -477,6 +477,7 @@ class MedAgentTrainEnv:
         self._step_count += 1
         self.done = True
         self.reward = self._evaluate()
+        self._print_trace()
         return f"Task completed. Reward: {self.reward:.3f}"
 
     # ------------------------------------------------------------------
@@ -497,15 +498,19 @@ class MedAgentTrainEnv:
             response_text = (
                 json.dumps(data) if isinstance(data, (dict, list)) else str(data)
             )
+            entry_count = len(data.get("entry", [])) if isinstance(data, dict) else "?"
             env_msg = (
                 f"Here is the response from the GET request:\n{response_text}. "
                 "Please call finish if you have got answers for all the questions "
                 "and finished all the requested tasks"
             )
+            # Compact trace entry — full bundle is returned to model, but trace shows summary
+            trace_msg = f"GET {url} → {entry_count} entries"
         else:
             env_msg = f"Error in GET request: {result.get('error', 'Unknown error')}"
+            trace_msg = env_msg
 
-        self._history.append(_HistoryItem("user", env_msg))
+        self._history.append(_HistoryItem("user", trace_msg))
 
         if self._step_count >= self._max_steps:
             self.done = True
@@ -534,6 +539,20 @@ class MedAgentTrainEnv:
             self.reward = 0.0
 
         return env_msg
+
+    def _print_trace(self) -> None:
+        """Print a readable episode trace to stdout."""
+        task_id = self._task["id"] if self._task else "unknown"
+        sep = "─" * 60
+        print(f"\n{sep}")
+        print(f"EPISODE TRACE  task={task_id}  steps={self._step_count}  reward={self.reward:.3f}")
+        print(sep)
+        # Skip index 0 (system prompt — too long to print)
+        for i, item in enumerate(self._history[1:], start=1):
+            role_label = "AGENT" if item.role == "agent" else "ENV  "
+            print(f"  [{i}] {role_label}: {item.content[:300]}")
+        print(f"  ANSWER: {self._agent_answer}")
+        print(sep)
 
     def _evaluate(self) -> float:
         if self._task is None:
@@ -619,11 +638,11 @@ def main():
     )
     parser.add_argument(
         "--data-dir", type=str, default=str(_DATA_DIR),
-        help="Path to MedAgentBench data directory",
+        help="Path to directory containing stratified_benchmark.json",
     )
     parser.add_argument(
         "--num-tasks", type=int, default=None,
-        help="Number of tasks to use (default: all)",
+        help="Number of tasks to use (default: all 90)",
     )
     parser.add_argument(
         "--max-completion-length", type=int, default=2048,
@@ -646,6 +665,23 @@ def main():
         "--gradient-accumulation-steps", type=int, default=4,
         help="Gradient accumulation steps",
     )
+    parser.add_argument(
+        "--learning-rate", type=float, default=5e-6,
+        help="Learning rate",
+    )
+    parser.add_argument(
+        "--push-to-hub", action="store_true",
+        help="Push the final model to HuggingFace Hub after training",
+    )
+    parser.add_argument(
+        "--hub-model-id", type=str, default=None,
+        help="HuggingFace repo to push to, e.g. 'username/medagent-qwen3'",
+    )
+    parser.add_argument(
+        "--hub-token", type=str,
+        default=os.environ.get("HF_TOKEN"),
+        help="HuggingFace API token (or set HF_TOKEN env var)",
+    )
     args = parser.parse_args()
 
     # Pre-load shared resources
@@ -661,10 +697,13 @@ def main():
         max_completion_length=args.max_completion_length,
         per_device_train_batch_size=args.per_device_batch_size,
         gradient_accumulation_steps=args.gradient_accumulation_steps,
-        chat_template_kwargs={"enable_thinking": False},
+        learning_rate=args.learning_rate,
         log_completions=True,
         num_completions_to_print=2,
         logging_steps=1,
+        save_steps=50,
+        save_total_limit=2,
+        bf16=True,
     )
 
     trainer = GRPOTrainer(
@@ -678,6 +717,20 @@ def main():
     trainer.train()
     trainer.save_model(args.output_dir)
     print(f"Training complete. Model saved to {args.output_dir}")
+
+    if args.push_to_hub:
+        if not args.hub_model_id:
+            # Default repo name: username inferred from token
+            model_basename = args.model.split("/")[-1]
+            args.hub_model_id = f"medagent-{model_basename}"
+            print(f"No --hub-model-id given, using: {args.hub_model_id}")
+        print(f"Pushing model to HuggingFace Hub: {args.hub_model_id} ...")
+        trainer.push_to_hub(
+            repo_id=args.hub_model_id,
+            token=args.hub_token,
+            private=False,
+        )
+        print(f"Model pushed to https://huggingface.co/{args.hub_model_id}")
 
 
 if __name__ == "__main__":
