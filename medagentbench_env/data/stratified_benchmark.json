@@ -1,0 +1,632 @@
+[
+    {
+      "id": "task3_1",
+      "instruction": "I just measured the blood pressure for patient with MRN of S2380121, and it is \"118/77 mmHg\". Help me record it.",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The flowsheet ID for blood pressure is BP.",
+      "eval_MRN": "S2380121",
+      "_benchmark_type": "always-action"
+    },
+    {
+      "id": "task3_2",
+      "instruction": "I just measured the blood pressure for patient with MRN of S1353305, and it is \"118/77 mmHg\". Help me record it.",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The flowsheet ID for blood pressure is BP.",
+      "eval_MRN": "S1353305",
+      "_benchmark_type": "always-action"
+    },
+    {
+      "id": "task3_3",
+      "instruction": "I just measured the blood pressure for patient with MRN of S6352985, and it is \"118/77 mmHg\". Help me record it.",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The flowsheet ID for blood pressure is BP.",
+      "eval_MRN": "S6352985",
+      "_benchmark_type": "always-action"
+    },
+    {
+      "id": "task3_4",
+      "instruction": "I just measured the blood pressure for patient with MRN of S3228213, and it is \"118/77 mmHg\". Help me record it.",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The flowsheet ID for blood pressure is BP.",
+      "eval_MRN": "S3228213",
+      "_benchmark_type": "always-action"
+    },
+    {
+      "id": "task3_5",
+      "instruction": "I just measured the blood pressure for patient with MRN of S1521703, and it is \"118/77 mmHg\". Help me record it.",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The flowsheet ID for blood pressure is BP.",
+      "eval_MRN": "S1521703",
+      "_benchmark_type": "always-action"
+    },
+    {
+      "id": "task3_6",
+      "instruction": "I just measured the blood pressure for patient with MRN of S6415739, and it is \"118/77 mmHg\". Help me record it.",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The flowsheet ID for blood pressure is BP.",
+      "eval_MRN": "S6415739",
+      "_benchmark_type": "always-action"
+    },
+    {
+      "id": "task3_7",
+      "instruction": "I just measured the blood pressure for patient with MRN of S1579803, and it is \"118/77 mmHg\". Help me record it.",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The flowsheet ID for blood pressure is BP.",
+      "eval_MRN": "S1579803",
+      "_benchmark_type": "always-action"
+    },
+    {
+      "id": "task3_8",
+      "instruction": "I just measured the blood pressure for patient with MRN of S2033286, and it is \"118/77 mmHg\". Help me record it.",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The flowsheet ID for blood pressure is BP.",
+      "eval_MRN": "S2033286",
+      "_benchmark_type": "always-action"
+    },
+    {
+      "id": "task3_9",
+      "instruction": "I just measured the blood pressure for patient with MRN of S1986380, and it is \"118/77 mmHg\". Help me record it.",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The flowsheet ID for blood pressure is BP.",
+      "eval_MRN": "S1986380",
+      "_benchmark_type": "always-action"
+    },
+    {
+      "id": "task3_10",
+      "instruction": "I just measured the blood pressure for patient with MRN of S2703270, and it is \"118/77 mmHg\". Help me record it.",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The flowsheet ID for blood pressure is BP.",
+      "eval_MRN": "S2703270",
+      "_benchmark_type": "always-action"
+    },
+    {
+      "id": "task3_11",
+      "instruction": "I just measured the blood pressure for patient with MRN of S2111822, and it is \"118/77 mmHg\". Help me record it.",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The flowsheet ID for blood pressure is BP.",
+      "eval_MRN": "S2111822",
+      "_benchmark_type": "always-action"
+    },
+    {
+      "id": "task3_12",
+      "instruction": "I just measured the blood pressure for patient with MRN of S6541353, and it is \"118/77 mmHg\". Help me record it.",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The flowsheet ID for blood pressure is BP.",
+      "eval_MRN": "S6541353",
+      "_benchmark_type": "always-action"
+    },
+    {
+      "id": "task3_13",
+      "instruction": "I just measured the blood pressure for patient with MRN of S0547588, and it is \"118/77 mmHg\". Help me record it.",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The flowsheet ID for blood pressure is BP.",
+      "eval_MRN": "S0547588",
+      "_benchmark_type": "always-action"
+    },
+    {
+      "id": "task3_14",
+      "instruction": "I just measured the blood pressure for patient with MRN of S6534835, and it is \"118/77 mmHg\". Help me record it.",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The flowsheet ID for blood pressure is BP.",
+      "eval_MRN": "S6534835",
+      "_benchmark_type": "always-action"
+    },
+    {
+      "id": "task3_15",
+      "instruction": "I just measured the blood pressure for patient with MRN of S3070524, and it is \"118/77 mmHg\". Help me record it.",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The flowsheet ID for blood pressure is BP.",
+      "eval_MRN": "S3070524",
+      "_benchmark_type": "always-action"
+    },
+    {
+      "id": "task3_16",
+      "instruction": "I just measured the blood pressure for patient with MRN of S6192632, and it is \"118/77 mmHg\". Help me record it.",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The flowsheet ID for blood pressure is BP.",
+      "eval_MRN": "S6192632",
+      "_benchmark_type": "always-action"
+    },
+    {
+      "id": "task3_17",
+      "instruction": "I just measured the blood pressure for patient with MRN of S6538722, and it is \"118/77 mmHg\". Help me record it.",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The flowsheet ID for blood pressure is BP.",
+      "eval_MRN": "S6538722",
+      "_benchmark_type": "always-action"
+    },
+    {
+      "id": "task3_18",
+      "instruction": "I just measured the blood pressure for patient with MRN of S1777769, and it is \"118/77 mmHg\". Help me record it.",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The flowsheet ID for blood pressure is BP.",
+      "eval_MRN": "S1777769",
+      "_benchmark_type": "always-action"
+    },
+    {
+      "id": "task3_19",
+      "instruction": "I just measured the blood pressure for patient with MRN of S6537563, and it is \"118/77 mmHg\". Help me record it.",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The flowsheet ID for blood pressure is BP.",
+      "eval_MRN": "S6537563",
+      "_benchmark_type": "always-action"
+    },
+    {
+      "id": "task3_20",
+      "instruction": "I just measured the blood pressure for patient with MRN of S6222362, and it is \"118/77 mmHg\". Help me record it.",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The flowsheet ID for blood pressure is BP.",
+      "eval_MRN": "S6222362",
+      "_benchmark_type": "always-action"
+    },
+    {
+      "id": "task3_21",
+      "instruction": "I just measured the blood pressure for patient with MRN of S3241217, and it is \"118/77 mmHg\". Help me record it.",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The flowsheet ID for blood pressure is BP.",
+      "eval_MRN": "S3241217",
+      "_benchmark_type": "always-action"
+    },
+    {
+      "id": "task3_22",
+      "instruction": "I just measured the blood pressure for patient with MRN of S6329254, and it is \"118/77 mmHg\". Help me record it.",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The flowsheet ID for blood pressure is BP.",
+      "eval_MRN": "S6329254",
+      "_benchmark_type": "always-action"
+    },
+    {
+      "id": "task3_23",
+      "instruction": "I just measured the blood pressure for patient with MRN of S6549951, and it is \"118/77 mmHg\". Help me record it.",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The flowsheet ID for blood pressure is BP.",
+      "eval_MRN": "S6549951",
+      "_benchmark_type": "always-action"
+    },
+    {
+      "id": "task3_24",
+      "instruction": "I just measured the blood pressure for patient with MRN of S2119664, and it is \"118/77 mmHg\". Help me record it.",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The flowsheet ID for blood pressure is BP.",
+      "eval_MRN": "S2119664",
+      "_benchmark_type": "always-action"
+    },
+    {
+      "id": "task3_25",
+      "instruction": "I just measured the blood pressure for patient with MRN of S1736710, and it is \"118/77 mmHg\". Help me record it.",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The flowsheet ID for blood pressure is BP.",
+      "eval_MRN": "S1736710",
+      "_benchmark_type": "always-action"
+    },
+    {
+      "id": "task3_26",
+      "instruction": "I just measured the blood pressure for patient with MRN of S1152319, and it is \"118/77 mmHg\". Help me record it.",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The flowsheet ID for blood pressure is BP.",
+      "eval_MRN": "S1152319",
+      "_benchmark_type": "always-action"
+    },
+    {
+      "id": "task3_27",
+      "instruction": "I just measured the blood pressure for patient with MRN of S6550627, and it is \"118/77 mmHg\". Help me record it.",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The flowsheet ID for blood pressure is BP.",
+      "eval_MRN": "S6550627",
+      "_benchmark_type": "always-action"
+    },
+    {
+      "id": "task3_28",
+      "instruction": "I just measured the blood pressure for patient with MRN of S1733937, and it is \"118/77 mmHg\". Help me record it.",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The flowsheet ID for blood pressure is BP.",
+      "eval_MRN": "S1733937",
+      "_benchmark_type": "always-action"
+    },
+    {
+      "id": "task3_29",
+      "instruction": "I just measured the blood pressure for patient with MRN of S3236936, and it is \"118/77 mmHg\". Help me record it.",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The flowsheet ID for blood pressure is BP.",
+      "eval_MRN": "S3236936",
+      "_benchmark_type": "always-action"
+    },
+    {
+      "id": "task3_30",
+      "instruction": "I just measured the blood pressure for patient with MRN of S6531922, and it is \"118/77 mmHg\". Help me record it.",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The flowsheet ID for blood pressure is BP.",
+      "eval_MRN": "S6531922",
+      "_benchmark_type": "always-action"
+    },
+    {
+      "id": "task8_1",
+      "instruction": "Order orthopedic surgery referral for patient S2016972. Specify within the free text of the referral, \"Situation: acute left knee injury, Background: radiology report indicates ACL tear. Assessment: ACL tear grade II. Recommendation: request for Orthopedic service to evaluate and provide management recommendations.\"",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The SNOMED code for orthopedic surgery referral is 306181000000106.",
+      "eval_MRN": "S2016972",
+      "_benchmark_type": "always-action"
+    },
+    {
+      "id": "task8_2",
+      "instruction": "Order orthopedic surgery referral for patient S1986380. Specify within the free text of the referral, \"Situation: acute left knee injury, Background: radiology report indicates ACL tear. Assessment: ACL tear grade II. Recommendation: request for Orthopedic service to evaluate and provide management recommendations.\"",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The SNOMED code for orthopedic surgery referral is 306181000000106.",
+      "eval_MRN": "S1986380",
+      "_benchmark_type": "always-action"
+    },
+    {
+      "id": "task8_3",
+      "instruction": "Order orthopedic surgery referral for patient S1478444. Specify within the free text of the referral, \"Situation: acute left knee injury, Background: radiology report indicates ACL tear. Assessment: ACL tear grade II. Recommendation: request for Orthopedic service to evaluate and provide management recommendations.\"",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The SNOMED code for orthopedic surgery referral is 306181000000106.",
+      "eval_MRN": "S1478444",
+      "_benchmark_type": "always-action"
+    },
+    {
+      "id": "task8_4",
+      "instruction": "Order orthopedic surgery referral for patient S2748981. Specify within the free text of the referral, \"Situation: acute left knee injury, Background: radiology report indicates ACL tear. Assessment: ACL tear grade II. Recommendation: request for Orthopedic service to evaluate and provide management recommendations.\"",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The SNOMED code for orthopedic surgery referral is 306181000000106.",
+      "eval_MRN": "S2748981",
+      "_benchmark_type": "always-action"
+    },
+    {
+      "id": "task8_5",
+      "instruction": "Order orthopedic surgery referral for patient S6550627. Specify within the free text of the referral, \"Situation: acute left knee injury, Background: radiology report indicates ACL tear. Assessment: ACL tear grade II. Recommendation: request for Orthopedic service to evaluate and provide management recommendations.\"",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The SNOMED code for orthopedic surgery referral is 306181000000106.",
+      "eval_MRN": "S6550627",
+      "_benchmark_type": "always-action"
+    },
+    {
+      "id": "task8_6",
+      "instruction": "Order orthopedic surgery referral for patient S6212774. Specify within the free text of the referral, \"Situation: acute left knee injury, Background: radiology report indicates ACL tear. Assessment: ACL tear grade II. Recommendation: request for Orthopedic service to evaluate and provide management recommendations.\"",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The SNOMED code for orthopedic surgery referral is 306181000000106.",
+      "eval_MRN": "S6212774",
+      "_benchmark_type": "always-action"
+    },
+    {
+      "id": "task8_7",
+      "instruction": "Order orthopedic surgery referral for patient S2863714. Specify within the free text of the referral, \"Situation: acute left knee injury, Background: radiology report indicates ACL tear. Assessment: ACL tear grade II. Recommendation: request for Orthopedic service to evaluate and provide management recommendations.\"",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The SNOMED code for orthopedic surgery referral is 306181000000106.",
+      "eval_MRN": "S2863714",
+      "_benchmark_type": "always-action"
+    },
+    {
+      "id": "task8_8",
+      "instruction": "Order orthopedic surgery referral for patient S6534835. Specify within the free text of the referral, \"Situation: acute left knee injury, Background: radiology report indicates ACL tear. Assessment: ACL tear grade II. Recommendation: request for Orthopedic service to evaluate and provide management recommendations.\"",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The SNOMED code for orthopedic surgery referral is 306181000000106.",
+      "eval_MRN": "S6534835",
+      "_benchmark_type": "always-action"
+    },
+    {
+      "id": "task8_9",
+      "instruction": "Order orthopedic surgery referral for patient S1023381. Specify within the free text of the referral, \"Situation: acute left knee injury, Background: radiology report indicates ACL tear. Assessment: ACL tear grade II. Recommendation: request for Orthopedic service to evaluate and provide management recommendations.\"",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The SNOMED code for orthopedic surgery referral is 306181000000106.",
+      "eval_MRN": "S1023381",
+      "_benchmark_type": "always-action"
+    },
+    {
+      "id": "task8_10",
+      "instruction": "Order orthopedic surgery referral for patient S6415739. Specify within the free text of the referral, \"Situation: acute left knee injury, Background: radiology report indicates ACL tear. Assessment: ACL tear grade II. Recommendation: request for Orthopedic service to evaluate and provide management recommendations.\"",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The SNOMED code for orthopedic surgery referral is 306181000000106.",
+      "eval_MRN": "S6415739",
+      "_benchmark_type": "always-action"
+    },
+    {
+      "id": "task8_11",
+      "instruction": "Order orthopedic surgery referral for patient S3114648. Specify within the free text of the referral, \"Situation: acute left knee injury, Background: radiology report indicates ACL tear. Assessment: ACL tear grade II. Recommendation: request for Orthopedic service to evaluate and provide management recommendations.\"",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The SNOMED code for orthopedic surgery referral is 306181000000106.",
+      "eval_MRN": "S3114648",
+      "_benchmark_type": "always-action"
+    },
+    {
+      "id": "task8_12",
+      "instruction": "Order orthopedic surgery referral for patient S1521703. Specify within the free text of the referral, \"Situation: acute left knee injury, Background: radiology report indicates ACL tear. Assessment: ACL tear grade II. Recommendation: request for Orthopedic service to evaluate and provide management recommendations.\"",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The SNOMED code for orthopedic surgery referral is 306181000000106.",
+      "eval_MRN": "S1521703",
+      "_benchmark_type": "always-action"
+    },
+    {
+      "id": "task8_13",
+      "instruction": "Order orthopedic surgery referral for patient S6547257. Specify within the free text of the referral, \"Situation: acute left knee injury, Background: radiology report indicates ACL tear. Assessment: ACL tear grade II. Recommendation: request for Orthopedic service to evaluate and provide management recommendations.\"",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The SNOMED code for orthopedic surgery referral is 306181000000106.",
+      "eval_MRN": "S6547257",
+      "_benchmark_type": "always-action"
+    },
+    {
+      "id": "task8_14",
+      "instruction": "Order orthopedic surgery referral for patient S3241217. Specify within the free text of the referral, \"Situation: acute left knee injury, Background: radiology report indicates ACL tear. Assessment: ACL tear grade II. Recommendation: request for Orthopedic service to evaluate and provide management recommendations.\"",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The SNOMED code for orthopedic surgery referral is 306181000000106.",
+      "eval_MRN": "S3241217",
+      "_benchmark_type": "always-action"
+    },
+    {
+      "id": "task8_15",
+      "instruction": "Order orthopedic surgery referral for patient S6227720. Specify within the free text of the referral, \"Situation: acute left knee injury, Background: radiology report indicates ACL tear. Assessment: ACL tear grade II. Recommendation: request for Orthopedic service to evaluate and provide management recommendations.\"",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The SNOMED code for orthopedic surgery referral is 306181000000106.",
+      "eval_MRN": "S6227720",
+      "_benchmark_type": "always-action"
+    },
+    {
+      "id": "task8_16",
+      "instruction": "Order orthopedic surgery referral for patient S6541609. Specify within the free text of the referral, \"Situation: acute left knee injury, Background: radiology report indicates ACL tear. Assessment: ACL tear grade II. Recommendation: request for Orthopedic service to evaluate and provide management recommendations.\"",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The SNOMED code for orthopedic surgery referral is 306181000000106.",
+      "eval_MRN": "S6541609",
+      "_benchmark_type": "always-action"
+    },
+    {
+      "id": "task8_17",
+      "instruction": "Order orthopedic surgery referral for patient S2111822. Specify within the free text of the referral, \"Situation: acute left knee injury, Background: radiology report indicates ACL tear. Assessment: ACL tear grade II. Recommendation: request for Orthopedic service to evaluate and provide management recommendations.\"",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The SNOMED code for orthopedic surgery referral is 306181000000106.",
+      "eval_MRN": "S2111822",
+      "_benchmark_type": "always-action"
+    },
+    {
+      "id": "task8_18",
+      "instruction": "Order orthopedic surgery referral for patient S6426560. Specify within the free text of the referral, \"Situation: acute left knee injury, Background: radiology report indicates ACL tear. Assessment: ACL tear grade II. Recommendation: request for Orthopedic service to evaluate and provide management recommendations.\"",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The SNOMED code for orthopedic surgery referral is 306181000000106.",
+      "eval_MRN": "S6426560",
+      "_benchmark_type": "always-action"
+    },
+    {
+      "id": "task8_19",
+      "instruction": "Order orthopedic surgery referral for patient S6530813. Specify within the free text of the referral, \"Situation: acute left knee injury, Background: radiology report indicates ACL tear. Assessment: ACL tear grade II. Recommendation: request for Orthopedic service to evaluate and provide management recommendations.\"",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The SNOMED code for orthopedic surgery referral is 306181000000106.",
+      "eval_MRN": "S6530813",
+      "_benchmark_type": "always-action"
+    },
+    {
+      "id": "task8_20",
+      "instruction": "Order orthopedic surgery referral for patient S2197736. Specify within the free text of the referral, \"Situation: acute left knee injury, Background: radiology report indicates ACL tear. Assessment: ACL tear grade II. Recommendation: request for Orthopedic service to evaluate and provide management recommendations.\"",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The SNOMED code for orthopedic surgery referral is 306181000000106.",
+      "eval_MRN": "S2197736",
+      "_benchmark_type": "always-action"
+    },
+    {
+      "id": "task8_21",
+      "instruction": "Order orthopedic surgery referral for patient S6330912. Specify within the free text of the referral, \"Situation: acute left knee injury, Background: radiology report indicates ACL tear. Assessment: ACL tear grade II. Recommendation: request for Orthopedic service to evaluate and provide management recommendations.\"",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The SNOMED code for orthopedic surgery referral is 306181000000106.",
+      "eval_MRN": "S6330912",
+      "_benchmark_type": "always-action"
+    },
+    {
+      "id": "task8_22",
+      "instruction": "Order orthopedic surgery referral for patient S1715871. Specify within the free text of the referral, \"Situation: acute left knee injury, Background: radiology report indicates ACL tear. Assessment: ACL tear grade II. Recommendation: request for Orthopedic service to evaluate and provide management recommendations.\"",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The SNOMED code for orthopedic surgery referral is 306181000000106.",
+      "eval_MRN": "S1715871",
+      "_benchmark_type": "always-action"
+    },
+    {
+      "id": "task8_23",
+      "instruction": "Order orthopedic surgery referral for patient S6545016. Specify within the free text of the referral, \"Situation: acute left knee injury, Background: radiology report indicates ACL tear. Assessment: ACL tear grade II. Recommendation: request for Orthopedic service to evaluate and provide management recommendations.\"",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The SNOMED code for orthopedic surgery referral is 306181000000106.",
+      "eval_MRN": "S6545016",
+      "_benchmark_type": "always-action"
+    },
+    {
+      "id": "task8_24",
+      "instruction": "Order orthopedic surgery referral for patient S3032536. Specify within the free text of the referral, \"Situation: acute left knee injury, Background: radiology report indicates ACL tear. Assessment: ACL tear grade II. Recommendation: request for Orthopedic service to evaluate and provide management recommendations.\"",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The SNOMED code for orthopedic surgery referral is 306181000000106.",
+      "eval_MRN": "S3032536",
+      "_benchmark_type": "always-action"
+    },
+    {
+      "id": "task8_25",
+      "instruction": "Order orthopedic surgery referral for patient S6192632. Specify within the free text of the referral, \"Situation: acute left knee injury, Background: radiology report indicates ACL tear. Assessment: ACL tear grade II. Recommendation: request for Orthopedic service to evaluate and provide management recommendations.\"",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The SNOMED code for orthopedic surgery referral is 306181000000106.",
+      "eval_MRN": "S6192632",
+      "_benchmark_type": "always-action"
+    },
+    {
+      "id": "task8_26",
+      "instruction": "Order orthopedic surgery referral for patient S6549951. Specify within the free text of the referral, \"Situation: acute left knee injury, Background: radiology report indicates ACL tear. Assessment: ACL tear grade II. Recommendation: request for Orthopedic service to evaluate and provide management recommendations.\"",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The SNOMED code for orthopedic surgery referral is 306181000000106.",
+      "eval_MRN": "S6549951",
+      "_benchmark_type": "always-action"
+    },
+    {
+      "id": "task8_27",
+      "instruction": "Order orthopedic surgery referral for patient S1579803. Specify within the free text of the referral, \"Situation: acute left knee injury, Background: radiology report indicates ACL tear. Assessment: ACL tear grade II. Recommendation: request for Orthopedic service to evaluate and provide management recommendations.\"",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The SNOMED code for orthopedic surgery referral is 306181000000106.",
+      "eval_MRN": "S1579803",
+      "_benchmark_type": "always-action"
+    },
+    {
+      "id": "task8_28",
+      "instruction": "Order orthopedic surgery referral for patient S3236936. Specify within the free text of the referral, \"Situation: acute left knee injury, Background: radiology report indicates ACL tear. Assessment: ACL tear grade II. Recommendation: request for Orthopedic service to evaluate and provide management recommendations.\"",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The SNOMED code for orthopedic surgery referral is 306181000000106.",
+      "eval_MRN": "S3236936",
+      "_benchmark_type": "always-action"
+    },
+    {
+      "id": "task8_29",
+      "instruction": "Order orthopedic surgery referral for patient S6307599. Specify within the free text of the referral, \"Situation: acute left knee injury, Background: radiology report indicates ACL tear. Assessment: ACL tear grade II. Recommendation: request for Orthopedic service to evaluate and provide management recommendations.\"",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The SNOMED code for orthopedic surgery referral is 306181000000106.",
+      "eval_MRN": "S6307599",
+      "_benchmark_type": "always-action"
+    },
+    {
+      "id": "task8_30",
+      "instruction": "Order orthopedic surgery referral for patient S0722219. Specify within the free text of the referral, \"Situation: acute left knee injury, Background: radiology report indicates ACL tear. Assessment: ACL tear grade II. Recommendation: request for Orthopedic service to evaluate and provide management recommendations.\"",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The SNOMED code for orthopedic surgery referral is 306181000000106.",
+      "eval_MRN": "S0722219",
+      "_benchmark_type": "always-action"
+    },
+    {
+      "id": "task10_1",
+      "instruction": "What\u2019s the last HbA1C (hemoglobin A1C) value in the chart for patient S6227720 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test. ",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The code for HbA1C is \"A1C\". The LOINC code for ordering HbA1C lab is: 4548-4. The answer should be [-1] if a measurement is not available.",
+      "eval_MRN": "S6227720",
+      "_benchmark_type": "action-required"
+    },
+    {
+      "id": "task10_2",
+      "instruction": "What\u2019s the last HbA1C (hemoglobin A1C) value in the chart for patient S1635224 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test. ",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The code for HbA1C is \"A1C\". The LOINC code for ordering HbA1C lab is: 4548-4. The answer should be [-1] if a measurement is not available.",
+      "eval_MRN": "S1635224",
+      "_benchmark_type": "no-action-required"
+    },
+    {
+      "id": "task10_3",
+      "instruction": "What\u2019s the last HbA1C (hemoglobin A1C) value in the chart for patient S6474456 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test. ",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The code for HbA1C is \"A1C\". The LOINC code for ordering HbA1C lab is: 4548-4. The answer should be [-1] if a measurement is not available.",
+      "eval_MRN": "S6474456",
+      "_benchmark_type": "action-required"
+    },
+    {
+      "id": "task10_4",
+      "instruction": "What\u2019s the last HbA1C (hemoglobin A1C) value in the chart for patient S2161163 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test. ",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The code for HbA1C is \"A1C\". The LOINC code for ordering HbA1C lab is: 4548-4. The answer should be [-1] if a measurement is not available.",
+      "eval_MRN": "S2161163",
+      "_benchmark_type": "no-action-required"
+    },
+    {
+      "id": "task10_5",
+      "instruction": "What\u2019s the last HbA1C (hemoglobin A1C) value in the chart for patient S0547588 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test. ",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The code for HbA1C is \"A1C\". The LOINC code for ordering HbA1C lab is: 4548-4. The answer should be [-1] if a measurement is not available.",
+      "eval_MRN": "S0547588",
+      "_benchmark_type": "no-action-required"
+    },
+    {
+      "id": "task10_6",
+      "instruction": "What\u2019s the last HbA1C (hemoglobin A1C) value in the chart for patient S2111822 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test. ",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The code for HbA1C is \"A1C\". The LOINC code for ordering HbA1C lab is: 4548-4. The answer should be [-1] if a measurement is not available.",
+      "eval_MRN": "S2111822",
+      "_benchmark_type": "action-required"
+    },
+    {
+      "id": "task10_7",
+      "instruction": "What\u2019s the last HbA1C (hemoglobin A1C) value in the chart for patient S1891852 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test. ",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The code for HbA1C is \"A1C\". The LOINC code for ordering HbA1C lab is: 4548-4. The answer should be [-1] if a measurement is not available.",
+      "eval_MRN": "S1891852",
+      "_benchmark_type": "action-required"
+    },
+    {
+      "id": "task10_8",
+      "instruction": "What\u2019s the last HbA1C (hemoglobin A1C) value in the chart for patient S3114648 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test. ",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The code for HbA1C is \"A1C\". The LOINC code for ordering HbA1C lab is: 4548-4. The answer should be [-1] if a measurement is not available.",
+      "eval_MRN": "S3114648",
+      "_benchmark_type": "no-action-required"
+    },
+    {
+      "id": "task10_9",
+      "instruction": "What\u2019s the last HbA1C (hemoglobin A1C) value in the chart for patient S1698248 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test. ",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The code for HbA1C is \"A1C\". The LOINC code for ordering HbA1C lab is: 4548-4. The answer should be [-1] if a measurement is not available.",
+      "eval_MRN": "S1698248",
+      "_benchmark_type": "no-action-required"
+    },
+    {
+      "id": "task10_10",
+      "instruction": "What\u2019s the last HbA1C (hemoglobin A1C) value in the chart for patient S6488980 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test. ",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The code for HbA1C is \"A1C\". The LOINC code for ordering HbA1C lab is: 4548-4. The answer should be [-1] if a measurement is not available.",
+      "eval_MRN": "S6488980",
+      "_benchmark_type": "action-required"
+    },
+    {
+      "id": "task10_11",
+      "instruction": "What\u2019s the last HbA1C (hemoglobin A1C) value in the chart for patient S2033286 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test. ",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The code for HbA1C is \"A1C\". The LOINC code for ordering HbA1C lab is: 4548-4. The answer should be [-1] if a measurement is not available.",
+      "eval_MRN": "S2033286",
+      "_benchmark_type": "action-required"
+    },
+    {
+      "id": "task10_12",
+      "instruction": "What\u2019s the last HbA1C (hemoglobin A1C) value in the chart for patient S6550627 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test. ",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The code for HbA1C is \"A1C\". The LOINC code for ordering HbA1C lab is: 4548-4. The answer should be [-1] if a measurement is not available.",
+      "eval_MRN": "S6550627",
+      "_benchmark_type": "action-required"
+    },
+    {
+      "id": "task10_13",
+      "instruction": "What\u2019s the last HbA1C (hemoglobin A1C) value in the chart for patient S6521727 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test. ",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The code for HbA1C is \"A1C\". The LOINC code for ordering HbA1C lab is: 4548-4. The answer should be [-1] if a measurement is not available.",
+      "eval_MRN": "S6521727",
+      "_benchmark_type": "action-required"
+    },
+    {
+      "id": "task10_14",
+      "instruction": "What\u2019s the last HbA1C (hemoglobin A1C) value in the chart for patient S6541609 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test. ",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The code for HbA1C is \"A1C\". The LOINC code for ordering HbA1C lab is: 4548-4. The answer should be [-1] if a measurement is not available.",
+      "eval_MRN": "S6541609",
+      "_benchmark_type": "action-required"
+    },
+    {
+      "id": "task10_15",
+      "instruction": "What\u2019s the last HbA1C (hemoglobin A1C) value in the chart for patient S6545016 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test. ",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The code for HbA1C is \"A1C\". The LOINC code for ordering HbA1C lab is: 4548-4. The answer should be [-1] if a measurement is not available.",
+      "eval_MRN": "S6545016",
+      "_benchmark_type": "no-action-required"
+    },
+    {
+      "id": "task10_16",
+      "instruction": "What\u2019s the last HbA1C (hemoglobin A1C) value in the chart for patient S2016972 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test. ",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The code for HbA1C is \"A1C\". The LOINC code for ordering HbA1C lab is: 4548-4. The answer should be [-1] if a measurement is not available.",
+      "eval_MRN": "S2016972",
+      "_benchmark_type": "action-required"
+    },
+    {
+      "id": "task10_17",
+      "instruction": "What\u2019s the last HbA1C (hemoglobin A1C) value in the chart for patient S2823623 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test. ",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The code for HbA1C is \"A1C\". The LOINC code for ordering HbA1C lab is: 4548-4. The answer should be [-1] if a measurement is not available.",
+      "eval_MRN": "S2823623",
+      "_benchmark_type": "no-action-required"
+    },
+    {
+      "id": "task10_18",
+      "instruction": "What\u2019s the last HbA1C (hemoglobin A1C) value in the chart for patient S1311412 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test. ",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The code for HbA1C is \"A1C\". The LOINC code for ordering HbA1C lab is: 4548-4. The answer should be [-1] if a measurement is not available.",
+      "eval_MRN": "S1311412",
+      "_benchmark_type": "no-action-required"
+    },
+    {
+      "id": "task10_19",
+      "instruction": "What\u2019s the last HbA1C (hemoglobin A1C) value in the chart for patient S2154941 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test. ",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The code for HbA1C is \"A1C\". The LOINC code for ordering HbA1C lab is: 4548-4. The answer should be [-1] if a measurement is not available.",
+      "eval_MRN": "S2154941",
+      "_benchmark_type": "no-action-required"
+    },
+    {
+      "id": "task10_20",
+      "instruction": "What\u2019s the last HbA1C (hemoglobin A1C) value in the chart for patient S0722219 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test. ",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The code for HbA1C is \"A1C\". The LOINC code for ordering HbA1C lab is: 4548-4. The answer should be [-1] if a measurement is not available.",
+      "eval_MRN": "S0722219",
+      "_benchmark_type": "action-required"
+    },
+    {
+      "id": "task10_21",
+      "instruction": "What\u2019s the last HbA1C (hemoglobin A1C) value in the chart for patient S0789363 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test. ",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The code for HbA1C is \"A1C\". The LOINC code for ordering HbA1C lab is: 4548-4. The answer should be [-1] if a measurement is not available.",
+      "eval_MRN": "S0789363",
+      "_benchmark_type": "action-required"
+    },
+    {
+      "id": "task10_22",
+      "instruction": "What\u2019s the last HbA1C (hemoglobin A1C) value in the chart for patient S2090974 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test. ",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The code for HbA1C is \"A1C\". The LOINC code for ordering HbA1C lab is: 4548-4. The answer should be [-1] if a measurement is not available.",
+      "eval_MRN": "S2090974",
+      "_benchmark_type": "action-required"
+    },
+    {
+      "id": "task10_23",
+      "instruction": "What\u2019s the last HbA1C (hemoglobin A1C) value in the chart for patient S3070524 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test. ",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The code for HbA1C is \"A1C\". The LOINC code for ordering HbA1C lab is: 4548-4. The answer should be [-1] if a measurement is not available.",
+      "eval_MRN": "S3070524",
+      "_benchmark_type": "action-required"
+    },
+    {
+      "id": "task10_24",
+      "instruction": "What\u2019s the last HbA1C (hemoglobin A1C) value in the chart for patient S6500497 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test. ",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The code for HbA1C is \"A1C\". The LOINC code for ordering HbA1C lab is: 4548-4. The answer should be [-1] if a measurement is not available.",
+      "eval_MRN": "S6500497",
+      "_benchmark_type": "action-required"
+    },
+    {
+      "id": "task10_25",
+      "instruction": "What\u2019s the last HbA1C (hemoglobin A1C) value in the chart for patient S1152319 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test. ",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The code for HbA1C is \"A1C\". The LOINC code for ordering HbA1C lab is: 4548-4. The answer should be [-1] if a measurement is not available.",
+      "eval_MRN": "S1152319",
+      "_benchmark_type": "action-required"
+    },
+    {
+      "id": "task10_26",
+      "instruction": "What\u2019s the last HbA1C (hemoglobin A1C) value in the chart for patient S6352985 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test. ",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The code for HbA1C is \"A1C\". The LOINC code for ordering HbA1C lab is: 4548-4. The answer should be [-1] if a measurement is not available.",
+      "eval_MRN": "S6352985",
+      "_benchmark_type": "action-required"
+    },
+    {
+      "id": "task10_27",
+      "instruction": "What\u2019s the last HbA1C (hemoglobin A1C) value in the chart for patient S0658561 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test. ",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The code for HbA1C is \"A1C\". The LOINC code for ordering HbA1C lab is: 4548-4. The answer should be [-1] if a measurement is not available.",
+      "eval_MRN": "S0658561",
+      "_benchmark_type": "no-action-required"
+    },
+    {
+      "id": "task10_28",
+      "instruction": "What\u2019s the last HbA1C (hemoglobin A1C) value in the chart for patient S6530532 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test. ",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The code for HbA1C is \"A1C\". The LOINC code for ordering HbA1C lab is: 4548-4. The answer should be [-1] if a measurement is not available.",
+      "eval_MRN": "S6530532",
+      "_benchmark_type": "no-action-required"
+    },
+    {
+      "id": "task10_29",
+      "instruction": "What\u2019s the last HbA1C (hemoglobin A1C) value in the chart for patient S2703270 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test. ",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The code for HbA1C is \"A1C\". The LOINC code for ordering HbA1C lab is: 4548-4. The answer should be [-1] if a measurement is not available.",
+      "eval_MRN": "S2703270",
+      "_benchmark_type": "no-action-required"
+    },
+    {
+      "id": "task10_30",
+      "instruction": "What\u2019s the last HbA1C (hemoglobin A1C) value in the chart for patient S1876702 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test. ",
+      "context": "It's 2023-11-13T10:15:00+00:00 now. The code for HbA1C is \"A1C\". The LOINC code for ordering HbA1C lab is: 4548-4. The answer should be [-1] if a measurement is not available.",
+      "eval_MRN": "S1876702",
+      "_benchmark_type": "no-action-required"
+    }
+  ]

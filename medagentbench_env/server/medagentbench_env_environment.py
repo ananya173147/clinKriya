@@ -10,6 +10,10 @@ MedAgentBench RL Environment Implementation.
 Wraps the MedAgentBench v2 clinical decision-making benchmark as an
 OpenEnv Gymnasium-style environment.  Each episode corresponds to one
 clinical task where the agent interacts with a FHIR EHR server.
+
+Supports two modes:
+  - Live FHIR: proxies requests to a real FHIR server
+  - Cached/Mock: uses a pre-built cache file (no FHIR server needed)
 """
 
 import json
@@ -31,6 +35,7 @@ from medagentbench_env.models import (
     TaskStatus,
 )
 from medagentbench_env.server.reward import compute_shaped_reward
+from medagentbench_env.server.fhir_cache import MockFHIR
 
 # ---------------------------------------------------------------------------
 # Paths to MedAgentBench v2 data (relative to this repo)
@@ -45,6 +50,7 @@ _DEFAULT_DATA_DIR = (
     / "data"
     / "medagentbench"
 )
+_DEFAULT_CACHE_PATH = Path(__file__).resolve().parents[1] / "data" / "fhir_cache.json"
 
 # System prompt template (from MedAgentBench v2)
 _SYSTEM_PROMPT = """\
@@ -77,11 +83,11 @@ Question: {question}"""
 
 
 # ---------------------------------------------------------------------------
-# FHIR helpers (ported from medagentbenchv2 utils.py)
+# FHIR helpers
 # ---------------------------------------------------------------------------
 
-def _send_get_request(url: str) -> Dict[str, Any]:
-    """Proxy a GET request to the FHIR server."""
+def _send_get_request_live(url: str) -> Dict[str, Any]:
+    """Proxy a GET request to a real FHIR server."""
     try:
         response = requests.get(url)
         response.raise_for_status()
@@ -93,7 +99,7 @@ def _send_get_request(url: str) -> Dict[str, Any]:
 
 
 # ---------------------------------------------------------------------------
-# Evaluation helpers (ported from medagentbenchv2 eval.py / refsol.py)
+# Evaluation helpers
 # ---------------------------------------------------------------------------
 
 def _load_eval_module():
@@ -111,8 +117,7 @@ def _load_eval_module():
     )
     if str(refsol_path) not in sys.path:
         sys.path.insert(0, str(refsol_path))
-        # Also add parent paths needed by the refsol module's own imports
-        src_root = refsol_path.parents[3]  # .../src
+        src_root = refsol_path.parents[3]
         if str(src_root) not in sys.path:
             sys.path.insert(0, str(src_root))
     try:
@@ -121,6 +126,33 @@ def _load_eval_module():
         return refsol
     except ImportError:
         return None
+
+
+def _patch_refsol_with_mock(mock: MockFHIR) -> None:
+    """Monkey-patch the refsol utils module to use our mock FHIR client.
+
+    The refsol graders call `send_get_request(url)` from their utils module.
+    We replace that function so evaluation works without a real FHIR server.
+    """
+    refsol_path = (
+        _MEDAGENTBENCH_ROOT.parent
+        / "medagentbenchv2"
+        / "medagentbench_v2"
+        / "src"
+        / "MedAgentBench"
+        / "src"
+        / "server"
+        / "tasks"
+        / "medagentbench"
+    )
+    if str(refsol_path) not in sys.path:
+        sys.path.insert(0, str(refsol_path))
+    try:
+        import importlib
+        utils_mod = importlib.import_module("utils")
+        utils_mod.send_get_request = lambda url, params=None, headers=None: mock.get(url)
+    except ImportError:
+        pass
 
 
 # ---------------------------------------------------------------------------
@@ -134,10 +166,15 @@ class MedAgentBenchEnvironment(
     OpenEnv environment wrapping MedAgentBench v2.
 
     Each episode is one clinical task. The agent sends GET/POST/FINISH
-    actions and receives FHIR server responses as observations.  The
-    episode terminates when the agent calls FINISH, exceeds max steps,
-    or sends an invalid action.  Reward is binary: 1.0 if the task-
-    specific evaluation passes, 0.0 otherwise.
+    actions and receives FHIR server responses as observations.
+
+    Args:
+        fhir_api_base: FHIR server URL (used for live mode and URL construction).
+        data_file: Path to task JSON (default: stratified_benchmark.json).
+        func_file: Path to FHIR function definitions JSON.
+        max_steps: Max agent actions per episode.
+        cache_file: Path to fhir_cache.json. If provided (or default exists),
+                    uses cached responses instead of a live FHIR server.
     """
 
     SUPPORTS_CONCURRENT_SESSIONS: bool = True
@@ -148,6 +185,7 @@ class MedAgentBenchEnvironment(
         data_file: Optional[str] = None,
         func_file: Optional[str] = None,
         max_steps: int = 8,
+        cache_file: Optional[str] = None,
     ):
         super().__init__()
         self._fhir_api_base = fhir_api_base
@@ -163,7 +201,20 @@ class MedAgentBenchEnvironment(
         with open(func_path) as f:
             self._functions: List[Dict[str, Any]] = json.load(f)
 
-        # Task index for sequential iteration (can be overridden in reset)
+        # Set up FHIR backend: mock (cached) or live
+        cache_path = Path(cache_file) if cache_file else _DEFAULT_CACHE_PATH
+        if cache_path.exists():
+            print(f"Using cached FHIR responses from {cache_path}")
+            self._mock_fhir = MockFHIR.from_cache(str(cache_path), fhir_api_base)
+            self._send_get = lambda url: self._mock_fhir.get(url)
+            # Patch refsol so evaluation also uses the mock
+            _patch_refsol_with_mock(self._mock_fhir)
+        else:
+            print(f"No cache found at {cache_path}, using live FHIR server at {fhir_api_base}")
+            self._mock_fhir = None
+            self._send_get = _send_get_request_live
+
+        # Task index for sequential iteration
         self._task_index = 0
 
         # Internal state
@@ -185,7 +236,7 @@ class MedAgentBenchEnvironment(
         """Start a new episode with a task from the benchmark.
 
         Keyword args:
-            task_index: int — select a specific task (0-119). Defaults to
+            task_index: int — select a specific task (0-89). Defaults to
                 sequential iteration through the dataset.
         """
         task_index = kwargs.get("task_index", self._task_index)
@@ -266,7 +317,7 @@ class MedAgentBenchEnvironment(
             if "&_format=json" not in url and "?_format=json" not in url:
                 url += "&_format=json" if "?" in url else "?_format=json"
 
-            get_res = _send_get_request(url)
+            get_res = self._send_get(url)
 
             if "data" in get_res:
                 data_str = (
@@ -280,7 +331,7 @@ class MedAgentBenchEnvironment(
                     "questions and finished all the requested tasks"
                 )
             else:
-                env_msg = f"Error in sending the GET request: {get_res['error']}"
+                env_msg = f"Error in sending the GET request: {get_res.get('error', 'Unknown error')}"
 
             self._state.chat_history.append(ChatMessage(role="user", content=env_msg))
             return self._check_step_limit(env_msg)
@@ -368,9 +419,8 @@ class MedAgentBenchEnvironment(
         if task is None:
             return 0.0
 
-        task_type = task.id.split("_")[0]  # e.g. "task3"
+        task_type = task.id.split("_")[0]
 
-        # Build case_data dict
         case_data = {
             "id": task.id,
             "instruction": task.instruction,
@@ -399,7 +449,6 @@ class MedAgentBenchEnvironment(
                     print(f"Refsol error for {task.id}: {e}")
 
         # --- Compute shaped reward ---
-        # Find the benchmark_type from the original task data
         benchmark_type = ""
         for t in self._tasks:
             if t["id"] == task.id:
