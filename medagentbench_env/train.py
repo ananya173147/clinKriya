@@ -79,6 +79,11 @@ _SYSTEM_PROMPT: str = ""
 _TASKS: List[Dict] = []
 _TASK_INDEX: int = 0
 
+# Global env tracker — Unsloth's patched _calculate_rewards does not forward
+# the `environments` kwarg to reward_func, so we track every created env in
+# order and pop them in reward_func to match rewards to completions.
+_ENV_REGISTRY: List["MedAgentTrainEnv"] = []
+
 
 def _get_mock_fhir() -> MockFHIR:
     global _MOCK_FHIR
@@ -117,6 +122,7 @@ class MedAgentTrainEnv:
     """
 
     def __init__(self):
+        _ENV_REGISTRY.append(self)  # register for reward_func fallback
         self._mock = _get_mock_fhir()
         self._history: List[_HistoryItem] = []
         self._post_requests: List[Dict] = []
@@ -585,9 +591,24 @@ class MedAgentTrainEnv:
 # Reward function
 # ---------------------------------------------------------------------------
 
-def reward_func(completions, environments, **kwargs):
-    """Return shaped reward from each episode's environment."""
-    return [float(env.reward) for env in environments]
+def reward_func(completions, environments=None, **kwargs):
+    """Return shaped reward from each episode's environment.
+
+    Standard TRL passes `environments` directly. Unsloth's patched
+    _calculate_rewards does not, so we fall back to the global registry
+    which tracks every MedAgentTrainEnv in creation order.
+    """
+    if environments is None:
+        environments = kwargs.get("environments")
+
+    if environments is not None:
+        return [float(env.reward) for env in environments]
+
+    # Unsloth fallback: pop the oldest N envs from the registry
+    n = len(completions)
+    envs = _ENV_REGISTRY[:n]
+    del _ENV_REGISTRY[:n]
+    return [float(env.reward) for env in envs]
 
 
 # ---------------------------------------------------------------------------
