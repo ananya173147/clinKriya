@@ -714,28 +714,30 @@ def main():
     dataset = build_dataset(Path(args.data_dir), args.num_tasks)
     print(f"Training dataset: {len(dataset)} tasks")
 
-    # Load model with Unsloth (full bfloat16, no 4-bit).
-    # load_in_4bit=True causes bnb to compute in fp16 even when dtype=bfloat16
-    # (Unsloth 2026.x bug), and bf16=True in GRPOConfig triggers an fp16
-    # autocaster in grpo_accumulated_loss.  Both produce Half/BFloat16 mismatches.
-    # Solution: full bfloat16 weights + no AMP.
+    # Load model with standard transformers + PEFT (no Unsloth).
+    # Unsloth's GRPOTrainer has a hardcoded fp16 autocaster in
+    # grpo_accumulated_loss that cannot be overridden by bf16/fp16 flags,
+    # causing Half/BFloat16 mismatches.  Standard TRL respects bf16=True.
     import torch
-    from unsloth import FastLanguageModel
-    model, tokenizer = FastLanguageModel.from_pretrained(
-        model_name=args.model,
-        max_seq_length=4096,
-        load_in_4bit=False,
-        dtype=torch.bfloat16,
+    from transformers import AutoModelForCausalLM, AutoTokenizer
+    from peft import get_peft_model, LoraConfig, TaskType
+
+    tokenizer = AutoTokenizer.from_pretrained(args.model)
+    model = AutoModelForCausalLM.from_pretrained(
+        args.model,
+        torch_dtype=torch.bfloat16,
+        device_map="auto",
     )
-    model = FastLanguageModel.get_peft_model(
-        model,
+    lora_config = LoraConfig(
         r=16,
         lora_alpha=16,
         lora_dropout=0,
+        bias="none",
+        task_type=TaskType.CAUSAL_LM,
         target_modules=["q_proj", "k_proj", "v_proj", "o_proj",
                         "gate_proj", "up_proj", "down_proj"],
-        use_gradient_checkpointing="unsloth",
     )
+    model = get_peft_model(model, lora_config)
 
     grpo_config = GRPOConfig(
         output_dir=args.output_dir,
@@ -750,8 +752,7 @@ def main():
         logging_steps=1,
         save_steps=50,
         save_total_limit=2,
-        bf16=False,
-        fp16=False,
+        bf16=True,
     )
 
     trainer = GRPOTrainer(
