@@ -640,7 +640,7 @@ async function startSession() {
 
   // Call /reset
   try {
-    const r = await fetch('/reset', {
+    const r = await fetch('/api/reset', {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
       body: JSON.stringify({task_index: selectedTask.index})
@@ -761,7 +761,7 @@ async function sendAction() {
   document.getElementById('send-btn').disabled = true;
 
   try {
-    const r = await fetch('/step', {
+    const r = await fetch('/api/step', {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
       body: JSON.stringify({
@@ -807,7 +807,7 @@ function buildQuickButtons() {
 
   // Task-specific GET shortcuts
   if (type === 'task10') {
-    gets.splice(2, 0, { label: '🩸 A1C (4548-4)', path: `Observation?patient=${mrn}&code=4548-4&_sort=-date`, resource: 'Observation' });
+    gets.splice(2, 0, { label: '🩸 A1C (A1C/4548-4)', path: `Observation?patient=${mrn}&code=A1C&_count=5000`, resource: 'Observation' });
   }
   if (type === 'task3') {
     gets.splice(2, 0, { label: '💓 Vital Signs', path: `Observation?patient=${mrn}&category=vital-signs&_sort=-date`, resource: 'Observation' });
@@ -918,19 +918,32 @@ function appendAgentAction(type, url, body, answer, raw) {
 
 function appendFhirResponse(text) {
   const id = `resp-${traceSteps.length}`;
-  let parsed = null, summary = '';
+  let parsed = null, summary = '', displayText = text;
+
+  // The env wraps FHIR JSON as: "Here is the response from the GET request:\n{JSON}. Please call FINISH..."
+  // Extract the embedded JSON so we can parse and pretty-print it.
+  const prefix = 'Here is the response from the GET request:\n';
+  const suffix = '. Please call FINISH';
+  const prefixIdx = text.indexOf(prefix);
+  if (prefixIdx !== -1) {
+    const afterPrefix = text.substring(prefixIdx + prefix.length);
+    const suffixIdx = afterPrefix.lastIndexOf(suffix);
+    displayText = suffixIdx !== -1 ? afterPrefix.substring(0, suffixIdx) : afterPrefix;
+  }
+
   try {
-    parsed = JSON.parse(text);
+    parsed = JSON.parse(displayText);
     const total = parsed?.total ?? parsed?.entry?.length;
     const rtype = parsed?.resourceType;
     if (rtype === 'Bundle') {
-      summary = `Bundle · ${parsed.entry?.length ?? 0} entries${total !== undefined ? ` (total ${total})` : ''}`;
+      const count = parsed.entry?.length ?? 0;
+      summary = `Bundle · ${count} ${count === 1 ? 'entry' : 'entries'}${total !== undefined ? ` (total ${total})` : ''}`;
     } else if (rtype) {
       summary = `${rtype}`;
     }
   } catch {}
 
-  const prettyText = parsed ? JSON.stringify(parsed, null, 2) : text;
+  const prettyText = parsed ? JSON.stringify(parsed, null, 2) : displayText;
   const shortText = prettyText.length > 2000 ? prettyText.substring(0, 2000) + '\n… (truncated)' : prettyText;
 
   const div = document.createElement('div');

@@ -20,28 +20,36 @@ Usage:
 
 import json
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Optional
 
-from fastapi import FastAPI, HTTPException
+try:
+    from openenv.core.env_server.http_server import create_app
+except Exception as e:  # pragma: no cover
+    raise ImportError(
+        "openenv is required. Install dependencies with 'uv sync'"
+    ) from e
+
+from fastapi import HTTPException
 from fastapi.responses import HTMLResponse, JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 
-_ROOT = Path(__file__).parent.parent
-_UI_HTML_PATH = _ROOT / "ui" / "index.html"
-_UI_HTML = _UI_HTML_PATH.read_text() if _UI_HTML_PATH.exists() else "<h1>MedAgentBench Env</h1>"
+from medagentbench_env.models import MedAgentBenchAction, MedAgentBenchObservation
+from .medagentbench_env_environment import MedAgentBenchEnvironment
 
-_OPENENV_AVAILABLE = False
-try:
-    from openenv.core.env_server.http_server import create_app
-    from medagentbench_env.models import MedAgentBenchAction, MedAgentBenchObservation
-    from .medagentbench_env_environment import MedAgentBenchEnvironment
-    _OPENENV_AVAILABLE = True
-except Exception:
-    pass
+# ---------------------------------------------------------------------------
+# Stateful UI session — one persistent environment instance shared across
+# /api/reset and /api/step so step_count and task context survive between calls.
+# (The built-in /reset and /step from OpenEnv create a fresh env per request.)
+# ---------------------------------------------------------------------------
+_ui_env: Optional[MedAgentBenchEnvironment] = None
+
+_ROOT = Path(__file__).parent.parent
+_UI_HTML = (_ROOT / "ui" / "index.html").read_text()
 
 
 class _UIMiddleware(BaseHTTPMiddleware):
+    """Intercept /web, /ui, / before OpenEnv's default handler."""
     async def dispatch(self, request: Request, call_next):
         p = request.url.path
         if p == "/" or p == "/ui" or p == "/web" or p.startswith("/web/"):
@@ -49,71 +57,20 @@ class _UIMiddleware(BaseHTTPMiddleware):
         return await call_next(request)
 
 
-if _OPENENV_AVAILABLE:
-    app = create_app(
-        MedAgentBenchEnvironment,
-        MedAgentBenchAction,
-        MedAgentBenchObservation,
-        env_name="medagentbench_env",
-        max_concurrent_envs=1,
-    )
-else:
-    # Standalone fallback app when openenv-core is not installed
-    app = FastAPI(title="MedAgentBench Env", version="0.1.0")
-
-    _env_state: Dict[str, Any] = {"task_index": 0, "step": 0, "done": False}
-
-    @app.get("/health")
-    async def health():
-        return {"status": "ok"}
-
-    @app.post("/reset")
-    async def reset(body: Optional[Dict[str, Any]] = None):
-        _env_state.update({"task_index": _env_state["task_index"], "step": 0, "done": False})
-        tasks_path = _ROOT / "data" / "stratified_benchmark.json"
-        task = {}
-        if tasks_path.exists():
-            with open(tasks_path) as f:
-                tasks = json.load(f)
-            idx = (body or {}).get("task_index", _env_state["task_index"]) % len(tasks)
-            task = tasks[idx]
-            _env_state["task_index"] = idx
-            _env_state["task"] = task
-        return JSONResponse({"done": False, "reward": 0.0, "task_id": task.get("id", ""),
-                             "instruction": task.get("instruction", ""), "step_number": 0})
-
-    @app.post("/step")
-    async def step(body: Dict[str, Any]):
-        _env_state["step"] += 1
-        action_type = body.get("action_type", "FINISH")
-        done = action_type == "FINISH" or _env_state["step"] >= 8
-        reward = 0.0
-        if action_type == "GET":
-            response_text = "GET not available in standalone mode."
-        elif action_type == "POST":
-            response_text = "POST request accepted."
-        else:
-            done = True
-            response_text = "Task completed."
-        return JSONResponse({"done": done, "reward": reward,
-                             "response_text": response_text,
-                             "step_number": _env_state["step"]})
-
-    @app.get("/state")
-    async def state():
-        return JSONResponse(_env_state)
-
-    @app.get("/schema")
-    async def schema():
-        return JSONResponse({"action": {"action_type": "GET|POST|FINISH", "url": "str", "body": "dict", "answer": "list"},
-                             "observation": {"done": "bool", "reward": "float", "response_text": "str"}})
+app = create_app(
+    MedAgentBenchEnvironment,
+    MedAgentBenchAction,
+    MedAgentBenchObservation,
+    env_name="medagentbench_env",
+    max_concurrent_envs=1,
+)
 
 app.add_middleware(_UIMiddleware)
 
 
 @app.get("/api/tasks")
 async def get_tasks():
-    """Return the task list (instruction, context, MRN, type) for the UI."""
+    """Return the task list for the UI."""
     tasks_path = _ROOT / "data" / "stratified_benchmark.json"
     if not tasks_path.exists():
         raise HTTPException(status_code=404, detail="stratified_benchmark.json not found")
@@ -132,6 +89,42 @@ async def get_tasks():
     ])
 
 
+@app.post("/api/reset")
+async def api_reset(request: Request):
+    """Stateful reset for the UI — creates a persistent env instance."""
+    global _ui_env
+    body = {}
+    try:
+        body = await request.json()
+    except Exception:
+        pass
+    task_index = body.get("task_index", 0)
+    _ui_env = MedAgentBenchEnvironment()
+    obs = _ui_env.reset(task_index=task_index)
+    obs_dict = obs.model_dump(exclude={"reward", "done", "metadata"})
+    return JSONResponse({"observation": obs_dict, "reward": obs.reward, "done": obs.done})
+
+
+@app.post("/api/step")
+async def api_step(request: Request):
+    """Stateful step for the UI — uses the same env instance across calls."""
+    global _ui_env
+    if _ui_env is None:
+        raise HTTPException(status_code=400, detail="No active session. Call /api/reset first.")
+    body = {}
+    try:
+        body = await request.json()
+    except Exception:
+        pass
+    try:
+        action = MedAgentBenchAction.model_validate(body.get("action", {}))
+    except Exception as e:
+        raise HTTPException(status_code=422, detail=str(e))
+    obs = _ui_env.step(action)
+    obs_dict = obs.model_dump(exclude={"reward", "done", "metadata"})
+    return JSONResponse({"observation": obs_dict, "reward": obs.reward, "done": obs.done})
+
+
 @app.get("/api/baseline-results")
 async def get_baseline_results():
     """Return pre-computed baseline evaluation results."""
@@ -140,8 +133,6 @@ async def get_baseline_results():
         raise HTTPException(status_code=404, detail="baseline_results.json not found")
     with open(results_path) as f:
         return JSONResponse(content=json.load(f))
-
-
 
 
 def main(host: str = "0.0.0.0", port: int = 8000):
