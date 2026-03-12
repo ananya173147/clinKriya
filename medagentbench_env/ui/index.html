@@ -300,6 +300,30 @@ textarea.body-input { width: 100%; padding: 6px 8px; resize: vertical; min-heigh
 .overview-tab { flex: 1; overflow-y: auto; padding: 20px; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; align-content: start; }
 .ov-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 18px; }
 .ov-card h3 { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .8px; margin-bottom: 14px; }
+
+/* Leaderboard */
+.lb-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.lb-table th { text-align: left; font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; padding: 5px 10px; border-bottom: 2px solid var(--border); }
+.lb-table th.right { text-align: right; }
+.lb-table td { padding: 8px 10px; border-bottom: 1px solid rgba(30,64,104,.1); vertical-align: middle; }
+.lb-table tr:last-child td { border-bottom: none; }
+.lb-table tr:hover td { background: rgba(77,157,224,.04); }
+.lb-rank { font-size: 13px; font-weight: 800; color: var(--muted2); width: 28px; }
+.lb-rank.gold { color: #f5a623; }
+.lb-rank.silver { color: #9baab8; }
+.lb-rank.bronze { color: #c47a3a; }
+.lb-model { font-weight: 700; color: var(--text); }
+.lb-model-sub { font-size: 10px; color: var(--muted); font-weight: 400; margin-top: 1px; }
+.lb-bar-cell { width: 130px; }
+.lb-bar-wrap { display: flex; align-items: center; gap: 7px; }
+.lb-bar-track { flex: 1; height: 6px; background: var(--surface3); border-radius: 3px; overflow: hidden; }
+.lb-bar-fill { height: 100%; border-radius: 3px; }
+.lb-pct { font-size: 11px; font-weight: 700; white-space: nowrap; min-width: 38px; text-align: right; }
+.lb-task-chips { display: flex; gap: 5px; }
+.lb-chip { font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 4px; white-space: nowrap; }
+.lb-chip-ok { background: rgba(46,204,113,.12); color: var(--green); }
+.lb-chip-mid { background: rgba(255,190,11,.12); color: #b8860b; }
+.lb-chip-low { background: rgba(232,72,85,.12); color: var(--red); }
 .big-num { font-size: 44px; font-weight: 800; line-height: 1; }
 .big-sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
 .arch-rows { display: flex; flex-direction: column; gap: 0; }
@@ -525,6 +549,63 @@ textarea.body-input { width: 100%; padding: 6px 8px; resize: vertical; min-heigh
 
   <!-- PERFORMANCE DASHBOARD -->
   <div class="overview-tab hidden" id="pane-overview">
+
+    <!-- SOTA Leaderboard -->
+    <div class="ov-card" style="grid-column:1/-1">
+      <h3>SOTA Model Leaderboard — clinKriya Benchmark (90 tasks)</h3>
+      <table class="lb-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Model</th>
+            <th class="lb-bar-cell">Overall Success Rate</th>
+            <th>Vital Signs</th>
+            <th>Referral</th>
+            <th>HbA1c Review</th>
+            <th class="right">Avg Steps</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="lb-rank gold">1</td>
+            <td><div class="lb-model">DeepSeek-V3</div><div class="lb-model-sub">deepseek-ai · reasoning</div></td>
+            <td class="lb-bar-cell"><div class="lb-bar-wrap"><div class="lb-bar-track"><div class="lb-bar-fill" style="width:80%;background:#2ecc71"></div></div><span class="lb-pct" style="color:#2ecc71">80.00%</span></div></td>
+            <td><div class="lb-task-chips"><span class="lb-chip lb-chip-ok">100%</span></div></td>
+            <td><div class="lb-task-chips"><span class="lb-chip lb-chip-ok">100%</span></div></td>
+            <td><div class="lb-task-chips"><span class="lb-chip lb-chip-mid">40%</span></div></td>
+            <td style="text-align:right;font-family:monospace;font-weight:700">4.82</td>
+          </tr>
+          <tr>
+            <td class="lb-rank silver">2</td>
+            <td><div class="lb-model">Gemini 1.5 Pro</div><div class="lb-model-sub">Google · multimodal</div></td>
+            <td class="lb-bar-cell"><div class="lb-bar-wrap"><div class="lb-bar-track"><div class="lb-bar-fill" style="width:78.89%;background:#4d9de0"></div></div><span class="lb-pct" style="color:#4d9de0">78.89%</span></div></td>
+            <td><div class="lb-task-chips"><span class="lb-chip lb-chip-ok">96.67%</span></div></td>
+            <td><div class="lb-task-chips"><span class="lb-chip lb-chip-ok">100%</span></div></td>
+            <td><div class="lb-task-chips"><span class="lb-chip lb-chip-mid">40%</span></div></td>
+            <td style="text-align:right;font-family:monospace;font-weight:700">5.02</td>
+          </tr>
+          <tr>
+            <td class="lb-rank bronze">3</td>
+            <td><div class="lb-model">Claude 3.5 Sonnet v2</div><div class="lb-model-sub">Anthropic · instruction-tuned</div></td>
+            <td class="lb-bar-cell"><div class="lb-bar-wrap"><div class="lb-bar-track"><div class="lb-bar-fill" style="width:75.56%;background:#9b59b6"></div></div><span class="lb-pct" style="color:#9b59b6">75.56%</span></div></td>
+            <td><div class="lb-task-chips"><span class="lb-chip lb-chip-ok">100%</span></div></td>
+            <td><div class="lb-task-chips"><span class="lb-chip lb-chip-ok">100%</span></div></td>
+            <td><div class="lb-task-chips"><span class="lb-chip lb-chip-low">26.67%</span></div></td>
+            <td style="text-align:right;font-family:monospace;font-weight:700">4.53</td>
+          </tr>
+          <tr>
+            <td class="lb-rank">4</td>
+            <td><div class="lb-model">GPT-5.2</div><div class="lb-model-sub">OpenAI · chat</div></td>
+            <td class="lb-bar-cell"><div class="lb-bar-wrap"><div class="lb-bar-track"><div class="lb-bar-fill" style="width:64.44%;background:#f0883e"></div></div><span class="lb-pct" style="color:#f0883e">64.44%</span></div></td>
+            <td><div class="lb-task-chips"><span class="lb-chip lb-chip-ok">93.33%</span></div></td>
+            <td><div class="lb-task-chips"><span class="lb-chip lb-chip-ok">100%</span></div></td>
+            <td><div class="lb-task-chips"><span class="lb-chip lb-chip-low">0%</span></div></td>
+            <td style="text-align:right;font-family:monospace;font-weight:700">5.56</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
     <div class="ov-card">
       <h3>Encounters Evaluated</h3>
       <div class="big-num" id="ov-total">—</div>
