@@ -41,7 +41,7 @@ header {
 @keyframes pulse { 0%,100%{opacity:1}50%{opacity:.4} }
 
 /* ── Sidebar ── */
-.sidebar { background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
+.sidebar { background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow-y: auto; }
 .sidebar-section { padding: 14px 14px 10px; border-bottom: 1px solid var(--border); }
 .sidebar-section:last-child { border-bottom: none; }
 .section-title { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .8px; margin-bottom: 10px; }
@@ -553,16 +553,14 @@ textarea.body-input { width: 100%; padding: 6px 8px; resize: vertical; min-heigh
 
     <!-- SOTA Leaderboard -->
     <div class="ov-card" style="grid-column:1/-1">
-      <h3>SOTA Model Leaderboard — clinKriya Benchmark (90 tasks)</h3>
+      <h3>Model Leaderboard — clinKriya Benchmark (90 tasks)</h3>
       <table class="lb-table">
         <thead>
           <tr>
             <th>#</th>
             <th>Model</th>
-            <th class="lb-bar-cell">Overall Success Rate</th>
-            <th>Vital Signs</th>
-            <th>Referral</th>
-            <th>HbA1c Review</th>
+            <th class="lb-bar-cell">Overall Score</th>
+            <th>Metric</th>
             <th class="right">Avg Steps</th>
           </tr>
         </thead>
@@ -571,55 +569,39 @@ textarea.body-input { width: 100%; padding: 6px 8px; resize: vertical; min-heigh
             <td class="lb-rank gold">1</td>
             <td><div class="lb-model">DeepSeek-V3</div><div class="lb-model-sub">deepseek-ai · reasoning</div></td>
             <td class="lb-bar-cell"><div class="lb-bar-wrap"><div class="lb-bar-track"><div class="lb-bar-fill" style="width:80%;background:#2ecc71"></div></div><span class="lb-pct" style="color:#2ecc71">80.00%</span></div></td>
-            <td><div class="lb-task-chips"><span class="lb-chip lb-chip-ok">100%</span></div></td>
-            <td><div class="lb-task-chips"><span class="lb-chip lb-chip-ok">100%</span></div></td>
-            <td><div class="lb-task-chips"><span class="lb-chip lb-chip-mid">40%</span></div></td>
+            <td><span class="lb-chip lb-chip-ok">Success Rate</span></td>
             <td style="text-align:right;font-family:monospace;font-weight:700">4.82</td>
           </tr>
           <tr>
             <td class="lb-rank silver">2</td>
             <td><div class="lb-model">Gemini 1.5 Pro</div><div class="lb-model-sub">Google · multimodal</div></td>
             <td class="lb-bar-cell"><div class="lb-bar-wrap"><div class="lb-bar-track"><div class="lb-bar-fill" style="width:78.89%;background:#4d9de0"></div></div><span class="lb-pct" style="color:#4d9de0">78.89%</span></div></td>
-            <td><div class="lb-task-chips"><span class="lb-chip lb-chip-ok">96.67%</span></div></td>
-            <td><div class="lb-task-chips"><span class="lb-chip lb-chip-ok">100%</span></div></td>
-            <td><div class="lb-task-chips"><span class="lb-chip lb-chip-mid">40%</span></div></td>
+            <td><span class="lb-chip lb-chip-ok">Success Rate</span></td>
             <td style="text-align:right;font-family:monospace;font-weight:700">5.02</td>
           </tr>
           <tr>
             <td class="lb-rank bronze">3</td>
             <td><div class="lb-model">Claude 3.5 Sonnet v2</div><div class="lb-model-sub">Anthropic · instruction-tuned</div></td>
             <td class="lb-bar-cell"><div class="lb-bar-wrap"><div class="lb-bar-track"><div class="lb-bar-fill" style="width:75.56%;background:#9b59b6"></div></div><span class="lb-pct" style="color:#9b59b6">75.56%</span></div></td>
-            <td><div class="lb-task-chips"><span class="lb-chip lb-chip-ok">100%</span></div></td>
-            <td><div class="lb-task-chips"><span class="lb-chip lb-chip-ok">100%</span></div></td>
-            <td><div class="lb-task-chips"><span class="lb-chip lb-chip-low">26.67%</span></div></td>
+            <td><span class="lb-chip lb-chip-ok">Success Rate</span></td>
             <td style="text-align:right;font-family:monospace;font-weight:700">4.53</td>
           </tr>
           <tr>
             <td class="lb-rank">4</td>
             <td><div class="lb-model">GPT-5.2</div><div class="lb-model-sub">OpenAI · chat</div></td>
             <td class="lb-bar-cell"><div class="lb-bar-wrap"><div class="lb-bar-track"><div class="lb-bar-fill" style="width:64.44%;background:#f0883e"></div></div><span class="lb-pct" style="color:#f0883e">64.44%</span></div></td>
-            <td><div class="lb-task-chips"><span class="lb-chip lb-chip-ok">93.33%</span></div></td>
-            <td><div class="lb-task-chips"><span class="lb-chip lb-chip-ok">100%</span></div></td>
-            <td><div class="lb-task-chips"><span class="lb-chip lb-chip-low">0%</span></div></td>
+            <td><span class="lb-chip lb-chip-ok">Success Rate</span></td>
             <td style="text-align:right;font-family:monospace;font-weight:700">5.56</td>
+          </tr>
+          <tr id="lb-baseline-row" style="display:none">
+            <td class="lb-rank">5</td>
+            <td><div class="lb-model">Qwen3-1.7B (clinKriya)</div><div class="lb-model-sub">RL fine-tuned · GRPO baseline</div></td>
+            <td class="lb-bar-cell"><div class="lb-bar-wrap"><div class="lb-bar-track"><div class="lb-bar-fill" id="lb-baseline-bar" style="background:#ffbe0b"></div></div><span class="lb-pct" id="lb-baseline-pct" style="color:#ffbe0b">—</span></div></td>
+            <td><span class="lb-chip lb-chip-mid">Reward Score</span></td>
+            <td style="text-align:right;font-family:monospace;font-weight:700" id="lb-baseline-tasks">—</td>
           </tr>
         </tbody>
       </table>
-    </div>
-
-    <div class="ov-card">
-      <h3>Encounters Evaluated</h3>
-      <div class="big-num" id="ov-total">—</div>
-      <div class="big-sub">clinical benchmark tasks</div>
-    </div>
-    <div class="ov-card">
-      <h3>Avg Reward Score</h3>
-      <div class="big-num" id="ov-avg" style="color:var(--green)">—</div>
-      <div class="big-sub">reward / penalty (–0.3 → 1.0) · Qwen3-1.7B</div>
-    </div>
-    <div class="ov-card">
-      <h3>Performance by Visit Type</h3>
-      <div class="perf-rows" id="ov-perf"></div>
     </div>
   </div>
 
@@ -1239,18 +1221,14 @@ async function loadBaseline() {
     const r = await fetch('/api/baseline-results');
     const data = await r.json();
     const s = data.summary || {};
-    document.getElementById('ov-total').textContent = s.total_tasks || '—';
-    document.getElementById('ov-avg').textContent = s.avg_reward?.toFixed(4) || '—';
-    const perf = document.getElementById('ov-perf');
-    perf.innerHTML = Object.entries(s.by_type || {}).map(([type, info]) => {
-      const meta = TASK_META[type] || {};
-      const pct = Math.round(info.avg_reward * 100);
-      return `<div class="perf-row">
-        <div class="perf-header"><span class="perf-name" style="color:${meta.color||'#888'}">${meta.label || type}</span><span class="perf-score" style="color:${meta.color||'#888'}">${info.avg_reward.toFixed(4)}</span></div>
-        <div class="perf-sub">${info.count} encounters · ${meta.desc || ''}</div>
-        <div class="perf-bar"><div class="perf-fill" style="width:${pct}%;background:${meta.color||'#888'}"></div></div>
-      </div>`;
-    }).join('');
+    const reward = s.avg_reward;
+    if (reward !== undefined) {
+      const pct = Math.min(100, Math.round(reward * 100));
+      document.getElementById('lb-baseline-bar').style.width = pct + '%';
+      document.getElementById('lb-baseline-pct').textContent = (reward * 100).toFixed(2) + '%';
+      document.getElementById('lb-baseline-tasks').textContent = s.total_tasks || '—';
+      document.getElementById('lb-baseline-row').style.display = '';
+    }
   } catch {}
 }
 
