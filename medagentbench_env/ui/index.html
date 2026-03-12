@@ -412,10 +412,10 @@ textarea.body-input { width: 100%; padding: 6px 8px; resize: vertical; min-heigh
 
   <!-- Visit Score -->
   <div class="sidebar-section" id="reward-section" style="display:none">
-    <div class="section-title">Visit Score</div>
+    <div class="section-title">Reward Score</div>
     <div class="reward-big">
       <div class="reward-num" id="rew-num">—</div>
-      <div class="reward-sub">quality score (–0.3 → 1.0)</div>
+      <div class="reward-sub">reward score (–0.3 → 1.0)</div>
     </div>
     <div class="reward-comps" id="rew-comps"></div>
   </div>
@@ -612,9 +612,9 @@ textarea.body-input { width: 100%; padding: 6px 8px; resize: vertical; min-heigh
       <div class="big-sub">clinical benchmark tasks</div>
     </div>
     <div class="ov-card">
-      <h3>Avg Quality Score</h3>
+      <h3>Avg Reward Score</h3>
       <div class="big-num" id="ov-avg" style="color:var(--green)">—</div>
-      <div class="big-sub">baseline model: Qwen3-1.7B</div>
+      <div class="big-sub">reward / penalty (–0.3 → 1.0) · Qwen3-1.7B</div>
     </div>
     <div class="ov-card">
       <h3>Performance by Visit Type</h3>
@@ -1214,7 +1214,7 @@ function appendRewardCard(r, status, comps) {
     <div class="tmsg-header"><span class="tmsg-role" style="color:var(--blue)">🏆 Encounter Complete</span></div>
     <div class="reward-card">
       <div class="reward-card-header">
-        <div><div class="reward-card-val" style="color:${col}">${r.toFixed(4)}</div><div class="reward-card-label">Quality Score</div></div>
+        <div><div class="reward-card-val" style="color:${col}">${r.toFixed(4)}</div><div class="reward-card-label">Reward Score (–0.3 → 1.0)</div></div>
         <div class="reward-card-status"><span class="status-chip ${statusCls}">${statusLabel}</span></div>
       </div>
       <div class="reward-bars">${barsHtml}</div>
