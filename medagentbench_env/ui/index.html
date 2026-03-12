@@ -3,15 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>clinKriya — FHIR RL Environment</title>
+<title>clinKriya PCP Clinic — Primary Care EHR</title>
 <style>
 :root {
-  --bg: #0d1117; --surface: #161b22; --surface2: #1c2128; --surface3: #21262d;
-  --border: #30363d; --text: #e6edf3; --muted: #7d8590; --muted2: #484f58;
-  --blue: #58a6ff; --green: #3fb950; --red: #f85149; --yellow: #e3b341;
-  --purple: #bc8cff; --teal: #39d353; --orange: #f0883e;
-  --accent: #1f6feb; --accent2: #388bfd;
-  --fhir-get: #2ea043; --fhir-post: #d29922; --fhir-finish: #1f6feb;
+  --bg: #f5f7fa; --surface: #ffffff; --surface2: #f0f4f8; --surface3: #e8edf3;
+  --border: #d0dae6; --text: #1a2f4a; --muted: #6d8fad; --muted2: #9bb3ca;
+  --blue: #4d9de0; --green: #2ecc71; --red: #e84855; --yellow: #ffbe0b;
+  --purple: #9b59b6; --teal: #00c9a7; --orange: #f0883e;
+  --accent: #1565c0; --accent2: #1976d2;
+  --review: #00c9a7; --document: #f59e0b; --sign: #818cf8;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 13px; line-height: 1.5; overflow: hidden; height: 100vh; }
@@ -22,15 +22,18 @@ body { background: var(--bg); color: var(--text); font-family: -apple-system, Bl
 
 /* ── Header ── */
 header {
-  background: var(--surface); border-bottom: 1px solid var(--border);
+  background: linear-gradient(90deg, #0a1628 0%, #0f2244 100%);
+  border-bottom: 2px solid var(--accent);
   display: flex; align-items: center; padding: 0 20px; gap: 14px;
 }
 .logo { display: flex; align-items: center; gap: 10px; }
-.logo-icon { width: 30px; height: 30px; background: linear-gradient(135deg,#1f6feb,#58a6ff); border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 15px; }
-.logo-name { font-size: 15px; font-weight: 700; }
-.logo-sub { font-size: 11px; color: var(--muted); }
+.logo-icon { width: 32px; height: 32px; background: linear-gradient(135deg,#1565c0,#4d9de0); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 17px; box-shadow: 0 0 12px rgba(77,157,224,.4); }
+.logo-name { font-size: 16px; font-weight: 800; letter-spacing: -.3px; color: #e8f4ff; }
+.logo-sub { font-size: 10px; color: var(--muted); letter-spacing: .5px; text-transform: uppercase; }
+.header-center { margin-left: 20px; display: flex; align-items: center; gap: 6px; }
+.dept-badge { background: rgba(77,157,224,.12); border: 1px solid rgba(77,157,224,.3); border-radius: 4px; padding: 3px 10px; font-size: 11px; font-weight: 700; color: var(--blue); letter-spacing: .3px; }
 .header-pill { margin-left: auto; display: flex; align-items: center; gap: 8px; }
-.pill { background: var(--surface3); border: 1px solid var(--border); border-radius: 20px; padding: 3px 10px; font-size: 11px; font-weight: 600; color: var(--muted); display: flex; align-items: center; gap: 5px; }
+.pill { background: rgba(255,255,255,.06); border: 1px solid var(--border); border-radius: 20px; padding: 3px 10px; font-size: 11px; font-weight: 600; color: var(--muted); display: flex; align-items: center; gap: 5px; }
 .dot { width: 6px; height: 6px; border-radius: 50%; }
 .dot-green { background: var(--green); animation: pulse 2s infinite; }
 .dot-red { background: var(--red); }
@@ -38,15 +41,12 @@ header {
 @keyframes pulse { 0%,100%{opacity:1}50%{opacity:.4} }
 
 /* ── Sidebar ── */
-.sidebar {
-  background: var(--surface); border-right: 1px solid var(--border);
-  display: flex; flex-direction: column; overflow: hidden;
-}
+.sidebar { background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
 .sidebar-section { padding: 14px 14px 10px; border-bottom: 1px solid var(--border); }
 .sidebar-section:last-child { border-bottom: none; }
 .section-title { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .8px; margin-bottom: 10px; }
 
-/* Task selector */
+/* Patient queue */
 .type-tabs { display: flex; gap: 4px; margin-bottom: 8px; flex-wrap: wrap; }
 .ttab { background: transparent; border: 1px solid var(--border); border-radius: 5px; padding: 3px 8px; font-size: 11px; font-weight: 600; color: var(--muted); cursor: pointer; transition: all .15s; }
 .ttab:hover { border-color: var(--blue); color: var(--blue); }
@@ -56,20 +56,20 @@ select.task-select {
   width: 100%; background: var(--surface2); border: 1px solid var(--border);
   border-radius: 6px; color: var(--text); font-size: 12px; padding: 7px 8px;
   outline: none; cursor: pointer; appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%237d8590'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236d8fad'/%3E%3C/svg%3E");
   background-repeat: no-repeat; background-position: right 8px center; padding-right: 24px;
 }
 select.task-select:focus { border-color: var(--accent); }
 
-.task-preview {
-  margin-top: 8px; background: var(--surface2); border: 1px solid var(--border);
-  border-radius: 6px; padding: 10px; display: none;
-}
+/* Patient preview card */
+.task-preview { margin-top: 8px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 10px; display: none; }
 .task-preview.visible { display: block; }
-.preview-mrn { font-family: monospace; font-size: 11px; font-weight: 700; color: var(--blue); margin-bottom: 4px; }
-.preview-type { display: inline-block; font-size: 10px; padding: 1px 6px; border-radius: 3px; font-weight: 700; margin-bottom: 6px; }
-.preview-instr { font-size: 12px; color: var(--text); line-height: 1.5; }
-.preview-ctx { font-size: 11px; color: var(--muted); margin-top: 4px; }
+.pt-preview-name { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+.pt-preview-demos { font-size: 11px; color: var(--muted); margin-bottom: 5px; }
+.pt-preview-mrn { font-family: monospace; font-size: 10px; color: var(--blue); font-weight: 700; }
+.pt-preview-visit { display: inline-block; margin-top: 5px; font-size: 10px; padding: 2px 8px; border-radius: 4px; font-weight: 700; }
+.pt-preview-reason { font-size: 11px; color: var(--muted); margin-top: 5px; line-height: 1.4; }
+.allergy-chip { display: inline-flex; align-items: center; gap: 3px; background: rgba(232,72,85,.12); border: 1px solid rgba(232,72,85,.3); border-radius: 4px; padding: 1px 6px; font-size: 10px; font-weight: 700; color: var(--red); margin-top: 4px; }
 
 .btn { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; padding: 8px 12px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: all .15s; margin-top: 8px; }
 .btn-primary { background: var(--accent); color: #fff; }
@@ -77,21 +77,20 @@ select.task-select:focus { border-color: var(--accent); }
 .btn-primary:disabled { background: var(--muted2); cursor: not-allowed; opacity: .6; }
 .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
 .btn-outline:hover { border-color: var(--blue); color: var(--blue); }
-.btn-sm { padding: 5px 10px; font-size: 11px; width: auto; }
 
-/* Session status */
+/* Current encounter panel */
 .session-status { display: flex; flex-direction: column; gap: 8px; }
 .stat-row { display: flex; justify-content: space-between; align-items: center; }
 .stat-label { font-size: 11px; color: var(--muted); }
 .stat-val { font-size: 12px; font-weight: 700; }
 .steps-bar { background: var(--border); border-radius: 3px; height: 5px; overflow: hidden; margin-top: 2px; }
-.steps-fill { height: 100%; background: var(--blue); border-radius: 3px; transition: width .3s; }
+.steps-fill { height: 100%; background: linear-gradient(90deg,var(--accent),var(--blue)); border-radius: 3px; transition: width .3s; }
 .status-chip { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 10px; }
-.status-running { background: rgba(88,166,255,.15); color: var(--blue); }
-.status-completed { background: rgba(63,185,80,.15); color: var(--green); }
-.status-error { background: rgba(248,81,73,.15); color: var(--red); }
+.status-running { background: rgba(77,157,224,.15); color: var(--blue); }
+.status-completed { background: rgba(46,204,113,.15); color: var(--green); }
+.status-error { background: rgba(232,72,85,.15); color: var(--red); }
 
-/* Reward display */
+/* Visit score */
 .reward-big { text-align: center; padding: 12px 0 8px; }
 .reward-num { font-size: 36px; font-weight: 800; line-height: 1; }
 .reward-sub { font-size: 11px; color: var(--muted); margin-top: 3px; }
@@ -103,7 +102,7 @@ select.task-select:focus { border-color: var(--accent); }
 .rc-track { background: var(--border); border-radius: 3px; height: 5px; overflow: hidden; }
 .rc-fill { height: 100%; border-radius: 3px; transition: width .8s ease; }
 
-/* Reward model explainer */
+/* Scoring rubric */
 .reward-model { flex: 1; overflow-y: auto; }
 .reward-model::-webkit-scrollbar { width: 3px; }
 .reward-model::-webkit-scrollbar-thumb { background: var(--border); }
@@ -117,91 +116,114 @@ select.task-select:focus { border-color: var(--accent); }
 
 /* ── Main panel ── */
 .main { display: flex; flex-direction: column; overflow: hidden; }
-
-/* Tab bar */
 .tab-bar { display: flex; background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 16px; gap: 0; flex-shrink: 0; }
 .tab { padding: 11px 14px; font-size: 12px; font-weight: 500; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; transition: all .15s; white-space: nowrap; }
 .tab:hover { color: var(--text); }
 .tab.active { color: var(--blue); border-bottom-color: var(--blue); }
 
-/* ── Interactive session ── */
-.session-pane { display: flex; flex-direction: column; overflow: hidden; flex: 1; }
-
-/* Task card */
-.task-card {
-  background: var(--surface); border-bottom: 1px solid var(--border);
-  padding: 14px 18px; flex-shrink: 0;
+/* ── Patient banner (replaces task card) ── */
+.pt-banner {
+  background: linear-gradient(135deg, #e8f3ff 0%, #f0f7ff 100%);
+  border-bottom: 1px solid var(--border);
+  padding: 0; flex-shrink: 0;
 }
-.task-card-empty { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 13px; }
-.task-card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
-.task-card-id { font-family: monospace; font-size: 13px; font-weight: 700; }
-.task-card-type { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px; }
-.task-card-instr { font-size: 13px; font-weight: 500; color: var(--text); line-height: 1.5; margin-bottom: 4px; }
-.task-card-ctx { font-size: 11px; color: var(--muted); }
-.task-card-mrn { font-family: monospace; font-size: 11px; color: var(--blue); font-weight: 700; }
+.pt-banner-empty { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 13px; padding: 16px 18px; }
+.pt-banner-content { display: none; }
+.pt-banner-content.visible { display: block; }
 
-.sys-prompt-toggle { display: flex; align-items: center; gap: 6px; margin-top: 8px; cursor: pointer; user-select: none; color: var(--muted); font-size: 11px; }
-.sys-prompt-toggle:hover { color: var(--text); }
-.sys-prompt-body { margin-top: 6px; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 10px; font-family: monospace; font-size: 10px; color: var(--muted); max-height: 160px; overflow-y: auto; white-space: pre-wrap; display: none; }
-.sys-prompt-body.open { display: block; }
+/* Patient demographics bar */
+.pt-demo-bar {
+  display: flex; align-items: center; gap: 0;
+  background: rgba(21,101,192,.15); border-bottom: 1px solid rgba(77,157,224,.2);
+  padding: 8px 18px; flex-wrap: wrap; gap: 0;
+}
+.pt-name-big { font-size: 15px; font-weight: 800; color: #1a3a6b; margin-right: 14px; }
+.pt-demo-sep { color: var(--muted2); margin: 0 8px; }
+.pt-demo-item { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 4px; margin-right: 14px; }
+.pt-demo-item b { color: var(--text); font-weight: 600; }
+.pt-allergy { background: rgba(232,72,85,.15); border: 1px solid rgba(232,72,85,.3); border-radius: 4px; padding: 1px 7px; font-size: 10px; font-weight: 700; color: #ff6b7a; margin-left: auto; }
+.pt-status-bar { display: flex; align-items: center; gap: 10px; padding: 8px 18px; }
+.pt-visit-type { display: flex; align-items: center; gap: 6px; }
+.pt-visit-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+.pt-visit-chip { font-size: 11px; font-weight: 700; padding: 2px 10px; border-radius: 4px; }
+.pt-reason { font-size: 12px; color: var(--muted); flex: 1; }
+.pt-banner-status { margin-left: auto; display: flex; align-items: center; gap: 8px; }
 
-/* Trace */
+/* Clinical context toggle */
+.clin-ctx-toggle { display: flex; align-items: center; gap: 6px; padding: 6px 18px; cursor: pointer; user-select: none; color: var(--muted); font-size: 11px; border-top: 1px solid var(--border); }
+.clin-ctx-toggle:hover { color: var(--blue); background: rgba(77,157,224,.04); }
+.clin-ctx-body { padding: 10px 18px; background: var(--surface2); border-top: 1px solid var(--border); font-family: monospace; font-size: 10px; color: var(--muted); max-height: 140px; overflow-y: auto; white-space: pre-wrap; display: none; }
+.clin-ctx-body.open { display: block; }
+
+/* ── Encounter notes (trace) ── */
+.session-pane { display: flex; flex-direction: column; overflow: hidden; flex: 1; }
 .trace { flex: 1; overflow-y: auto; padding: 14px 18px; display: flex; flex-direction: column; gap: 10px; }
 .trace::-webkit-scrollbar { width: 4px; }
 .trace::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-
 .trace-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 12px; color: var(--muted); }
 .trace-empty-icon { font-size: 40px; opacity: .3; }
 
-/* Trace messages */
+/* Encounter note messages */
 .tmsg { display: flex; flex-direction: column; gap: 3px; }
 .tmsg-header { display: flex; align-items: center; gap: 8px; }
 .tmsg-role { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .7px; }
 .tmsg-step { font-size: 10px; color: var(--muted2); }
 .tmsg-body { border-radius: 7px; border: 1px solid var(--border); overflow: hidden; }
 
-/* ENV message */
-.msg-env .tmsg-role { color: var(--muted); }
-.msg-env .tmsg-body { background: var(--surface2); }
-.env-text { padding: 8px 12px; font-size: 12px; color: var(--muted); }
-
-/* FHIR GET action */
-.msg-get .tmsg-role { color: var(--fhir-get); }
-.msg-get .tmsg-body { background: rgba(46,160,67,.06); border-color: rgba(46,160,67,.25); }
-/* FHIR POST action */
-.msg-post .tmsg-role { color: var(--fhir-post); }
-.msg-post .tmsg-body { background: rgba(210,153,34,.06); border-color: rgba(210,153,34,.25); }
-/* FINISH action */
-.msg-finish .tmsg-role { color: var(--blue); }
-.msg-finish .tmsg-body { background: rgba(31,111,235,.07); border-color: rgba(31,111,235,.3); }
-/* FHIR response */
+/* Chart Review (GET) */
+.msg-get .tmsg-role { color: var(--review); }
+.msg-get .tmsg-body { background: rgba(0,201,167,.05); border-color: rgba(0,201,167,.2); }
+/* Order/Document (POST) */
+.msg-post .tmsg-role { color: var(--document); }
+.msg-post .tmsg-body { background: rgba(245,158,11,.05); border-color: rgba(245,158,11,.2); }
+/* Sign & Close (FINISH) */
+.msg-finish .tmsg-role { color: var(--sign); }
+.msg-finish .tmsg-body { background: rgba(129,140,248,.06); border-color: rgba(129,140,248,.25); }
+/* EHR response */
 .msg-response .tmsg-role { color: var(--muted2); }
 .msg-response .tmsg-body { background: var(--surface2); }
+/* Env/system message */
+.msg-env .tmsg-role { color: var(--muted); }
+.msg-env .tmsg-body { background: var(--surface2); }
 
-/* Action chip inside trace */
 .action-line { display: flex; align-items: flex-start; gap: 8px; padding: 8px 12px; }
-.action-verb { font-weight: 800; font-size: 11px; padding: 2px 7px; border-radius: 4px; flex-shrink: 0; font-family: monospace; }
-.verb-get { background: rgba(46,160,67,.2); color: #4ac26b; }
-.verb-post { background: rgba(210,153,34,.2); color: #d29922; }
-.verb-finish { background: rgba(31,111,235,.2); color: #58a6ff; }
+.action-verb { font-weight: 800; font-size: 11px; padding: 2px 8px; border-radius: 4px; flex-shrink: 0; font-family: monospace; }
+.verb-get { background: rgba(0,201,167,.18); color: var(--review); }
+.verb-post { background: rgba(245,158,11,.18); color: var(--document); }
+.verb-finish { background: rgba(129,140,248,.18); color: var(--sign); }
 .action-url { font-family: monospace; font-size: 11px; color: var(--text); word-break: break-all; }
-.action-body-pre { margin: 0 12px 8px; background: rgba(0,0,0,.3); border-radius: 5px; padding: 8px; font-family: monospace; font-size: 10px; color: var(--muted); white-space: pre-wrap; }
-
-/* FHIR resource tag */
+.action-body-pre { margin: 0 12px 8px; background: rgba(0,0,0,.04); border: 1px solid var(--border); border-radius: 5px; padding: 8px; font-family: monospace; font-size: 10px; color: var(--text); white-space: pre-wrap; }
 .fhir-resource { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 700; padding: 1px 7px; border-radius: 10px; background: var(--surface3); border: 1px solid var(--border); color: var(--muted); font-family: monospace; }
 
-/* Response toggle */
+/* EHR response */
 .resp-toggle { display: flex; align-items: center; gap: 6px; padding: 5px 12px; font-size: 10px; color: var(--muted); cursor: pointer; border-top: 1px solid var(--border); user-select: none; }
-.resp-toggle:hover { background: rgba(255,255,255,.03); color: var(--text); }
+.resp-toggle:hover { background: rgba(0,0,0,.03); color: var(--text); }
 .resp-body { padding: 8px 12px; font-family: monospace; font-size: 10px; color: var(--muted); white-space: pre-wrap; border-top: 1px solid var(--border); max-height: 220px; overflow-y: auto; display: none; }
 .resp-body.open { display: block; }
-.resp-summary { font-size: 10px; color: var(--muted); padding: 4px 12px 6px; }
+.resp-summary { font-size: 11px; color: var(--muted); padding: 6px 12px; font-weight: 600; }
+
+/* Clinical table (FHIR data formatted) */
+.clin-section { padding: 8px 12px 10px; }
+.clin-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+.clin-table th { text-align: left; font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; padding: 4px 8px; border-bottom: 1px solid var(--border); }
+.clin-table td { padding: 5px 8px; border-bottom: 1px solid rgba(30,64,104,.15); color: var(--text); vertical-align: top; }
+.clin-table tr:last-child td { border-bottom: none; }
+.clin-val { font-weight: 700; color: var(--blue); font-family: monospace; }
+.clin-date { color: var(--muted); font-size: 10px; white-space: nowrap; }
+.clin-empty { padding: 10px 12px; color: var(--muted); font-size: 11px; font-style: italic; }
+
+/* Patient FHIR card */
+.pt-fhir-card { padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; }
+.pt-fhir-name { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+.pt-fhir-row { display: flex; gap: 8px; font-size: 11px; }
+.pt-fhir-row span:first-child { color: var(--muted); min-width: 60px; }
+.pt-fhir-row span:last-child { color: var(--text); font-weight: 600; }
 
 /* FINISH answer */
 .finish-answer { padding: 8px 12px; }
 .finish-label { font-size: 10px; color: var(--muted); margin-bottom: 4px; }
 .finish-vals { display: flex; flex-wrap: wrap; gap: 4px; }
-.finish-val { background: rgba(88,166,255,.12); border: 1px solid rgba(88,166,255,.3); border-radius: 5px; padding: 3px 10px; font-family: monospace; font-size: 12px; font-weight: 700; color: var(--blue); }
+.finish-val { background: rgba(129,140,248,.12); border: 1px solid rgba(129,140,248,.3); border-radius: 5px; padding: 3px 10px; font-family: monospace; font-size: 12px; font-weight: 700; color: var(--sign); }
 
 /* Reward card in trace */
 .reward-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; margin-top: 4px; }
@@ -217,76 +239,62 @@ select.task-select:focus { border-color: var(--accent); }
 .rbar-track { background: var(--border); border-radius: 3px; height: 5px; overflow: hidden; }
 .rbar-fill { height: 100%; border-radius: 3px; }
 
-/* ── Action panel ── */
-.action-panel {
-  background: var(--surface); border-top: 1px solid var(--border);
-  padding: 12px 16px; flex-shrink: 0;
-}
+/* ── Clinical action panel ── */
+.action-panel { background: var(--surface); border-top: 1px solid var(--border); padding: 12px 16px; flex-shrink: 0; }
 .action-panel-title { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
-.action-panel-title h3 { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+.action-panel-title h3 { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
 .action-panel-title .step-badge { font-size: 11px; color: var(--blue); font-weight: 700; }
 
-/* Quick FHIR buttons */
+/* Clinical workflow progress */
+.workflow-bar { display: flex; align-items: center; gap: 0; margin-bottom: 10px; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+.wf-step { flex: 1; padding: 5px 8px; text-align: center; font-size: 10px; font-weight: 600; color: var(--muted); transition: all .3s; border-right: 1px solid var(--border); }
+.wf-step:last-child { border-right: none; }
+.wf-step.active { background: rgba(77,157,224,.15); color: var(--blue); }
+.wf-step.done { background: rgba(46,204,113,.1); color: var(--green); }
+
+/* Quick chart lookup buttons */
 .quick-section { margin-bottom: 10px; }
 .quick-label { font-size: 10px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 6px; }
 .quick-btns { display: flex; flex-wrap: wrap; gap: 5px; }
-.qbtn {
-  background: var(--surface2); border: 1px solid var(--border); border-radius: 5px;
-  padding: 4px 10px; font-size: 11px; font-weight: 600; cursor: pointer; color: var(--muted);
-  transition: all .15s; display: flex; align-items: center; gap: 4px;
-}
-.qbtn:hover { border-color: var(--blue); color: var(--blue); background: rgba(88,166,255,.06); }
+.qbtn { background: var(--surface2); border: 1px solid var(--border); border-radius: 5px; padding: 4px 10px; font-size: 11px; font-weight: 600; cursor: pointer; color: var(--muted); transition: all .15s; display: flex; align-items: center; gap: 4px; }
+.qbtn:hover { background: rgba(77,157,224,.06); }
 .qbtn:disabled { opacity: .4; cursor: not-allowed; }
-.qbtn-get { border-color: rgba(46,160,67,.3); color: var(--fhir-get); }
-.qbtn-get:hover { border-color: var(--fhir-get); background: rgba(46,160,67,.06); }
-.qbtn-post { border-color: rgba(210,153,34,.3); color: var(--yellow); }
-.qbtn-post:hover { border-color: var(--yellow); background: rgba(210,153,34,.06); }
-.qbtn-finish { border-color: rgba(31,111,235,.3); color: var(--blue); }
-.qbtn-finish:hover { border-color: var(--blue); background: rgba(31,111,235,.08); }
+.qbtn-get { border-color: rgba(0,201,167,.3); color: var(--review); }
+.qbtn-get:hover { border-color: var(--review); background: rgba(0,201,167,.06); }
+.qbtn-post { border-color: rgba(245,158,11,.3); color: var(--document); }
+.qbtn-post:hover { border-color: var(--document); background: rgba(245,158,11,.06); }
+.qbtn-finish { border-color: rgba(129,140,248,.3); color: var(--sign); }
+.qbtn-finish:hover { border-color: var(--sign); background: rgba(129,140,248,.08); }
 
-/* Manual action form */
+/* Action form */
 .action-form { display: grid; grid-template-columns: auto 1fr; gap: 8px; align-items: start; }
 .action-type-btns { display: flex; flex-direction: column; gap: 4px; }
-.atype-btn {
-  width: 62px; padding: 5px 0; border-radius: 5px; font-size: 11px; font-weight: 800;
-  font-family: monospace; cursor: pointer; border: 1px solid var(--border);
-  background: var(--surface2); color: var(--muted); transition: all .15s; text-align: center;
-}
-.atype-btn.sel-get { background: rgba(46,160,67,.15); border-color: var(--fhir-get); color: var(--fhir-get); }
-.atype-btn.sel-post { background: rgba(210,153,34,.15); border-color: var(--yellow); color: var(--yellow); }
-.atype-btn.sel-finish { background: rgba(31,111,235,.15); border-color: var(--blue); color: var(--blue); }
+.atype-btn { width: 72px; padding: 6px 0; border-radius: 5px; font-size: 11px; font-weight: 700; cursor: pointer; border: 1px solid var(--border); background: var(--surface2); color: var(--muted); transition: all .15s; text-align: center; }
+.atype-btn.sel-get { background: rgba(0,201,167,.12); border-color: var(--review); color: var(--review); }
+.atype-btn.sel-post { background: rgba(245,158,11,.12); border-color: var(--document); color: var(--document); }
+.atype-btn.sel-finish { background: rgba(129,140,248,.12); border-color: var(--sign); color: var(--sign); }
 
 .action-inputs { display: flex; flex-direction: column; gap: 6px; }
 .input-row { display: flex; align-items: center; gap: 6px; }
-.fhir-prefix { font-family: monospace; font-size: 11px; color: var(--muted); white-space: nowrap; background: var(--surface2); border: 1px solid var(--border); border-right: none; border-radius: 5px 0 0 5px; padding: 6px 8px; }
-input.url-input, textarea.body-input {
-  background: var(--surface2); border: 1px solid var(--border); border-radius: 5px;
-  color: var(--text); font-size: 12px; outline: none; font-family: monospace;
-  transition: border .15s;
-}
+.fhir-prefix { font-family: monospace; font-size: 10px; color: var(--muted); white-space: nowrap; background: var(--surface2); border: 1px solid var(--border); border-right: none; border-radius: 5px 0 0 5px; padding: 6px 8px; }
+input.url-input, textarea.body-input { background: var(--surface2); border: 1px solid var(--border); border-radius: 5px; color: var(--text); font-size: 12px; outline: none; font-family: monospace; transition: border .15s; }
 input.url-input { flex: 1; padding: 6px 8px; border-radius: 0 5px 5px 0; }
 input.url-input:focus, textarea.body-input:focus { border-color: var(--accent); }
-.answer-input {
-  background: var(--surface2); border: 1px solid var(--border); border-radius: 5px;
-  color: var(--text); font-size: 12px; padding: 6px 8px; outline: none; font-family: monospace;
-  width: 100%;
-}
+.answer-input { background: var(--surface2); border: 1px solid var(--border); border-radius: 5px; color: var(--text); font-size: 12px; padding: 6px 8px; outline: none; font-family: monospace; width: 100%; }
 .answer-input:focus { border-color: var(--accent); }
 textarea.body-input { width: 100%; padding: 6px 8px; resize: vertical; min-height: 56px; max-height: 120px; font-size: 11px; }
-
 .field-label { font-size: 10px; color: var(--muted); font-weight: 600; margin-bottom: 2px; }
 
 .send-row { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
-.btn-send {
-  background: var(--accent); color: #fff; border: none; border-radius: 6px;
-  padding: 7px 18px; font-size: 12px; font-weight: 700; cursor: pointer; transition: background .15s;
-}
+.btn-send { background: var(--accent); color: #fff; border: none; border-radius: 6px; padding: 7px 18px; font-size: 12px; font-weight: 700; cursor: pointer; transition: background .15s; }
 .btn-send:hover { background: var(--accent2); }
 .btn-send:disabled { background: var(--muted2); cursor: not-allowed; }
+.btn-send.sign-mode { background: #4f46e5; }
+.btn-send.sign-mode:hover { background: #6366f1; }
 .send-hint { font-size: 11px; color: var(--muted); }
 .error-msg { font-size: 11px; color: var(--red); margin-top: 4px; }
 
-/* ── Overview tab ── */
+/* ── Performance dashboard ── */
 .overview-tab { flex: 1; overflow-y: auto; padding: 20px; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; align-content: start; }
 .ov-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 18px; }
 .ov-card h3 { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .8px; margin-bottom: 14px; }
@@ -307,30 +315,31 @@ textarea.body-input { width: 100%; padding: 6px 8px; resize: vertical; min-heigh
 .perf-bar { height: 7px; background: var(--border); border-radius: 4px; overflow: hidden; }
 .perf-fill { height: 100%; border-radius: 4px; }
 
-/* scrollbar global */
+/* scrollbar */
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-
-/* util */
 .hidden { display: none !important; }
-.flex-row { display: flex; align-items: center; gap: 6px; }
+.env-text { padding: 8px 12px; font-size: 12px; color: var(--muted); }
 </style>
 </head>
 <body>
 <div class="shell">
 
-<!-- Header -->
+<!-- ── Header ── -->
 <header>
   <div class="logo">
     <div class="logo-icon">🏥</div>
     <div>
-      <div class="logo-name">clinKriya</div>
-      <div class="logo-sub">FHIR RL Environment</div>
+      <div class="logo-name">clinKriya PCP Clinic</div>
+      <div class="logo-sub">Primary Care EHR</div>
     </div>
   </div>
+  <div class="header-center">
+    <span class="dept-badge">Family Medicine · Outpatient</span>
+  </div>
   <div class="header-pill">
-    <div class="pill"><div class="dot dot-green"></div>OpenEnv</div>
+    <div class="pill"><div class="dot dot-green"></div>FHIR Connected</div>
     <div class="pill" id="server-status"><div class="dot dot-yellow" id="server-dot"></div><span id="server-label">Connecting…</span></div>
   </div>
 </header>
@@ -340,150 +349,171 @@ textarea.body-input { width: 100%; padding: 6px 8px; resize: vertical; min-heigh
 <!-- ── SIDEBAR ── -->
 <div class="sidebar">
 
-  <!-- Task Selector -->
+  <!-- Patient Queue -->
   <div class="sidebar-section">
-    <div class="section-title">Select Task</div>
+    <div class="section-title">Patient Queue</div>
     <div class="type-tabs" id="type-tabs">
       <button class="ttab active" onclick="setTypeFilter('all',this)">All</button>
-      <button class="ttab" onclick="setTypeFilter('task3',this)">Blood Pressure</button>
-      <button class="ttab" onclick="setTypeFilter('task8',this)">Ortho Referral</button>
-      <button class="ttab" onclick="setTypeFilter('task10',this)">A1C / Diabetes</button>
+      <button class="ttab" onclick="setTypeFilter('task3',this)">Vital Signs</button>
+      <button class="ttab" onclick="setTypeFilter('task8',this)">Referral</button>
+      <button class="ttab" onclick="setTypeFilter('task10',this)">Lab Review</button>
     </div>
     <select class="task-select" id="task-select" onchange="onTaskSelect()">
-      <option value="">— pick a clinical task —</option>
+      <option value="">— select a patient encounter —</option>
     </select>
     <div class="task-preview" id="task-preview">
-      <div class="preview-mrn" id="prev-mrn"></div>
-      <div><span class="preview-type" id="prev-type"></span></div>
-      <div class="preview-instr" id="prev-instr"></div>
-      <div class="preview-ctx" id="prev-ctx"></div>
+      <div class="pt-preview-name" id="prev-name"></div>
+      <div class="pt-preview-demos" id="prev-demos"></div>
+      <div class="pt-preview-mrn" id="prev-mrn"></div>
+      <span class="pt-preview-visit" id="prev-type"></span>
+      <div class="pt-preview-reason" id="prev-reason"></div>
+      <div class="allergy-chip" id="prev-allergy">⚠ NKA</div>
     </div>
-    <button class="btn btn-primary" id="start-btn" onclick="startSession()" disabled>▶ Start Session</button>
+    <button class="btn btn-primary" id="start-btn" onclick="startSession()" disabled>📂 Open Chart</button>
   </div>
 
-  <!-- Session Status -->
+  <!-- Current Encounter -->
   <div class="sidebar-section" id="session-section">
-    <div class="section-title">Session</div>
+    <div class="section-title">Current Encounter</div>
     <div class="session-status">
-      <div class="stat-row"><span class="stat-label">Task</span><span class="stat-val" id="ss-task">—</span></div>
-      <div class="stat-row"><span class="stat-label">Status</span><span class="status-chip status-running" id="ss-status">—</span></div>
-      <div class="stat-row"><span class="stat-label">Steps</span><span class="stat-val" id="ss-steps">0 / 8</span></div>
+      <div class="stat-row"><span class="stat-label">Patient</span><span class="stat-val" id="ss-task">—</span></div>
+      <div class="stat-row"><span class="stat-label">Visit Status</span><span class="status-chip status-running" id="ss-status">—</span></div>
+      <div class="stat-row"><span class="stat-label">Actions</span><span class="stat-val" id="ss-steps">0 / 8</span></div>
       <div class="steps-bar"><div class="steps-fill" id="ss-steps-bar" style="width:0%"></div></div>
     </div>
-    <button class="btn btn-outline" id="reset-btn" style="margin-top:10px" onclick="resetSession()">↺ New Session</button>
+    <button class="btn btn-outline" id="reset-btn" style="margin-top:10px" onclick="resetSession()">↺ Close &amp; New Encounter</button>
   </div>
 
-  <!-- Reward -->
+  <!-- Visit Score -->
   <div class="sidebar-section" id="reward-section" style="display:none">
-    <div class="section-title">Episode Reward</div>
+    <div class="section-title">Visit Score</div>
     <div class="reward-big">
       <div class="reward-num" id="rew-num">—</div>
-      <div class="reward-sub">shaped reward (–0.3 → 1.0)</div>
+      <div class="reward-sub">quality score (–0.3 → 1.0)</div>
     </div>
     <div class="reward-comps" id="rew-comps"></div>
   </div>
 
-  <!-- Reward Model -->
+  <!-- Scoring Rubric -->
   <div class="sidebar-section" style="flex:1;overflow:hidden;display:flex;flex-direction:column">
-    <div class="section-title">Reward Model</div>
+    <div class="section-title">Scoring Rubric</div>
     <div class="reward-model">
-      <div class="rm-row"><div class="rm-icon">✅</div><div class="rm-info"><div class="rm-name">Correctness</div><div class="rm-desc">refsol pass + partial field credit</div></div><div class="rm-range" style="color:var(--green)">0.0–0.4</div></div>
-      <div class="rm-row"><div class="rm-icon">🏗</div><div class="rm-info"><div class="rm-name">Structure</div><div class="rm-desc">right endpoint + resource type</div></div><div class="rm-range" style="color:var(--blue)">0.0–0.2</div></div>
-      <div class="rm-row"><div class="rm-icon">🧑‍⚕️</div><div class="rm-info"><div class="rm-name">Patient Ref</div><div class="rm-desc">correct MRN in payload</div></div><div class="rm-range" style="color:var(--purple)">0.0–0.1</div></div>
-      <div class="rm-row"><div class="rm-icon">⚡</div><div class="rm-info"><div class="rm-name">Efficiency</div><div class="rm-desc">fewer steps = higher bonus</div></div><div class="rm-range" style="color:var(--yellow)">0.0–0.1</div></div>
-      <div class="rm-row"><div class="rm-icon">🏁</div><div class="rm-info"><div class="rm-name">Completion</div><div class="rm-desc">bonus for calling FINISH</div></div><div class="rm-range" style="color:var(--teal)">+0.05</div></div>
-      <div class="rm-row"><div class="rm-icon">⚠️</div><div class="rm-info"><div class="rm-name">Redundancy</div><div class="rm-desc">penalty per unnecessary call</div></div><div class="rm-range" style="color:var(--red)">−0.1</div></div>
-      <div class="rm-row"><div class="rm-icon">🚫</div><div class="rm-info"><div class="rm-name">Format Error</div><div class="rm-desc">invalid action structure</div></div><div class="rm-range" style="color:var(--red)">−0.1</div></div>
+      <div class="rm-row"><div class="rm-icon">✅</div><div class="rm-info"><div class="rm-name">Clinical Accuracy</div><div class="rm-desc">Correct orders & documentation</div></div><div class="rm-range" style="color:var(--green)">0.0–0.4</div></div>
+      <div class="rm-row"><div class="rm-icon">🏗</div><div class="rm-info"><div class="rm-name">Order Structure</div><div class="rm-desc">Right endpoint + resource type</div></div><div class="rm-range" style="color:var(--blue)">0.0–0.2</div></div>
+      <div class="rm-row"><div class="rm-icon">🧑‍⚕️</div><div class="rm-info"><div class="rm-name">Patient Match</div><div class="rm-desc">Correct MRN in order</div></div><div class="rm-range" style="color:var(--purple)">0.0–0.1</div></div>
+      <div class="rm-row"><div class="rm-icon">⚡</div><div class="rm-info"><div class="rm-name">Efficiency</div><div class="rm-desc">Fewer actions = higher bonus</div></div><div class="rm-range" style="color:var(--yellow)">0.0–0.1</div></div>
+      <div class="rm-row"><div class="rm-icon">🏁</div><div class="rm-info"><div class="rm-name">Visit Completion</div><div class="rm-desc">Bonus for signing off</div></div><div class="rm-range" style="color:var(--teal)">+0.05</div></div>
+      <div class="rm-row"><div class="rm-icon">⚠️</div><div class="rm-info"><div class="rm-name">Redundancy</div><div class="rm-desc">Penalty per unnecessary action</div></div><div class="rm-range" style="color:var(--red)">−0.1</div></div>
+      <div class="rm-row"><div class="rm-icon">🚫</div><div class="rm-info"><div class="rm-name">Format Error</div><div class="rm-desc">Invalid action format</div></div><div class="rm-range" style="color:var(--red)">−0.1</div></div>
     </div>
   </div>
 
-</div>
+</div><!-- /sidebar -->
 
 <!-- ── MAIN PANEL ── -->
 <div class="main">
 
   <div class="tab-bar">
-    <div class="tab active" id="tab-session" onclick="showTab('session',this)">🩺 Interactive Session</div>
-    <div class="tab" id="tab-overview" onclick="showTab('overview',this)">📊 Benchmark Results</div>
+    <div class="tab active" id="tab-session" onclick="showTab('session',this)">🩺 Patient Encounter</div>
+    <div class="tab" id="tab-overview" onclick="showTab('overview',this)">📊 Performance Dashboard</div>
   </div>
 
-  <!-- SESSION PANE -->
+  <!-- ENCOUNTER PANE -->
   <div class="session-pane" id="pane-session">
 
-    <!-- Task card -->
-    <div class="task-card" id="task-card">
-      <div class="task-card-empty" id="card-empty">
+    <!-- Patient banner -->
+    <div class="pt-banner" id="pt-banner">
+      <div class="pt-banner-empty" id="card-empty">
         <span style="font-size:24px;opacity:.3">🏥</span>
-        <span>Select a clinical task and click <strong>Start Session</strong> to begin</span>
+        <span>Select a patient from the queue and click <strong>Open Chart</strong> to begin</span>
       </div>
-      <div class="hidden" id="card-content">
-        <div class="task-card-header">
-          <span class="task-card-id" id="card-id"></span>
-          <span class="task-card-type" id="card-type"></span>
-          <span class="task-card-mrn" id="card-mrn"></span>
-          <span class="status-chip status-running" id="card-status" style="margin-left:auto">running</span>
+      <div class="pt-banner-content" id="card-content">
+        <div class="pt-demo-bar">
+          <span class="pt-name-big" id="card-pt-name">—</span>
+          <span class="pt-demo-item"><b id="card-dob">—</b></span>
+          <span class="pt-demo-sep">·</span>
+          <span class="pt-demo-item">Age <b id="card-age">—</b></span>
+          <span class="pt-demo-sep">·</span>
+          <span class="pt-demo-item">MRN <b id="card-mrn" style="font-family:monospace">—</b></span>
+          <span class="pt-allergy" id="card-allergy">⚠ NKA</span>
         </div>
-        <div class="task-card-instr" id="card-instr"></div>
-        <div class="task-card-ctx" id="card-ctx"></div>
-        <div class="sys-prompt-toggle" onclick="toggleSysPrompt()">
-          <span id="spt-arrow">▶</span> <span style="font-family:monospace">system_prompt</span>
-          <span style="font-size:10px;margin-left:4px;color:var(--muted2)">(FHIR function definitions)</span>
+        <div class="pt-status-bar">
+          <div class="pt-visit-type">
+            <span class="pt-visit-label">Visit Type</span>
+            <span class="pt-visit-chip" id="card-type" style="margin-left:6px">—</span>
+          </div>
+          <span class="pt-reason" id="card-instr"></span>
+          <div class="pt-banner-status">
+            <span class="status-chip status-running" id="card-status">Visit Active</span>
+          </div>
         </div>
-        <div class="sys-prompt-body" id="sys-prompt-body"></div>
+        <div class="clin-ctx-toggle" onclick="toggleSysPrompt()">
+          <span id="spt-arrow">▶</span>
+          <span>Clinical Decision Support Tools</span>
+          <span style="font-size:10px;margin-left:4px;color:var(--muted2)">(FHIR API definitions)</span>
+        </div>
+        <div class="clin-ctx-body" id="sys-prompt-body"></div>
       </div>
     </div>
 
-    <!-- Trace -->
+    <!-- Encounter notes -->
     <div class="trace" id="trace">
       <div class="trace-empty" id="trace-empty">
         <div class="trace-empty-icon">📋</div>
-        <div>Agent actions and FHIR responses will appear here</div>
+        <div>Open a patient chart to begin documenting the encounter</div>
       </div>
     </div>
 
-    <!-- Action panel -->
+    <!-- Clinical actions panel -->
     <div class="action-panel" id="action-panel">
       <div class="action-panel-title">
-        <h3>Take Action</h3>
+        <h3>Clinical Actions</h3>
         <span class="step-badge" id="ap-step"></span>
-        <span class="send-hint" id="ap-hint" style="margin-left:auto">Start a session to take actions</span>
+        <span class="send-hint" id="ap-hint" style="margin-left:auto">Open a chart to begin</span>
       </div>
 
-      <!-- Quick FHIR buttons -->
+      <!-- Workflow progress bar -->
+      <div class="workflow-bar" id="workflow-bar">
+        <div class="wf-step" id="wf-review">📋 Chart Review</div>
+        <div class="wf-step" id="wf-order">📝 Order / Document</div>
+        <div class="wf-step" id="wf-sign">✅ Sign &amp; Close</div>
+      </div>
+
+      <!-- Quick chart lookup buttons -->
       <div class="quick-section" id="quick-section">
-        <div class="quick-label">Quick FHIR Queries</div>
+        <div class="quick-label">Quick Chart Lookups</div>
         <div class="quick-btns" id="quick-btns"></div>
       </div>
 
-      <!-- Manual form -->
+      <!-- Action form -->
       <div class="action-form">
         <div class="action-type-btns">
-          <div class="field-label" style="text-align:center">Type</div>
-          <button class="atype-btn sel-get" id="atype-get" onclick="setActionType('GET')">GET</button>
-          <button class="atype-btn" id="atype-post" onclick="setActionType('POST')">POST</button>
-          <button class="atype-btn" id="atype-finish" onclick="setActionType('FINISH')">FINISH</button>
+          <div class="field-label" style="text-align:center;margin-bottom:4px">Action</div>
+          <button class="atype-btn sel-get" id="atype-get" onclick="setActionType('GET')">📋 Review</button>
+          <button class="atype-btn" id="atype-post" onclick="setActionType('POST')">📝 Document</button>
+          <button class="atype-btn" id="atype-finish" onclick="setActionType('FINISH')">✅ Sign</button>
         </div>
         <div class="action-inputs">
           <!-- GET / POST: URL field -->
           <div id="url-field">
             <div class="field-label">FHIR Resource Path</div>
             <div class="input-row">
-              <div class="fhir-prefix">http://localhost:8080/fhir/</div>
-              <input class="url-input" id="url-input" type="text" placeholder="Observation?patient=S1234567&code=4548-4">
+              <div class="fhir-prefix">…/fhir/</div>
+              <input class="url-input" id="url-input" type="text" placeholder="Observation?patient=S1234567&code=A1C">
             </div>
           </div>
-          <!-- POST: Body field -->
+          <!-- POST body -->
           <div id="body-field" class="hidden">
-            <div class="field-label">POST Body (JSON)</div>
+            <div class="field-label">Order / Documentation Payload (JSON)</div>
             <textarea class="body-input" id="body-input" placeholder='{"resourceType":"Observation","status":"final",...}'></textarea>
           </div>
-          <!-- FINISH: Answer field -->
+          <!-- FINISH answer -->
           <div id="answer-field" class="hidden">
-            <div class="field-label">Answer values (one per line, will be sent as a list)</div>
-            <input class="answer-input" id="answer-input" type="text" placeholder='e.g.  controlled   or   S6534835'>
+            <div class="field-label">Clinical findings / answer (comma-separated)</div>
+            <input class="answer-input" id="answer-input" type="text" placeholder='e.g.  controlled   or   9.1%, 2023-08-01'>
           </div>
           <div class="send-row">
-            <button class="btn-send" id="send-btn" onclick="sendAction()" disabled>Send →</button>
+            <button class="btn-send" id="send-btn" onclick="sendAction()" disabled>Submit</button>
             <div class="error-msg hidden" id="action-error"></div>
           </div>
         </div>
@@ -491,29 +521,29 @@ textarea.body-input { width: 100%; padding: 6px 8px; resize: vertical; min-heigh
     </div>
   </div>
 
-  <!-- OVERVIEW PANE -->
+  <!-- PERFORMANCE DASHBOARD -->
   <div class="overview-tab hidden" id="pane-overview">
     <div class="ov-card">
-      <h3>Tasks Evaluated</h3>
+      <h3>Encounters Evaluated</h3>
       <div class="big-num" id="ov-total">—</div>
       <div class="big-sub">clinical benchmark tasks</div>
     </div>
     <div class="ov-card">
-      <h3>Avg Shaped Reward</h3>
+      <h3>Avg Quality Score</h3>
       <div class="big-num" id="ov-avg" style="color:var(--green)">—</div>
       <div class="big-sub">baseline model: Qwen3-1.7B</div>
     </div>
     <div class="ov-card">
-      <h3>Task Type Performance</h3>
+      <h3>Performance by Visit Type</h3>
       <div class="perf-rows" id="ov-perf"></div>
     </div>
     <div class="ov-card" style="grid-column:span 2">
       <h3>System Architecture</h3>
       <div class="arch-rows">
-        <div class="arch-row"><div class="arch-icon">🤖</div><div><div class="arch-title">LLM Agent</div><div class="arch-desc">Receives clinical task + FHIR function definitions, outputs GET / POST / FINISH actions</div></div></div>
-        <div class="arch-row"><div class="arch-icon">🌐</div><div><div class="arch-title">FHIR API (Mock or Live)</div><div class="arch-desc">MockFHIR cache (68 KB) or live HAPI FHIR — serves Patient, Observation, Condition, MedicationRequest, Procedure, ServiceRequest</div></div></div>
-        <div class="arch-row"><div class="arch-icon">🏆</div><div><div class="arch-title">Shaped Reward Engine</div><div class="arch-desc">Dense multi-component reward: correctness + structure + patient ref + efficiency − redundancy/format penalties</div></div></div>
-        <div class="arch-row"><div class="arch-icon">🔄</div><div><div class="arch-title">RL Training (GRPO)</div><div class="arch-desc">OpenEnv WebSocket environment → TRL GRPOTrainer policy gradient training on 90 clinical tasks</div></div></div>
+        <div class="arch-row"><div class="arch-icon">🤖</div><div><div class="arch-title">LLM Clinical Agent</div><div class="arch-desc">Receives patient context + FHIR tools, outputs Chart Review / Order / Sign actions</div></div></div>
+        <div class="arch-row"><div class="arch-icon">🏥</div><div><div class="arch-title">Mock FHIR EHR (Cached)</div><div class="arch-desc">597-entry response cache — Patient, Observation, Condition, MedicationRequest, Procedure, ServiceRequest</div></div></div>
+        <div class="arch-row"><div class="arch-icon">🏆</div><div><div class="arch-title">Clinical Quality Scorer</div><div class="arch-desc">Dense reward: accuracy + order structure + patient match + efficiency − redundancy penalties</div></div></div>
+        <div class="arch-row"><div class="arch-icon">🔄</div><div><div class="arch-title">RL Training (GRPO)</div><div class="arch-desc">OpenEnv WebSocket environment → TRL GRPOTrainer on 90 clinical tasks across 3 visit types</div></div></div>
       </div>
     </div>
   </div>
@@ -527,22 +557,35 @@ textarea.body-input { width: 100%; padding: 6px 8px; resize: vertical; min-heigh
 const FHIR_BASE = 'http://localhost:8080/fhir/';
 
 const TASK_META = {
-  task3:  { label: 'Blood Pressure', color: '#58a6ff', desc: 'Record BP vital sign via POST Observation' },
-  task8:  { label: 'Orthopedic Referral', color: '#3fb950', desc: 'Create referral via POST ServiceRequest' },
-  task10: { label: 'A1C / Diabetes', color: '#bc8cff', desc: 'Query HbA1c results and assess glycemic control' },
+  task3:  { label: 'Vital Signs Documentation', color: '#4d9de0', visitColor: 'rgba(77,157,224,.15)', desc: 'Nurse documentation — record blood pressure reading' },
+  task8:  { label: 'Specialist Referral', color: '#2ecc71', visitColor: 'rgba(46,204,113,.15)', desc: 'Create orthopedic surgery referral order' },
+  task10: { label: 'Chronic Disease Review', color: '#9b59b6', visitColor: 'rgba(155,89,182,.15)', desc: 'HbA1c lab review and potential reorder for diabetes management' },
 };
 
-let allTasks = [];
-let filteredTasks = [];
-let typeFilter = 'all';
-let selectedTask = null;
-let sessionActive = false;
-let sessionDone = false;
-let currentStepNumber = 0;
-let maxSteps = 8;
-let currentActionType = 'GET';
-let traceSteps = [];
-let episodeReward = null;
+let allTasks = [], filteredTasks = [], typeFilter = 'all';
+let selectedTask = null, sessionActive = false, sessionDone = false;
+let currentStepNumber = 0, maxSteps = 8, currentActionType = 'GET';
+let traceSteps = [], episodeReward = null;
+
+// ─── Patient info generator (deterministic from MRN) ─────────────────────
+function getPatientInfo(mrn, taskType) {
+  let seed = 0;
+  for (let i = 0; i < mrn.length; i++) seed = ((seed * 31) + mrn.charCodeAt(i)) & 0xffff;
+  const maleFirst = ['James','Robert','Michael','William','David','Richard','Thomas','Charles'];
+  const femaleFirst = ['Mary','Patricia','Jennifer','Linda','Barbara','Susan','Margaret','Dorothy'];
+  const lastNames = ['Smith','Johnson','Williams','Brown','Jones','Garcia','Martinez','Davis','Wilson','Taylor','Anderson','Thomas','Jackson'];
+  const gender = seed % 2 === 0 ? 'M' : 'F';
+  const first = gender === 'M' ? maleFirst[seed % 8] : femaleFirst[(seed >> 1) % 8];
+  const last = lastNames[(seed >> 4) % 13];
+  const baseYears = { task3: 1956, task8: 1970, task10: 1963 };
+  const birthYear = (baseYears[taskType] || 1960) + (seed % 14);
+  const bm = String((seed % 12) + 1).padStart(2,'0');
+  const bd = String((seed % 28) + 1).padStart(2,'0');
+  const age = 2024 - birthYear;
+  const allergies = ['NKDA','Penicillin','Sulfa','Aspirin','Codeine','Latex'];
+  const allergy = allergies[seed % 6];
+  return { name: `${last}, ${first}`, firstName: first, lastName: last, gender, dob: `${bm}/${bd}/${birthYear}`, age, mrn, allergy };
+}
 
 // ─── Init ─────────────────────────────────────────────────────────────────
 async function init() {
@@ -551,28 +594,17 @@ async function init() {
 }
 
 async function checkServer() {
-  try {
-    const r = await fetch('/health');
-    if (r.ok) { setServerStatus('online'); return; }
-  } catch {}
+  try { const r = await fetch('/health'); if (r.ok) { setServerStatus('online'); return; } } catch {}
   setServerStatus('offline');
 }
-
 function setServerStatus(s) {
-  const dot = document.getElementById('server-dot');
-  const lbl = document.getElementById('server-label');
-  if (s === 'online') { dot.className = 'dot dot-green'; lbl.textContent = 'Server online'; }
-  else { dot.className = 'dot dot-red'; lbl.textContent = 'Server offline'; }
+  document.getElementById('server-dot').className = 'dot ' + (s === 'online' ? 'dot-green' : 'dot-red');
+  document.getElementById('server-label').textContent = s === 'online' ? 'EHR Online' : 'EHR Offline';
 }
 
-// ─── Tasks ────────────────────────────────────────────────────────────────
+// ─── Tasks / Patient Queue ────────────────────────────────────────────────
 async function loadTasks() {
-  try {
-    const r = await fetch('/api/tasks');
-    allTasks = await r.json();
-    filteredTasks = allTasks;
-    renderTaskSelect();
-  } catch {}
+  try { const r = await fetch('/api/tasks'); allTasks = await r.json(); filteredTasks = allTasks; renderTaskSelect(); } catch {}
 }
 
 function setTypeFilter(f, el) {
@@ -586,11 +618,11 @@ function setTypeFilter(f, el) {
 function renderTaskSelect() {
   const sel = document.getElementById('task-select');
   const prev = sel.value;
-  sel.innerHTML = '<option value="">— pick a clinical task —</option>' +
+  sel.innerHTML = '<option value="">— select a patient encounter —</option>' +
     filteredTasks.map(t => {
+      const pt = getPatientInfo(t.eval_MRN, t.task_type);
       const meta = TASK_META[t.task_type] || {};
-      const short = t.instruction.substring(0, 65) + (t.instruction.length > 65 ? '…' : '');
-      return `<option value="${t.index}">[${meta.label || t.task_type}] ${short}</option>`;
+      return `<option value="${t.index}">${pt.name} (${pt.age}${pt.gender}) — ${meta.label || t.task_type}</option>`;
     }).join('');
   if (filteredTasks.find(t => t.index == prev)) sel.value = prev;
   onTaskSelect();
@@ -601,20 +633,22 @@ function onTaskSelect() {
   selectedTask = isNaN(idx) ? null : allTasks.find(t => t.index === idx) || null;
   const preview = document.getElementById('task-preview');
   const startBtn = document.getElementById('start-btn');
-
-  if (!selectedTask) {
-    preview.classList.remove('visible');
-    startBtn.disabled = true;
-    return;
-  }
+  if (!selectedTask) { preview.classList.remove('visible'); startBtn.disabled = true; return; }
   const meta = TASK_META[selectedTask.task_type] || {};
-  document.getElementById('prev-mrn').textContent = `Patient MRN: ${selectedTask.eval_MRN}`;
+  const pt = getPatientInfo(selectedTask.eval_MRN, selectedTask.task_type);
+  document.getElementById('prev-name').textContent = pt.name;
+  document.getElementById('prev-demos').textContent = `${pt.dob}  ·  ${pt.age}y  ·  ${pt.gender}`;
+  document.getElementById('prev-mrn').textContent = `MRN: ${pt.mrn}`;
   const typeEl = document.getElementById('prev-type');
   typeEl.textContent = meta.label || selectedTask.task_type;
-  typeEl.style.background = hexToRgba(meta.color || '#888', .15);
+  typeEl.style.background = meta.visitColor || 'rgba(77,157,224,.15)';
   typeEl.style.color = meta.color || '#888';
-  document.getElementById('prev-instr').textContent = selectedTask.instruction;
-  document.getElementById('prev-ctx').textContent = selectedTask.context || '';
+  document.getElementById('prev-reason').textContent = selectedTask.instruction.substring(0, 100) + (selectedTask.instruction.length > 100 ? '…' : '');
+  const allergyEl = document.getElementById('prev-allergy');
+  allergyEl.textContent = pt.allergy === 'NKDA' ? '✓ NKDA' : `⚠ Allergy: ${pt.allergy}`;
+  allergyEl.style.color = pt.allergy === 'NKDA' ? 'var(--teal)' : 'var(--red)';
+  allergyEl.style.background = pt.allergy === 'NKDA' ? 'rgba(0,201,167,.1)' : 'rgba(232,72,85,.1)';
+  allergyEl.style.borderColor = pt.allergy === 'NKDA' ? 'rgba(0,201,167,.3)' : 'rgba(232,72,85,.3)';
   preview.classList.add('visible');
   startBtn.disabled = false;
 }
@@ -623,81 +657,60 @@ function onTaskSelect() {
 async function startSession() {
   if (!selectedTask) return;
   document.getElementById('start-btn').disabled = true;
-
   clearTrace();
-  sessionActive = true;
-  sessionDone = false;
-  currentStepNumber = 0;
-  episodeReward = null;
+  sessionActive = true; sessionDone = false; currentStepNumber = 0; episodeReward = null;
   document.getElementById('reward-section').style.display = 'none';
   document.getElementById('send-btn').disabled = false;
   document.getElementById('ap-hint').textContent = '';
   buildQuickButtons();
   updateSessionPanel();
-
-  // Show task card
-  showTaskCard(selectedTask);
-
-  // Call /reset
+  showPatientBanner(selectedTask);
+  updateWorkflowBar('review');
   try {
-    const r = await fetch('/api/reset', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({task_index: selectedTask.index})
-    });
+    const r = await fetch('/api/reset', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({task_index: selectedTask.index}) });
     if (!r.ok) throw new Error(await r.text());
     const obs = await r.json();
     handleObservation(obs, 'reset');
+    autoRunSession();
   } catch(e) {
-    appendEnvMessage(`Error starting session: ${e.message}`, true);
+    appendEnvMessage(`Error opening chart: ${e.message}`, true);
     document.getElementById('start-btn').disabled = false;
     sessionActive = false;
   }
 }
 
 function resetSession() {
-  clearTrace();
-  sessionActive = false;
-  sessionDone = false;
-  currentStepNumber = 0;
-  episodeReward = null;
+  clearTrace(); sessionActive = false; sessionDone = false; currentStepNumber = 0; episodeReward = null;
   document.getElementById('card-empty').classList.remove('hidden');
-  document.getElementById('card-content').classList.add('hidden');
+  document.getElementById('card-content').classList.add('visible');
+  document.getElementById('card-content').classList.remove('visible');
+  document.getElementById('card-empty').style.display = '';
+  document.getElementById('card-content').style.display = 'none';
   document.getElementById('send-btn').disabled = true;
-  document.getElementById('ap-hint').textContent = 'Start a session to take actions';
+  document.getElementById('ap-hint').textContent = 'Open a chart to begin';
   document.getElementById('start-btn').disabled = selectedTask ? false : true;
   document.getElementById('reward-section').style.display = 'none';
   updateSessionPanel();
+  updateWorkflowBar(null);
 }
 
 function handleObservation(obs, context) {
-  // obs is what OpenEnv returns — could be direct or wrapped
   const observation = obs.observation || obs;
-  const reward = obs.reward;
-  const done = obs.done;
-
+  const reward = obs.reward, done = obs.done;
   currentStepNumber = observation.step_number ?? currentStepNumber;
   maxSteps = observation.max_steps ?? maxSteps;
 
   if (context === 'reset') {
-    // Store system prompt (available_functions + task info)
     const sysParts = [];
     if (observation.available_functions?.length) {
-      sysParts.push(`// ${observation.available_functions.length} FHIR functions available\n`);
+      sysParts.push(`// ${observation.available_functions.length} FHIR clinical tools available\n`);
       sysParts.push(JSON.stringify(observation.available_functions, null, 2));
     }
-    if (sysParts.length) {
-      document.getElementById('sys-prompt-body').textContent = sysParts.join('\n');
-    }
+    if (sysParts.length) document.getElementById('sys-prompt-body').textContent = sysParts.join('\n');
   } else {
-    // Step response
-    const resp = observation.response_text || '';
-    const err = observation.error;
-    if (err) {
-      appendEnvMessage(`⚠ ${err}`, true);
-    } else if (resp) {
-      appendFhirResponse(resp);
-    }
+    const resp = observation.response_text || '', err = observation.error;
+    if (err) appendEnvMessage(`⚠ ${err}`, true);
+    else if (resp) appendFhirResponse(resp);
   }
 
   const status = observation.task_status || 'running';
@@ -706,73 +719,64 @@ function handleObservation(obs, context) {
   if (done || status !== 'running') {
     sessionDone = true;
     document.getElementById('send-btn').disabled = true;
-    document.getElementById('ap-hint').textContent = 'Episode complete';
-    document.getElementById('card-status').textContent = status;
-    document.getElementById('card-status').className = 'status-chip ' + (status === 'completed' ? 'status-completed' : 'status-error');
-
-    if (reward !== undefined && reward !== null) {
-      showReward(reward, status);
-    }
+    document.getElementById('ap-hint').textContent = 'Visit closed';
+    const statusEl = document.getElementById('card-status');
+    statusEl.textContent = status === 'completed' ? 'Visit Signed' : status === 'task_limit_reached' ? 'Time Limit Reached' : 'Visit Ended';
+    statusEl.className = 'status-chip ' + (status === 'completed' ? 'status-completed' : 'status-error');
+    updateWorkflowBar('done');
+    if (reward !== undefined && reward !== null) showReward(reward, status);
   }
 }
 
 // ─── Actions ──────────────────────────────────────────────────────────────
 function setActionType(t) {
   currentActionType = t;
+  const labels = { GET: '📋 Review', POST: '📝 Document', FINISH: '✅ Sign' };
   ['GET','POST','FINISH'].forEach(type => {
-    document.getElementById(`atype-${type.toLowerCase()}`).className =
-      `atype-btn${t === type ? ` sel-${t.toLowerCase()}` : ''}`;
+    const el = document.getElementById(`atype-${type.toLowerCase()}`);
+    el.className = `atype-btn${t === type ? ` sel-${t.toLowerCase()}` : ''}`;
+    el.textContent = labels[type];
   });
   document.getElementById('url-field').classList.toggle('hidden', t === 'FINISH');
   document.getElementById('body-field').classList.toggle('hidden', t !== 'POST');
   document.getElementById('answer-field').classList.toggle('hidden', t !== 'FINISH');
+  const sendBtn = document.getElementById('send-btn');
+  sendBtn.textContent = t === 'FINISH' ? 'Sign & Close Visit' : t === 'POST' ? 'Submit Order' : 'Pull Chart Data';
+  sendBtn.className = 'btn-send' + (t === 'FINISH' ? ' sign-mode' : '');
+  if (t === 'GET') updateWorkflowBar('review');
+  else if (t === 'POST') updateWorkflowBar('order');
+  else updateWorkflowBar('sign');
 }
 
 async function sendAction() {
-  if (!sessionActive || sessionDone) return;
-
-  const err = document.getElementById('action-error');
-  err.classList.add('hidden');
-
+  if (!sessionActive || sessionDone || autoRunning) return;
+  document.getElementById('action-error').classList.add('hidden');
   let url = '', body = null, answer = null, rawResponse = '';
 
   if (currentActionType === 'GET') {
     const path = document.getElementById('url-input').value.trim();
     if (!path) { showError('Enter a FHIR resource path'); return; }
-    url = FHIR_BASE + path;
-    rawResponse = `GET ${url}`;
+    url = FHIR_BASE + path; rawResponse = `GET ${url}`;
   } else if (currentActionType === 'POST') {
     const path = document.getElementById('url-input').value.trim();
     const bodyStr = document.getElementById('body-input').value.trim();
     if (!path) { showError('Enter a FHIR resource path'); return; }
-    if (!bodyStr) { showError('Enter a POST body'); return; }
-    try { body = JSON.parse(bodyStr); } catch { showError('Invalid JSON in body'); return; }
-    url = FHIR_BASE + path;
-    rawResponse = `POST ${url}\n${bodyStr}`;
+    if (!bodyStr) { showError('Enter order payload'); return; }
+    try { body = JSON.parse(bodyStr); } catch { showError('Invalid JSON in payload'); return; }
+    url = FHIR_BASE + path; rawResponse = `POST ${url}\n${bodyStr}`;
   } else {
     const ansStr = document.getElementById('answer-input').value.trim();
     answer = ansStr ? ansStr.split(',').map(s => s.trim()).filter(Boolean) : [];
     rawResponse = `FINISH(${JSON.stringify(answer)})`;
   }
 
-  // Append agent action to trace
   appendAgentAction(currentActionType, url, body, answer, rawResponse);
-
   document.getElementById('send-btn').disabled = true;
 
   try {
     const r = await fetch('/api/step', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({
-        action: {
-          action_type: currentActionType,
-          url: url,
-          body: body,
-          answer: answer,
-          raw_response: rawResponse
-        }
-      })
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ action: { action_type: currentActionType, url, body, answer, raw_response: rawResponse } })
     });
     if (!r.ok) throw new Error(await r.text());
     const result = await r.json();
@@ -786,129 +790,101 @@ async function sendAction() {
 
 function showError(msg) {
   const e = document.getElementById('action-error');
-  e.textContent = msg;
-  e.classList.remove('hidden');
+  e.textContent = msg; e.classList.remove('hidden');
 }
 
-// ─── Quick FHIR buttons ───────────────────────────────────────────────────
+// ─── Quick chart lookup buttons ───────────────────────────────────────────
 function buildQuickButtons() {
   if (!selectedTask) return;
-  const mrn = selectedTask.eval_MRN;
-  const type = selectedTask.task_type;
+  const mrn = selectedTask.eval_MRN, type = selectedTask.task_type;
   const container = document.getElementById('quick-btns');
 
   const gets = [
-    { label: '👤 Patient', path: `Patient?identifier=${mrn}`, resource: 'Patient' },
-    { label: '📊 Observations', path: `Observation?patient=${mrn}&_sort=-date&_count=50`, resource: 'Observation' },
-    { label: '💊 Medications', path: `MedicationRequest?patient=${mrn}&status=active`, resource: 'MedicationRequest' },
-    { label: '🩺 Conditions', path: `Condition?patient=${mrn}`, resource: 'Condition' },
-    { label: '🔬 Procedures', path: `Procedure?patient=${mrn}`, resource: 'Procedure' },
+    { label: '🪪 Demographics', path: `Patient?identifier=${mrn}` },
+    { label: '🧪 Lab Results', path: `Observation?patient=${mrn}&_sort=-date&_count=50` },
+    { label: '💊 Active Meds', path: `MedicationRequest?patient=${mrn}&status=active` },
+    { label: '📋 Problem List', path: `Condition?patient=${mrn}` },
+    { label: '🔬 Procedures', path: `Procedure?patient=${mrn}` },
   ];
 
-  // Task-specific GET shortcuts
-  if (type === 'task10') {
-    gets.splice(2, 0, { label: '🩸 A1C (A1C/4548-4)', path: `Observation?patient=${mrn}&code=A1C&_count=5000`, resource: 'Observation' });
-  }
-  if (type === 'task3') {
-    gets.splice(2, 0, { label: '💓 Vital Signs', path: `Observation?patient=${mrn}&category=vital-signs&_sort=-date`, resource: 'Observation' });
-  }
+  if (type === 'task10') gets.splice(2, 0, { label: '🩸 HbA1c History', path: `Observation?patient=${mrn}&code=A1C&_count=5000` });
+  if (type === 'task3') gets.splice(2, 0, { label: '❤️ Vital Signs', path: `Observation?patient=${mrn}&category=vital-signs&_sort=-date` });
 
   const getHtml = gets.map(g =>
     `<button class="qbtn qbtn-get" onclick="prefillGet('${g.path}')" title="${g.path}">${g.label}</button>`
   ).join('');
 
-  // POST quick actions
   let postHtml = '';
+  const dt = selectedTask.context?.match(/\d{4}-\d{2}-\d{2}T[\d:+]+/)?.[0] || new Date().toISOString();
   if (type === 'task3') {
-    const bpPayload = JSON.stringify({
-      resourceType: 'Observation', status: 'final',
-      category: [{ coding: [{ system: 'http://terminology.hl7.org/CodeSystem/observation-category', code: 'vital-signs' }] }],
-      code: { text: 'Blood pressure', coding: [{ code: 'BP' }] },
-      effectiveDateTime: selectedTask.context?.match(/\d{4}-\d{2}-\d{2}T[\d:+]+/)?.[0] || new Date().toISOString(),
-      valueString: '118/77 mmHg',
-      subject: { reference: `Patient/${mrn}` }
-    }, null, 2);
-    postHtml = `<button class="qbtn qbtn-post" onclick="prefillPost('Observation',${escAttr(bpPayload)})">📝 POST BP Observation</button>`;
+    const bp = JSON.stringify({ resourceType:'Observation', status:'final', category:[{coding:[{system:'http://terminology.hl7.org/CodeSystem/observation-category',code:'vital-signs'}]}], code:{text:'Blood pressure',coding:[{code:'BP'}]}, effectiveDateTime:dt, valueString:'118/77 mmHg', subject:{reference:`Patient/${mrn}`} }, null, 2);
+    postHtml = `<button class="qbtn qbtn-post" onclick="prefillPost('Observation',${escAttr(bp)})">📝 Document BP Reading</button>`;
   }
   if (type === 'task8') {
-    const refPayload = JSON.stringify({
-      resourceType: 'ServiceRequest', status: 'active', intent: 'order', priority: 'stat',
-      code: { coding: [{ system: 'http://snomed.info/sct', code: '306252003', display: 'Referral to orthopedic surgeon' }] },
-      subject: { reference: `Patient/${mrn}` },
-      authoredOn: new Date().toISOString()
-    }, null, 2);
-    postHtml = `<button class="qbtn qbtn-post" onclick="prefillPost('ServiceRequest',${escAttr(refPayload)})">📝 POST Referral</button>`;
+    const ref = JSON.stringify({ resourceType:'ServiceRequest', status:'active', intent:'order', priority:'stat', code:{coding:[{system:'http://snomed.info/sct',code:'306181000000106',display:'Referral to orthopedic surgeon'}]}, subject:{reference:`Patient/${mrn}`}, authoredOn:dt, note:[{text:'Situation: acute ACL tear. Background: traumatic injury. Assessment: surgical evaluation needed. Recommendation: orthopedic surgery consultation.'}] }, null, 2);
+    postHtml = `<button class="qbtn qbtn-post" onclick="prefillPost('ServiceRequest',${escAttr(ref)})">📝 Place Ortho Referral</button>`;
+  }
+  if (type === 'task10') {
+    const lab = JSON.stringify({ resourceType:'ServiceRequest', status:'active', intent:'order', priority:'stat', code:{coding:[{system:'http://loinc.org',code:'4548-4',display:'Hemoglobin A1c/Hemoglobin.total in Blood'}]}, subject:{reference:`Patient/${mrn}`}, authoredOn:dt }, null, 2);
+    postHtml = `<button class="qbtn qbtn-post" onclick="prefillPost('ServiceRequest',${escAttr(lab)})">📝 Order HbA1c Lab</button>`;
   }
 
-  const finishHtml = `<button class="qbtn qbtn-finish" onclick="prefillFinish()">🏁 FINISH</button>`;
-
+  const finishHtml = `<button class="qbtn qbtn-finish" onclick="prefillFinish()">✅ Sign &amp; Close Visit</button>`;
   container.innerHTML = getHtml + postHtml + finishHtml;
 }
 
 function escAttr(s) { return "'" + s.replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\n/g,'\\n') + "'"; }
+function prefillGet(path) { setActionType('GET'); document.getElementById('url-input').value = path; }
+function prefillPost(resource, bodyStr) { setActionType('POST'); document.getElementById('url-input').value = resource; document.getElementById('body-input').value = bodyStr.replace(/\\n/g,'\n'); }
+function prefillFinish() { setActionType('FINISH'); document.getElementById('answer-input').focus(); }
 
-function prefillGet(path) {
-  setActionType('GET');
-  document.getElementById('url-input').value = path;
-}
-
-function prefillPost(resource, bodyStr) {
-  setActionType('POST');
-  document.getElementById('url-input').value = resource;
-  document.getElementById('body-input').value = bodyStr.replace(/\\n/g,'\n');
-}
-
-function prefillFinish() {
-  setActionType('FINISH');
-  document.getElementById('answer-input').focus();
-}
-
-// ─── Trace rendering ──────────────────────────────────────────────────────
+// ─── Encounter notes rendering ────────────────────────────────────────────
 function clearTrace() {
   traceSteps = [];
-  const t = document.getElementById('trace');
-  t.innerHTML = '<div class="trace-empty" id="trace-empty"><div class="trace-empty-icon">📋</div><div>Agent actions and FHIR responses will appear here</div></div>';
+  document.getElementById('trace').innerHTML = '<div class="trace-empty" id="trace-empty"><div class="trace-empty-icon">📋</div><div>Open a patient chart to begin documenting the encounter</div></div>';
 }
 
-function hideTraceEmpty() {
-  const e = document.getElementById('trace-empty');
-  if (e) e.remove();
-}
+function hideTraceEmpty() { const e = document.getElementById('trace-empty'); if (e) e.remove(); }
 
 function appendAgentAction(type, url, body, answer, raw) {
   hideTraceEmpty();
   const step = ++traceSteps.length;
-  const id = `tmsg-${step}`;
   const cls = type === 'GET' ? 'msg-get' : type === 'POST' ? 'msg-post' : 'msg-finish';
   const verbCls = type === 'GET' ? 'verb-get' : type === 'POST' ? 'verb-post' : 'verb-finish';
 
-  // Extract resource type from URL
   let resource = '';
-  try {
-    const path = url.replace(FHIR_BASE, '').split('?')[0];
-    resource = path.split('/')[0];
-  } catch {}
+  try { resource = url.replace(FHIR_BASE,'').split('?')[0]; } catch {}
+
+  // Clinical action labels
+  const roleLabels = { GET: '📋 Chart Review', POST: '📝 Order Placed', FINISH: '✅ Visit Signed' };
+  const verbLabels = { GET: 'REVIEW', POST: 'ORDER', FINISH: 'SIGN' };
 
   let inner = '';
   if (type === 'FINISH') {
-    inner = `<div class="action-line"><span class="action-verb ${verbCls}">FINISH</span>
+    inner = `<div class="action-line"><span class="action-verb ${verbCls}">SIGN OFF</span>
       <div class="finish-vals">${(answer||[]).map(v=>`<span class="finish-val">${esc(v)}</span>`).join('')}</div></div>`;
   } else {
+    // Clinical resource label
+    const resourceLabels = { Observation:'Lab / Vitals', Condition:'Problem List', MedicationRequest:'Medications', Patient:'Demographics', ServiceRequest:'Order', Procedure:'Procedures' };
+    const rLabel = resourceLabels[resource] || resource;
     inner = `<div class="action-line">
-      <span class="action-verb ${verbCls}">${type}</span>
-      ${resource ? `<span class="fhir-resource">⬡ ${esc(resource)}</span>` : ''}
-      <span class="action-url">${esc(url.replace(FHIR_BASE,''))}</span>
+      <span class="action-verb ${verbCls}">${verbLabels[type]}</span>
+      ${rLabel ? `<span class="fhir-resource">🏥 ${esc(rLabel)}</span>` : ''}
+      <span class="action-url" style="color:var(--muted);font-size:10px">${esc(url.replace(FHIR_BASE,''))}</span>
     </div>`;
-    if (body) inner += `<pre class="action-body-pre">${esc(JSON.stringify(body,null,2))}</pre>`;
+    if (body) {
+      const clinNote = getClinicalNote(body);
+      if (clinNote) inner += `<div style="padding:4px 12px 8px;font-size:11px;color:var(--text)">${clinNote}</div>`;
+      inner += `<pre class="action-body-pre">${esc(JSON.stringify(body,null,2))}</pre>`;
+    }
   }
 
   const div = document.createElement('div');
   div.className = `tmsg ${cls}`;
-  div.id = id;
   div.innerHTML = `
     <div class="tmsg-header">
-      <span class="tmsg-role">${type === 'FINISH' ? '🏁 Agent Finish' : type === 'GET' ? '🔍 Agent GET' : '✍ Agent POST'}</span>
-      <span class="tmsg-step">Step ${step}</span>
+      <span class="tmsg-role">${roleLabels[type]}</span>
+      <span class="tmsg-step">Action ${step} of ${maxSteps}</span>
     </div>
     <div class="tmsg-body">${inner}</div>`;
   document.getElementById('trace').appendChild(div);
@@ -916,32 +892,43 @@ function appendAgentAction(type, url, body, answer, raw) {
   updateSessionPanel();
 }
 
+function getClinicalNote(body) {
+  if (!body) return '';
+  if (body.resourceType === 'Observation' && body.valueString) return `📊 Documenting: <b>${esc(body.valueString)}</b> for patient <code>${esc((body.subject?.reference||'').replace('Patient/',''))}</code>`;
+  if (body.resourceType === 'ServiceRequest') {
+    const code = body.code?.coding?.[0]?.display || body.code?.text || '';
+    return `📋 Ordering: <b>${esc(code)}</b> — priority <b>${esc(body.priority||'')}</b>`;
+  }
+  return '';
+}
+
 function appendFhirResponse(text) {
   const id = `resp-${traceSteps.length}`;
-  let parsed = null, summary = '', displayText = text;
+  let parsed = null, displayText = text;
 
-  // The env wraps FHIR JSON as: "Here is the response from the GET request:\n{JSON}. Please call FINISH..."
-  // Extract the embedded JSON so we can parse and pretty-print it.
   const prefix = 'Here is the response from the GET request:\n';
   const suffix = '. Please call FINISH';
   const prefixIdx = text.indexOf(prefix);
   if (prefixIdx !== -1) {
-    const afterPrefix = text.substring(prefixIdx + prefix.length);
-    const suffixIdx = afterPrefix.lastIndexOf(suffix);
-    displayText = suffixIdx !== -1 ? afterPrefix.substring(0, suffixIdx) : afterPrefix;
+    const after = text.substring(prefixIdx + prefix.length);
+    const suffixIdx = after.lastIndexOf(suffix);
+    displayText = suffixIdx !== -1 ? after.substring(0, suffixIdx) : after;
   }
 
-  try {
-    parsed = JSON.parse(displayText);
-    const total = parsed?.total ?? parsed?.entry?.length;
-    const rtype = parsed?.resourceType;
-    if (rtype === 'Bundle') {
-      const count = parsed.entry?.length ?? 0;
-      summary = `Bundle · ${count} ${count === 1 ? 'entry' : 'entries'}${total !== undefined ? ` (total ${total})` : ''}`;
-    } else if (rtype) {
-      summary = `${rtype}`;
-    }
-  } catch {}
+  try { parsed = JSON.parse(displayText); } catch {}
+
+  // Build clinical table if possible
+  const clinicalHtml = parsed ? renderClinicalBundle(parsed) : null;
+  const entries = parsed?.entry?.length ?? 0;
+  const rtype = parsed?.resourceType;
+
+  let summaryText = '';
+  if (rtype === 'Bundle') {
+    const typeLabels = { Observation:'observations', Condition:'conditions', MedicationRequest:'medications', Patient:'patient record', Procedure:'procedures', ServiceRequest:'orders' };
+    const firstRtype = parsed.entry?.[0]?.resource?.resourceType;
+    const tLabel = typeLabels[firstRtype] || 'records';
+    summaryText = entries === 0 ? `No ${tLabel} on file` : `${entries} ${tLabel} retrieved`;
+  } else if (rtype) { summaryText = rtype; }
 
   const prettyText = parsed ? JSON.stringify(parsed, null, 2) : displayText;
   const shortText = prettyText.length > 2000 ? prettyText.substring(0, 2000) + '\n… (truncated)' : prettyText;
@@ -949,14 +936,87 @@ function appendFhirResponse(text) {
   const div = document.createElement('div');
   div.className = 'tmsg msg-response';
   div.innerHTML = `
-    <div class="tmsg-header"><span class="tmsg-role">🌐 FHIR Response</span></div>
+    <div class="tmsg-header"><span class="tmsg-role">📊 EHR Response</span></div>
     <div class="tmsg-body">
-      ${summary ? `<div class="resp-summary">${esc(summary)}</div>` : ''}
-      <div class="resp-toggle" onclick="toggleResp(this)">▶ Show full response</div>
+      ${summaryText ? `<div class="resp-summary">${esc(summaryText)}</div>` : ''}
+      ${clinicalHtml ? `<div class="clin-section">${clinicalHtml}</div>` : ''}
+      <div class="resp-toggle" onclick="toggleResp(this)">▶ Show raw FHIR</div>
       <pre class="resp-body" id="${id}">${esc(shortText)}</pre>
     </div>`;
   document.getElementById('trace').appendChild(div);
   scrollTrace();
+}
+
+// ─── Clinical FHIR table renderers ────────────────────────────────────────
+function renderClinicalBundle(parsed) {
+  if (!parsed || parsed.resourceType !== 'Bundle') return null;
+  const entries = (parsed.entry || []).map(e => e.resource).filter(Boolean);
+  if (!entries.length) return '<div class="clin-empty">No records found in EHR</div>';
+  const rtype = entries[0].resourceType;
+  if (rtype === 'Observation') return renderObservationTable(entries);
+  if (rtype === 'Condition') return renderConditionTable(entries);
+  if (rtype === 'MedicationRequest') return renderMedTable(entries);
+  if (rtype === 'Patient') return renderPatientCard(entries[0]);
+  if (rtype === 'Procedure') return renderProcedureTable(entries);
+  return null;
+}
+
+function renderObservationTable(resources) {
+  const rows = resources.map(r => {
+    const name = r.code?.text || r.code?.coding?.[0]?.display || r.code?.coding?.[0]?.code || '—';
+    const value = r.valueQuantity ? `${r.valueQuantity.value} ${r.valueQuantity.unit||''}`.trim()
+                : r.valueString || r.valueCodeableConcept?.text || '—';
+    const date = r.effectiveDateTime ? new Date(r.effectiveDateTime).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '—';
+    const status = r.status || '';
+    const statusCls = status === 'final' ? 'status-completed' : 'status-running';
+    return `<tr><td>${esc(name)}</td><td class="clin-val">${esc(value)}</td><td class="clin-date">${esc(date)}</td><td><span class="status-chip ${statusCls}">${esc(status)}</span></td></tr>`;
+  }).join('');
+  return `<table class="clin-table"><thead><tr><th>Observation</th><th>Result</th><th>Date</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+function renderConditionTable(resources) {
+  const rows = resources.map(r => {
+    const name = r.code?.text || r.code?.coding?.[0]?.display || '—';
+    const status = r.clinicalStatus?.coding?.[0]?.code || '—';
+    const date = r.recordedDate ? new Date(r.recordedDate).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '—';
+    const icd = r.code?.coding?.find(c => c.system?.includes('icd'))?.code || '';
+    return `<tr><td>${esc(name)}${icd ? `<br><span style="font-size:9px;color:var(--muted)">${esc(icd)}</span>` : ''}</td><td><span class="status-chip ${status==='active'?'status-completed':'status-running'}">${esc(status)}</span></td><td class="clin-date">${esc(date)}</td></tr>`;
+  }).join('');
+  return `<table class="clin-table"><thead><tr><th>Condition</th><th>Status</th><th>Recorded</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+function renderMedTable(resources) {
+  const rows = resources.map(r => {
+    const name = r.medicationCodeableConcept?.text || r.medicationCodeableConcept?.coding?.[0]?.display || '—';
+    const status = r.status || '—';
+    const date = r.authoredOn ? new Date(r.authoredOn).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '—';
+    return `<tr><td>${esc(name)}</td><td><span class="status-chip ${status==='active'?'status-completed':'status-running'}">${esc(status)}</span></td><td class="clin-date">${esc(date)}</td></tr>`;
+  }).join('');
+  return `<table class="clin-table"><thead><tr><th>Medication</th><th>Status</th><th>Ordered</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+function renderPatientCard(r) {
+  if (!r) return null;
+  const name = r.name?.[0] ? `${r.name[0].family||''}, ${(r.name[0].given||[]).join(' ')}` : '—';
+  const dob = r.birthDate ? new Date(r.birthDate + 'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '—';
+  const mrn = r.identifier?.[0]?.value || '—';
+  const gender = r.gender ? r.gender.charAt(0).toUpperCase() + r.gender.slice(1) : '—';
+  return `<div class="pt-fhir-card">
+    <div class="pt-fhir-name">👤 ${esc(name)}</div>
+    <div class="pt-fhir-row"><span>DOB</span><span>${esc(dob)}</span></div>
+    <div class="pt-fhir-row"><span>Gender</span><span>${esc(gender)}</span></div>
+    <div class="pt-fhir-row"><span>MRN</span><span style="font-family:monospace">${esc(mrn)}</span></div>
+  </div>`;
+}
+
+function renderProcedureTable(resources) {
+  const rows = resources.map(r => {
+    const name = r.code?.text || r.code?.coding?.[0]?.display || '—';
+    const status = r.status || '—';
+    const date = r.performedDateTime ? new Date(r.performedDateTime).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '—';
+    return `<tr><td>${esc(name)}</td><td><span class="status-chip ${status==='completed'?'status-completed':'status-running'}">${esc(status)}</span></td><td class="clin-date">${esc(date)}</td></tr>`;
+  }).join('');
+  return `<table class="clin-table"><thead><tr><th>Procedure</th><th>Status</th><th>Date</th></tr></thead><tbody>${rows}</tbody></table>`;
 }
 
 function appendEnvMessage(text, isError) {
@@ -964,7 +1024,7 @@ function appendEnvMessage(text, isError) {
   const div = document.createElement('div');
   div.className = 'tmsg msg-env';
   div.innerHTML = `
-    <div class="tmsg-header"><span class="tmsg-role" style="color:${isError?'var(--red)':'var(--muted)'}">${isError?'⚠ Error':'ℹ Environment'}</span></div>
+    <div class="tmsg-header"><span class="tmsg-role" style="color:${isError?'var(--red)':'var(--muted)'}">${isError?'⚠ System Alert':'ℹ EHR System'}</span></div>
     <div class="tmsg-body"><div class="env-text" style="${isError?'color:var(--red)':''}">${esc(text)}</div></div>`;
   document.getElementById('trace').appendChild(div);
   scrollTrace();
@@ -973,15 +1033,72 @@ function appendEnvMessage(text, isError) {
 function toggleResp(el) {
   const body = el.nextElementSibling;
   const open = body.classList.toggle('open');
-  el.textContent = open ? '▼ Hide response' : '▶ Show full response';
+  el.textContent = open ? '▼ Hide raw FHIR' : '▶ Show raw FHIR';
 }
 
-function scrollTrace() {
-  const t = document.getElementById('trace');
-  t.scrollTop = t.scrollHeight;
+function scrollTrace() { const t = document.getElementById('trace'); t.scrollTop = t.scrollHeight; }
+
+// ─── Patient banner ───────────────────────────────────────────────────────
+function showPatientBanner(task) {
+  const pt = getPatientInfo(task.eval_MRN, task.task_type);
+  const meta = TASK_META[task.task_type] || {};
+  document.getElementById('card-empty').style.display = 'none';
+  const content = document.getElementById('card-content');
+  content.style.display = 'block';
+  document.getElementById('card-pt-name').textContent = pt.name;
+  document.getElementById('card-dob').textContent = pt.dob;
+  document.getElementById('card-age').textContent = `${pt.age}y ${pt.gender}`;
+  document.getElementById('card-mrn').textContent = pt.mrn;
+  const allergyEl = document.getElementById('card-allergy');
+  allergyEl.textContent = pt.allergy === 'NKDA' ? '✓ NKDA' : `⚠ ${pt.allergy}`;
+  allergyEl.style.color = pt.allergy === 'NKDA' ? 'var(--teal)' : '#ff6b7a';
+  allergyEl.style.background = pt.allergy === 'NKDA' ? 'rgba(0,201,167,.15)' : 'rgba(232,72,85,.15)';
+  allergyEl.style.borderColor = pt.allergy === 'NKDA' ? 'rgba(0,201,167,.3)' : 'rgba(232,72,85,.3)';
+  const typeEl = document.getElementById('card-type');
+  typeEl.textContent = meta.label || task.task_type;
+  typeEl.style.background = meta.visitColor || 'rgba(77,157,224,.15)';
+  typeEl.style.color = meta.color || '#888';
+  document.getElementById('card-instr').textContent = task.instruction;
+  document.getElementById('card-status').textContent = 'Visit Active';
+  document.getElementById('card-status').className = 'status-chip status-running';
 }
 
-// ─── Reward ───────────────────────────────────────────────────────────────
+function toggleSysPrompt() {
+  const body = document.getElementById('sys-prompt-body');
+  const arrow = document.getElementById('spt-arrow');
+  const open = body.classList.toggle('open');
+  arrow.textContent = open ? '▼' : '▶';
+}
+
+// ─── Workflow progress bar ────────────────────────────────────────────────
+function updateWorkflowBar(phase) {
+  const steps = ['review','order','sign'];
+  steps.forEach(s => {
+    const el = document.getElementById(`wf-${s}`);
+    if (!el) return;
+    el.className = 'wf-step';
+    if (phase === 'done') el.className = 'wf-step done';
+    else if (s === phase) el.className = 'wf-step active';
+    else if (steps.indexOf(s) < steps.indexOf(phase)) el.className = 'wf-step done';
+  });
+}
+
+// ─── Session panel ────────────────────────────────────────────────────────
+function updateSessionPanel(status) {
+  if (!selectedTask) return;
+  const pt = getPatientInfo(selectedTask.eval_MRN, selectedTask.task_type);
+  document.getElementById('ss-task').textContent = pt.name.split(',')[0];
+  const st = status || (sessionDone ? 'done' : sessionActive ? 'running' : '—');
+  const chip = document.getElementById('ss-status');
+  const statusLabels = { running: 'Visit Active', completed: 'Visit Signed', task_limit_reached: 'Time Limit', done: 'Closed' };
+  chip.textContent = statusLabels[st] || st;
+  chip.className = 'status-chip ' + (st === 'completed' ? 'status-completed' : st === 'running' ? 'status-running' : 'status-error');
+  document.getElementById('ss-steps').textContent = `${currentStepNumber} / ${maxSteps}`;
+  document.getElementById('ss-steps-bar').style.width = `${Math.min(100,(currentStepNumber/maxSteps)*100)}%`;
+  document.getElementById('ap-step').textContent = sessionActive ? `Action ${currentStepNumber + 1} of ${maxSteps}` : '';
+}
+
+// ─── Visit score (reward) ─────────────────────────────────────────────────
 function showReward(reward, status) {
   const sec = document.getElementById('reward-section');
   sec.style.display = '';
@@ -989,48 +1106,42 @@ function showReward(reward, status) {
   const col = r >= 0.4 ? 'var(--green)' : r >= 0.1 ? 'var(--yellow)' : 'var(--red)';
   document.getElementById('rew-num').style.color = col;
   document.getElementById('rew-num').textContent = r.toFixed(4);
-
-  // Estimate component breakdown
   const comps = estimateComps(r, status, traceSteps.length);
-  const compsHtml = [
-    { n: 'Correctness', v: comps.correctness, max: 0.4, c: 'var(--green)' },
-    { n: 'Structure', v: comps.structure, max: 0.2, c: 'var(--blue)' },
+  document.getElementById('rew-comps').innerHTML = [
+    { n: 'Clinical Accuracy', v: comps.correctness, max: 0.4, c: 'var(--green)' },
+    { n: 'Order Structure', v: comps.structure, max: 0.2, c: 'var(--blue)' },
     { n: 'Efficiency', v: comps.efficiency, max: 0.1, c: 'var(--yellow)' },
-    { n: 'Completion', v: comps.completion, max: 0.05, c: 'var(--teal)' },
+    { n: 'Visit Completion', v: comps.completion, max: 0.05, c: 'var(--teal)' },
   ].map(c => `
     <div class="rc-row">
       <div class="rc-header"><span class="rc-name">${c.n}</span><span class="rc-val" style="color:${c.c}">${c.v.toFixed(3)}</span></div>
       <div class="rc-track"><div class="rc-fill" style="width:${Math.min(100,Math.round(c.v/c.max*100))}%;background:${c.c}"></div></div>
     </div>`).join('');
-  document.getElementById('rew-comps').innerHTML = compsHtml;
-
-  // Also append reward card to trace
   appendRewardCard(r, status, comps);
 }
 
 function appendRewardCard(r, status, comps) {
   const col = r >= 0.4 ? 'var(--green)' : r >= 0.1 ? 'var(--yellow)' : 'var(--red)';
+  const statusLabel = status === 'completed' ? 'Visit Signed ✓' : status === 'task_limit_reached' ? 'Time Limit Reached' : 'Visit Ended';
   const statusCls = status === 'completed' ? 'status-completed' : 'status-error';
-
   const barsHtml = [
-    { n: 'Correctness', v: comps.correctness, max: 0.4, c: '#3fb950' },
-    { n: 'Structure', v: comps.structure, max: 0.2, c: '#58a6ff' },
-    { n: 'Efficiency', v: comps.efficiency, max: 0.1, c: '#e3b341' },
-    { n: 'Completion', v: comps.completion, max: 0.05, c: '#39d353' },
+    { n: 'Clinical Accuracy', v: comps.correctness, max: 0.4, c: '#2ecc71' },
+    { n: 'Order Structure', v: comps.structure, max: 0.2, c: '#4d9de0' },
+    { n: 'Efficiency', v: comps.efficiency, max: 0.1, c: '#ffbe0b' },
+    { n: 'Visit Completion', v: comps.completion, max: 0.05, c: '#00c9a7' },
   ].map(c => `
     <div class="rbar">
       <div class="rbar-header"><span class="rbar-name">${c.n}</span><span class="rbar-val" style="color:${c.c}">${c.v.toFixed(3)}</span></div>
       <div class="rbar-track"><div class="rbar-fill" style="width:${Math.min(100,Math.round(c.v/c.max*100))}%;background:${c.c}"></div></div>
     </div>`).join('');
-
   const div = document.createElement('div');
   div.className = 'tmsg';
   div.innerHTML = `
-    <div class="tmsg-header"><span class="tmsg-role" style="color:var(--blue)">🏆 Episode Complete</span></div>
+    <div class="tmsg-header"><span class="tmsg-role" style="color:var(--blue)">🏆 Encounter Complete</span></div>
     <div class="reward-card">
       <div class="reward-card-header">
-        <div><div class="reward-card-val" style="color:${col}">${r.toFixed(4)}</div><div class="reward-card-label">Shaped Reward</div></div>
-        <div class="reward-card-status"><span class="status-chip ${statusCls}">${status}</span></div>
+        <div><div class="reward-card-val" style="color:${col}">${r.toFixed(4)}</div><div class="reward-card-label">Quality Score</div></div>
+        <div class="reward-card-status"><span class="status-chip ${statusCls}">${statusLabel}</span></div>
       </div>
       <div class="reward-bars">${barsHtml}</div>
     </div>`;
@@ -1046,44 +1157,7 @@ function estimateComps(r, status, steps) {
   return { correctness: 0, structure: 0.02, efficiency: 0, completion: 0 };
 }
 
-// ─── Task card ────────────────────────────────────────────────────────────
-function showTaskCard(task) {
-  document.getElementById('card-empty').classList.add('hidden');
-  document.getElementById('card-content').classList.remove('hidden');
-  document.getElementById('card-id').textContent = task.id;
-  const meta = TASK_META[task.task_type] || {};
-  const typeEl = document.getElementById('card-type');
-  typeEl.textContent = meta.label || task.task_type;
-  typeEl.style.background = hexToRgba(meta.color || '#888', .15);
-  typeEl.style.color = meta.color || '#888';
-  document.getElementById('card-mrn').textContent = `MRN: ${task.eval_MRN}`;
-  document.getElementById('card-instr').textContent = task.instruction;
-  document.getElementById('card-ctx').textContent = task.context || '';
-  document.getElementById('card-status').textContent = 'running';
-  document.getElementById('card-status').className = 'status-chip status-running';
-}
-
-function toggleSysPrompt() {
-  const body = document.getElementById('sys-prompt-body');
-  const arrow = document.getElementById('spt-arrow');
-  const open = body.classList.toggle('open');
-  arrow.textContent = open ? '▼' : '▶';
-}
-
-// ─── Session panel ────────────────────────────────────────────────────────
-function updateSessionPanel(status) {
-  if (!selectedTask) return;
-  document.getElementById('ss-task').textContent = selectedTask?.id || '—';
-  const st = status || (sessionDone ? 'done' : sessionActive ? 'running' : '—');
-  const chip = document.getElementById('ss-status');
-  chip.textContent = st;
-  chip.className = 'status-chip ' + (st === 'completed' ? 'status-completed' : st === 'running' ? 'status-running' : 'status-error');
-  document.getElementById('ss-steps').textContent = `${currentStepNumber} / ${maxSteps}`;
-  document.getElementById('ss-steps-bar').style.width = `${Math.min(100,(currentStepNumber/maxSteps)*100)}%`;
-  document.getElementById('ap-step').textContent = sessionActive ? `Step ${currentStepNumber + 1} of ${maxSteps}` : '';
-}
-
-// ─── Overview ─────────────────────────────────────────────────────────────
+// ─── Performance dashboard ────────────────────────────────────────────────
 async function loadBaseline() {
   try {
     const r = await fetch('/api/baseline-results');
@@ -1097,7 +1171,7 @@ async function loadBaseline() {
       const pct = Math.round(info.avg_reward * 100);
       return `<div class="perf-row">
         <div class="perf-header"><span class="perf-name" style="color:${meta.color||'#888'}">${meta.label || type}</span><span class="perf-score" style="color:${meta.color||'#888'}">${info.avg_reward.toFixed(4)}</span></div>
-        <div class="perf-sub">${info.count} tasks · ${meta.desc || ''}</div>
+        <div class="perf-sub">${info.count} encounters · ${meta.desc || ''}</div>
         <div class="perf-bar"><div class="perf-fill" style="width:${pct}%;background:${meta.color||'#888'}"></div></div>
       </div>`;
     }).join('');
@@ -1113,12 +1187,133 @@ function showTab(name, el) {
 }
 
 // ─── Util ─────────────────────────────────────────────────────────────────
-function esc(s) {
-  return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+function esc(s) { return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// ─── Auto-run agent session ────────────────────────────────────────────────
+let autoRunning = false;
+
+async function autoRunSession() {
+  autoRunning = true;
+  const mrn = selectedTask.eval_MRN;
+  const type = selectedTask.task_type;
+  const dt = selectedTask.context?.match(/\d{4}-\d{2}-\d{2}T[\d:+]+/)?.[0] || new Date().toISOString();
+  const delay = ms => new Promise(r => setTimeout(r, ms || 2000));
+  const setHint = msg => { document.getElementById('ap-hint').textContent = msg; };
+
+  try {
+    if (type === 'task3') {
+      const bpMatch = selectedTask.instruction.match(/(\d{2,3}\/\d{2,3})\s*mmHg/i);
+      const bpValue = bpMatch ? bpMatch[1] + ' mmHg' : '118/77 mmHg';
+
+      setHint('🤖 Agent: reviewing demographics…');
+      await delay(); await autoStep('GET', `Patient?identifier=${mrn}`); if (sessionDone) return;
+
+      setHint('🤖 Agent: checking vitals history…');
+      await delay(); await autoStep('GET', `Observation?patient=${mrn}&category=vital-signs&_sort=-date`); if (sessionDone) return;
+
+      setHint('🤖 Agent: documenting BP reading…');
+      await delay();
+      await autoStep('POST', 'Observation', {
+        resourceType: 'Observation', status: 'final',
+        category: [{ coding: [{ system: 'http://terminology.hl7.org/CodeSystem/observation-category', code: 'vital-signs' }] }],
+        code: { text: 'Blood pressure', coding: [{ code: 'BP' }] },
+        effectiveDateTime: dt, valueString: bpValue,
+        subject: { reference: `Patient/${mrn}` }
+      }); if (sessionDone) return;
+
+      setHint('🤖 Agent: signing off…');
+      await delay(); await autoStep('FINISH', null, null, ['documented']);
+
+    } else if (type === 'task8') {
+      setHint('🤖 Agent: reviewing demographics…');
+      await delay(); await autoStep('GET', `Patient?identifier=${mrn}`); if (sessionDone) return;
+
+      setHint('🤖 Agent: reviewing problem list…');
+      await delay(); await autoStep('GET', `Condition?patient=${mrn}`); if (sessionDone) return;
+
+      setHint('🤖 Agent: placing referral order…');
+      await delay();
+      await autoStep('POST', 'ServiceRequest', {
+        resourceType: 'ServiceRequest', status: 'active', intent: 'order', priority: 'stat',
+        code: { coding: [{ system: 'http://snomed.info/sct', code: '306181000000106', display: 'Referral to orthopedic surgeon' }] },
+        subject: { reference: `Patient/${mrn}` }, authoredOn: dt,
+        note: [{ text: selectedTask.instruction }]
+      }); if (sessionDone) return;
+
+      setHint('🤖 Agent: signing off…');
+      await delay(); await autoStep('FINISH', null, null, ['referral placed']);
+
+    } else if (type === 'task10') {
+      setHint('🤖 Agent: reviewing demographics…');
+      await delay(); await autoStep('GET', `Patient?identifier=${mrn}`); if (sessionDone) return;
+
+      setHint('🤖 Agent: retrieving HbA1c history…');
+      await delay();
+      const obsResult = await autoStep('GET', `Observation?patient=${mrn}&code=A1C&_count=5000`); if (sessionDone) return;
+
+      // Parse most recent HbA1c value from response
+      let answerParts = ['reorder'];
+      try {
+        const obs = obsResult?.observation || obsResult;
+        let jsonStr = obs?.response_text || '';
+        const pi = jsonStr.indexOf('Here is the response from the GET request:\n');
+        if (pi !== -1) jsonStr = jsonStr.substring(pi + 'Here is the response from the GET request:\n'.length);
+        const si = jsonStr.lastIndexOf('. Please call FINISH');
+        if (si !== -1) jsonStr = jsonStr.substring(0, si);
+        const parsed = JSON.parse(jsonStr);
+        const first = parsed.entry?.[0]?.resource;
+        if (first) {
+          const val = first.valueQuantity?.value ?? first.valueString;
+          const date = first.effectiveDateTime?.split('T')[0];
+          answerParts = [val !== undefined ? String(val) + '%' : 'reorder'];
+          if (date) answerParts.push(date);
+        }
+      } catch {}
+
+      setHint('🤖 Agent: ordering HbA1c recheck…');
+      await delay();
+      await autoStep('POST', 'ServiceRequest', {
+        resourceType: 'ServiceRequest', status: 'active', intent: 'order', priority: 'stat',
+        code: { coding: [{ system: 'http://loinc.org', code: '4548-4', display: 'Hemoglobin A1c/Hemoglobin.total in Blood' }] },
+        subject: { reference: `Patient/${mrn}` }, authoredOn: dt
+      }); if (sessionDone) return;
+
+      setHint('🤖 Agent: signing off…');
+      await delay(); await autoStep('FINISH', null, null, answerParts);
+    }
+  } finally {
+    autoRunning = false;
+    if (!sessionDone) setHint('');
+  }
 }
-function hexToRgba(hex, a) {
-  const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
-  return `rgba(${r},${g},${b},${a})`;
+
+async function autoStep(actionType, path, body, answer) {
+  if (sessionDone) return null;
+  const FHIR_BASE_URL = 'http://localhost:8080/fhir/';
+  const url = (actionType !== 'FINISH' && path) ? FHIR_BASE_URL + path : '';
+  const rawResponse = actionType === 'GET' ? `GET ${url}`
+    : actionType === 'POST' ? `POST ${url}\n${JSON.stringify(body)}`
+    : `FINISH(${JSON.stringify(answer)})`;
+
+  setActionType(actionType);
+  if (path && actionType !== 'FINISH') document.getElementById('url-input').value = path;
+  if (body) document.getElementById('body-input').value = JSON.stringify(body, null, 2);
+  if (answer) document.getElementById('answer-input').value = answer.join(', ');
+
+  appendAgentAction(actionType, url, body, answer, rawResponse);
+  try {
+    const r = await fetch('/api/step', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: { action_type: actionType, url, body, answer, raw_response: rawResponse } })
+    });
+    if (!r.ok) throw new Error(await r.text());
+    const result = await r.json();
+    handleObservation(result, 'step');
+    return result;
+  } catch (e) {
+    appendEnvMessage(`Error: ${e.message}`, true);
+    return null;
+  }
 }
 
 init();
