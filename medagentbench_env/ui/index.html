@@ -381,6 +381,7 @@ textarea.body-input { width: 100%; padding: 6px 8px; resize: vertical; min-heigh
     <div class="type-tabs" id="type-tabs">
       <button class="ttab active" onclick="setTypeFilter('all',this)">All</button>
       <button class="ttab" onclick="setTypeFilter('task3',this)">Vital Signs</button>
+      <button class="ttab" onclick="setTypeFilter('task7',this)">QTc Review</button>
       <button class="ttab" onclick="setTypeFilter('task8',this)">Referral</button>
       <button class="ttab" onclick="setTypeFilter('task10',this)">Lab Review</button>
     </div>
@@ -632,6 +633,7 @@ const FHIR_BASE = 'http://localhost:8080/fhir/';
 
 const TASK_META = {
   task3:  { label: 'Vital Signs Documentation', color: '#4d9de0', visitColor: 'rgba(77,157,224,.15)', desc: 'Nurse documentation — record blood pressure reading' },
+  task7:  { label: 'QTc Interval Review', color: '#e84855', visitColor: 'rgba(232,72,85,.12)', desc: 'Check QTc interval — discontinue QT-prolonging meds & order ECG if prolonged' },
   task8:  { label: 'Specialist Referral', color: '#2ecc71', visitColor: 'rgba(46,204,113,.15)', desc: 'Create orthopedic surgery referral order' },
   task10: { label: 'Chronic Disease Review', color: '#9b59b6', visitColor: 'rgba(155,89,182,.15)', desc: 'HbA1c lab review and potential reorder for diabetes management' },
 };
@@ -1297,6 +1299,61 @@ async function autoRunSession() {
 
       setHint('🤖 Agent: signing off…');
       await delay(); await autoStep('FINISH', null, null, ['documented']);
+
+    } else if (type === 'task7') {
+      setHint('🤖 Agent: reviewing demographics…');
+      await delay(); await autoStep('GET', `Patient?identifier=${mrn}`); if (sessionDone) return;
+
+      setHint('🤖 Agent: retrieving QTc interval…');
+      await delay();
+      const qtcResult = await autoStep('GET', `Observation?patient=${mrn}&code=QTCINTERVAL&_sort=-date&_count=1`); if (sessionDone) return;
+
+      // Parse QTc value
+      let qtcValue = null;
+      try {
+        const obs = qtcResult?.observation || qtcResult;
+        let jsonStr = obs?.response_text || '';
+        const pi = jsonStr.indexOf('Here is the response from the GET request:\n');
+        if (pi !== -1) jsonStr = jsonStr.substring(pi + 'Here is the response from the GET request:\n'.length);
+        const si = jsonStr.lastIndexOf('. Please call FINISH');
+        if (si !== -1) jsonStr = jsonStr.substring(0, si);
+        const parsed = JSON.parse(jsonStr);
+        const first = parsed.entry?.[0]?.resource;
+        if (first) qtcValue = first.valueQuantity?.value ?? parseFloat(first.valueString);
+      } catch {}
+
+      const isProlonged = qtcValue !== null && qtcValue > 500;
+
+      if (isProlonged) {
+        setHint('🤖 Agent: QTc prolonged — checking active medications…');
+        await delay(); await autoStep('GET', `MedicationRequest?patient=${mrn}&status=active`); if (sessionDone) return;
+
+        setHint('🤖 Agent: discontinuing QT-prolonging medications…');
+        await delay();
+        await autoStep('POST', 'MedicationRequest', {
+          resourceType: 'MedicationRequest', status: 'stopped', intent: 'order',
+          medicationCodeableConcept: { text: 'QT-prolonging medication (ondansetron / prochlorperazine / antipsychotic)' },
+          subject: { reference: `Patient/${mrn}` }, authoredOn: dt,
+          note: [{ text: 'Discontinued due to prolonged QTc interval (> 500 ms). QTc: ' + qtcValue + ' ms.' }]
+        }); if (sessionDone) return;
+
+        setHint('🤖 Agent: ordering follow-up ECG in 24 hours…');
+        const ecgDateTime = new Date(new Date(dt).getTime() + 24 * 60 * 60 * 1000).toISOString();
+        await delay();
+        await autoStep('POST', 'ServiceRequest', {
+          resourceType: 'ServiceRequest', status: 'active', intent: 'order', priority: 'stat',
+          code: { coding: [{ system: 'http://snomed.info/sct', code: '445118002', display: '12-lead ECG' }] },
+          subject: { reference: `Patient/${mrn}` }, authoredOn: dt,
+          occurrenceDateTime: ecgDateTime,
+          note: [{ text: 'Follow-up ECG 24 hours after discontinuation of QT-prolonging medication. Baseline QTc: ' + qtcValue + ' ms.' }]
+        }); if (sessionDone) return;
+
+        setHint('🤖 Agent: signing off…');
+        await delay(); await autoStep('FINISH', null, null, [String(qtcValue)]);
+      } else {
+        setHint('🤖 Agent: QTc within normal limits — signing off…');
+        await delay(); await autoStep('FINISH', null, null, [qtcValue !== null ? String(qtcValue) : 'normal']);
+      }
 
     } else if (type === 'task8') {
       setHint('🤖 Agent: reviewing demographics…');
