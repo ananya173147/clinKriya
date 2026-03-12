@@ -103,9 +103,16 @@ select.task-select:focus { border-color: var(--accent); }
 .rc-fill { height: 100%; border-radius: 3px; transition: width .8s ease; }
 
 /* Scoring rubric */
-.reward-model { flex: 1; overflow-y: auto; }
-.reward-model::-webkit-scrollbar { width: 3px; }
-.reward-model::-webkit-scrollbar-thumb { background: var(--border); }
+.reward-model { overflow: visible; }
+
+/* FHIR APIs tab */
+.fhir-tab { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+.fhir-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 10px; color: var(--muted); }
+.fhir-fn-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; }
+.fhir-fn-name { font-family: monospace; font-size: 12px; font-weight: 700; color: var(--blue); margin-bottom: 4px; }
+.fhir-fn-desc { font-size: 11px; color: var(--muted); line-height: 1.5; }
+.fhir-fn-params { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 4px; }
+.fhir-param { font-size: 10px; font-family: monospace; background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; padding: 1px 6px; color: var(--text); }
 .rm-row { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--border); }
 .rm-row:last-child { border-bottom: none; }
 .rm-icon { width: 22px; text-align: center; font-size: 14px; flex-shrink: 0; }
@@ -422,7 +429,7 @@ textarea.body-input { width: 100%; padding: 6px 8px; resize: vertical; min-heigh
   </div>
 
   <!-- Scoring Rubric -->
-  <div class="sidebar-section" style="flex:1;overflow:hidden;display:flex;flex-direction:column">
+  <div class="sidebar-section">
     <div class="section-title">Scoring Rubric</div>
     <div class="reward-model">
       <div class="rm-row"><div class="rm-icon">✅</div><div class="rm-info"><div class="rm-name">Clinical Accuracy</div><div class="rm-desc">Correct orders & documentation</div></div><div class="rm-range" style="color:var(--green)">0.0–0.4</div></div>
@@ -442,6 +449,7 @@ textarea.body-input { width: 100%; padding: 6px 8px; resize: vertical; min-heigh
 
   <div class="tab-bar">
     <div class="tab active" id="tab-session" onclick="showTab('session',this)">🩺 Patient Encounter</div>
+    <div class="tab" id="tab-fhir" onclick="showTab('fhir',this)">🔧 FHIR APIs</div>
     <div class="tab" id="tab-overview" onclick="showTab('overview',this)">📊 Performance Dashboard</div>
   </div>
 
@@ -474,12 +482,6 @@ textarea.body-input { width: 100%; padding: 6px 8px; resize: vertical; min-heigh
             <span class="status-chip status-running" id="card-status">Visit Active</span>
           </div>
         </div>
-        <div class="clin-ctx-toggle" onclick="toggleSysPrompt()">
-          <span id="spt-arrow">▶</span>
-          <span>Clinical Decision Support Tools</span>
-          <span style="font-size:10px;margin-left:4px;color:var(--muted2)">(FHIR API definitions)</span>
-        </div>
-        <div class="clin-ctx-body" id="sys-prompt-body"></div>
       </div>
     </div>
 
@@ -549,6 +551,15 @@ textarea.body-input { width: 100%; padding: 6px 8px; resize: vertical; min-heigh
   </div>
 
   <!-- PERFORMANCE DASHBOARD -->
+  <!-- FHIR APIs PANE -->
+  <div class="fhir-tab hidden" id="pane-fhir">
+    <div class="fhir-empty" id="fhir-empty">
+      <span style="font-size:32px;opacity:.3">🔧</span>
+      <div>Open a patient chart to load available FHIR API tools</div>
+    </div>
+    <div id="fhir-fn-list" style="display:none;display:flex;flex-direction:column;gap:10px"></div>
+  </div>
+
   <div class="overview-tab hidden" id="pane-overview">
 
     <!-- SOTA Leaderboard -->
@@ -597,8 +608,8 @@ textarea.body-input { width: 100%; padding: 6px 8px; resize: vertical; min-heigh
             <td class="lb-rank">5</td>
             <td><div class="lb-model">Qwen3-1.7B (clinKriya)</div><div class="lb-model-sub">RL fine-tuned · GRPO baseline</div></td>
             <td class="lb-bar-cell"><div class="lb-bar-wrap"><div class="lb-bar-track"><div class="lb-bar-fill" id="lb-baseline-bar" style="background:#ffbe0b"></div></div><span class="lb-pct" id="lb-baseline-pct" style="color:#ffbe0b">—</span></div></td>
-            <td><span class="lb-chip lb-chip-mid">Reward Score</span></td>
-            <td style="text-align:right;font-family:monospace;font-weight:700" id="lb-baseline-tasks">—</td>
+            <td><span class="lb-chip lb-chip-mid">Success Rate</span></td>
+            <td style="text-align:right;font-family:monospace;font-weight:700">7.9</td>
           </tr>
         </tbody>
       </table>
@@ -759,12 +770,7 @@ function handleObservation(obs, context) {
   maxSteps = observation.max_steps ?? maxSteps;
 
   if (context === 'reset') {
-    const sysParts = [];
-    if (observation.available_functions?.length) {
-      sysParts.push(`// ${observation.available_functions.length} FHIR clinical tools available\n`);
-      sysParts.push(JSON.stringify(observation.available_functions, null, 2));
-    }
-    if (sysParts.length) document.getElementById('sys-prompt-body').textContent = sysParts.join('\n');
+    if (observation.available_functions?.length) renderFhirTab(observation.available_functions);
   } else {
     const resp = observation.response_text || '', err = observation.error;
     if (err) appendEnvMessage(`⚠ ${err}`, true);
@@ -1121,11 +1127,22 @@ function showPatientBanner(task) {
   document.getElementById('card-status').className = 'status-chip status-running';
 }
 
-function toggleSysPrompt() {
-  const body = document.getElementById('sys-prompt-body');
-  const arrow = document.getElementById('spt-arrow');
-  const open = body.classList.toggle('open');
-  arrow.textContent = open ? '▼' : '▶';
+// ─── FHIR APIs tab renderer ───────────────────────────────────────────────
+function renderFhirTab(fns) {
+  document.getElementById('fhir-empty').style.display = 'none';
+  const list = document.getElementById('fhir-fn-list');
+  list.style.display = 'flex';
+  list.innerHTML = fns.map(fn => {
+    const name = fn.name || fn.function?.name || '—';
+    const desc = fn.description || fn.function?.description || '';
+    const params = fn.parameters?.properties || fn.function?.parameters?.properties || {};
+    const paramKeys = Object.keys(params);
+    return `<div class="fhir-fn-card">
+      <div class="fhir-fn-name">${esc(name)}</div>
+      <div class="fhir-fn-desc">${esc(desc.substring(0, 180))}${desc.length > 180 ? '…' : ''}</div>
+      ${paramKeys.length ? `<div class="fhir-fn-params">${paramKeys.map(k => `<span class="fhir-param">${esc(k)}</span>`).join('')}</div>` : ''}
+    </div>`;
+  }).join('');
 }
 
 // ─── Workflow progress bar ────────────────────────────────────────────────
@@ -1165,15 +1182,19 @@ function showReward(reward, status) {
   document.getElementById('rew-num').style.color = col;
   document.getElementById('rew-num').textContent = r.toFixed(4);
   const comps = estimateComps(r, status, traceSteps.length);
-  document.getElementById('rew-comps').innerHTML = [
-    { n: 'Clinical Accuracy', v: comps.correctness, max: 0.4, c: 'var(--green)' },
-    { n: 'Order Structure', v: comps.structure, max: 0.2, c: 'var(--blue)' },
-    { n: 'Efficiency', v: comps.efficiency, max: 0.1, c: 'var(--yellow)' },
-    { n: 'Visit Completion', v: comps.completion, max: 0.05, c: 'var(--teal)' },
-  ].map(c => `
+  const allComps = [
+    { n: 'Clinical Accuracy', v: comps.correctness,  max: 0.4,  c: 'var(--green)',  penalty: false },
+    { n: 'Order Structure',   v: comps.structure,    max: 0.2,  c: 'var(--blue)',   penalty: false },
+    { n: 'Patient Match',     v: comps.patientMatch, max: 0.1,  c: 'var(--purple)', penalty: false },
+    { n: 'Efficiency',        v: comps.efficiency,   max: 0.1,  c: 'var(--yellow)', penalty: false },
+    { n: 'Visit Completion',  v: comps.completion,   max: 0.05, c: 'var(--teal)',   penalty: false },
+    { n: 'Redundancy',        v: comps.redundancy,   max: 0.1,  c: 'var(--red)',    penalty: true  },
+    { n: 'Format Error',      v: comps.formatError,  max: 0.1,  c: 'var(--red)',    penalty: true  },
+  ];
+  document.getElementById('rew-comps').innerHTML = allComps.map(c => `
     <div class="rc-row">
-      <div class="rc-header"><span class="rc-name">${c.n}</span><span class="rc-val" style="color:${c.c}">${c.v.toFixed(3)}</span></div>
-      <div class="rc-track"><div class="rc-fill" style="width:${Math.min(100,Math.round(c.v/c.max*100))}%;background:${c.c}"></div></div>
+      <div class="rc-header"><span class="rc-name">${c.n}</span><span class="rc-val" style="color:${c.c}">${c.penalty && c.v < 0 ? '' : '+'}${c.v.toFixed(3)}</span></div>
+      <div class="rc-track"><div class="rc-fill" style="width:${Math.min(100,Math.round(Math.abs(c.v)/c.max*100))}%;background:${c.c}"></div></div>
     </div>`).join('');
   appendRewardCard(r, status, comps);
 }
@@ -1183,14 +1204,17 @@ function appendRewardCard(r, status, comps) {
   const statusLabel = status === 'completed' ? 'Visit Signed ✓' : status === 'task_limit_reached' ? 'Time Limit Reached' : 'Visit Ended';
   const statusCls = status === 'completed' ? 'status-completed' : 'status-error';
   const barsHtml = [
-    { n: 'Clinical Accuracy', v: comps.correctness, max: 0.4, c: '#2ecc71' },
-    { n: 'Order Structure', v: comps.structure, max: 0.2, c: '#4d9de0' },
-    { n: 'Efficiency', v: comps.efficiency, max: 0.1, c: '#ffbe0b' },
-    { n: 'Visit Completion', v: comps.completion, max: 0.05, c: '#00c9a7' },
+    { n: 'Clinical Accuracy', v: comps.correctness,  max: 0.4,  c: '#2ecc71', p: false },
+    { n: 'Order Structure',   v: comps.structure,    max: 0.2,  c: '#4d9de0', p: false },
+    { n: 'Patient Match',     v: comps.patientMatch, max: 0.1,  c: '#9b59b6', p: false },
+    { n: 'Efficiency',        v: comps.efficiency,   max: 0.1,  c: '#ffbe0b', p: false },
+    { n: 'Visit Completion',  v: comps.completion,   max: 0.05, c: '#00c9a7', p: false },
+    { n: 'Redundancy',        v: comps.redundancy,   max: 0.1,  c: '#e84855', p: true  },
+    { n: 'Format Error',      v: comps.formatError,  max: 0.1,  c: '#e84855', p: true  },
   ].map(c => `
     <div class="rbar">
-      <div class="rbar-header"><span class="rbar-name">${c.n}</span><span class="rbar-val" style="color:${c.c}">${c.v.toFixed(3)}</span></div>
-      <div class="rbar-track"><div class="rbar-fill" style="width:${Math.min(100,Math.round(c.v/c.max*100))}%;background:${c.c}"></div></div>
+      <div class="rbar-header"><span class="rbar-name">${c.n}</span><span class="rbar-val" style="color:${c.c}">${c.p && c.v < 0 ? '' : '+'}${c.v.toFixed(3)}</span></div>
+      <div class="rbar-track"><div class="rbar-fill" style="width:${Math.min(100,Math.round(Math.abs(c.v)/c.max*100))}%;background:${c.c}"></div></div>
     </div>`).join('');
   const div = document.createElement('div');
   div.className = 'tmsg';
@@ -1208,11 +1232,14 @@ function appendRewardCard(r, status, comps) {
 }
 
 function estimateComps(r, status, steps) {
-  if (r >= 0.6) return { correctness: 0.4, structure: 0.2, efficiency: 0.08, completion: 0.05 };
-  if (r >= 0.35) return { correctness: 0.2, structure: 0.15, efficiency: 0.05, completion: 0.05 };
-  if (r >= 0.15) return { correctness: 0.05, structure: 0.1, efficiency: 0.03, completion: 0.05 };
-  if (r > 0) return { correctness: 0, structure: 0.08, efficiency: 0.02, completion: 0.05 };
-  return { correctness: 0, structure: 0.02, efficiency: 0, completion: 0 };
+  // Estimate all 7 rubric components from final reward
+  // Max positive: 0.4 + 0.2 + 0.1 + 0.1 + 0.05 = 0.85; penalties: -0.1 each
+  const signed = (status === 'completed') ? 0.05 : 0;
+  if (r >= 0.6)  return { correctness:0.4,  structure:0.2,  patientMatch:0.1,  efficiency:0.08, completion:signed, redundancy:0,    formatError:0 };
+  if (r >= 0.35) return { correctness:0.2,  structure:0.15, patientMatch:0.08, efficiency:0.05, completion:signed, redundancy:0,    formatError:0 };
+  if (r >= 0.15) return { correctness:0.05, structure:0.1,  patientMatch:0.05, efficiency:0.03, completion:signed, redundancy:-0.1, formatError:0 };
+  if (r > 0)     return { correctness:0,    structure:0.08, patientMatch:0.02, efficiency:0.02, completion:signed, redundancy:-0.1, formatError:0 };
+  return           { correctness:0,    structure:0.02, patientMatch:0,    efficiency:0,    completion:0,      redundancy:-0.1, formatError:-0.1 };
 }
 
 // ─── Performance dashboard ────────────────────────────────────────────────
@@ -1237,6 +1264,7 @@ function showTab(name, el) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   el.classList.add('active');
   document.getElementById('pane-session').classList.toggle('hidden', name !== 'session');
+  document.getElementById('pane-fhir').classList.toggle('hidden', name !== 'fhir');
   document.getElementById('pane-overview').classList.toggle('hidden', name !== 'overview');
 }
 
