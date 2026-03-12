@@ -620,15 +620,6 @@ textarea.body-input { width: 100%; padding: 6px 8px; resize: vertical; min-heigh
       <h3>Performance by Visit Type</h3>
       <div class="perf-rows" id="ov-perf"></div>
     </div>
-    <div class="ov-card" style="grid-column:span 2">
-      <h3>System Architecture</h3>
-      <div class="arch-rows">
-        <div class="arch-row"><div class="arch-icon">🤖</div><div><div class="arch-title">LLM Clinical Agent</div><div class="arch-desc">Receives patient context + FHIR tools, outputs Chart Review / Order / Sign actions</div></div></div>
-        <div class="arch-row"><div class="arch-icon">🏥</div><div><div class="arch-title">Mock FHIR EHR (Cached)</div><div class="arch-desc">597-entry response cache — Patient, Observation, Condition, MedicationRequest, Procedure, ServiceRequest</div></div></div>
-        <div class="arch-row"><div class="arch-icon">🏆</div><div><div class="arch-title">Clinical Quality Scorer</div><div class="arch-desc">Dense reward: accuracy + order structure + patient match + efficiency − redundancy penalties</div></div></div>
-        <div class="arch-row"><div class="arch-icon">🔄</div><div><div class="arch-title">RL Training (GRPO)</div><div class="arch-desc">OpenEnv WebSocket environment → TRL GRPOTrainer on 90 clinical tasks across 3 visit types</div></div></div>
-      </div>
-    </div>
   </div>
 
 </div><!-- /main -->
