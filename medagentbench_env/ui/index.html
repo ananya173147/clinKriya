@@ -1141,6 +1141,14 @@ function showPatientBanner(task) {
 
 // ─── FHIR APIs tab renderer ───────────────────────────────────────────────
 function renderFhirTab(fns) {
+  // Deduplicate by function name
+  const seen = new Set();
+  fns = fns.filter(fn => {
+    const name = fn.name || fn.function?.name || '';
+    if (seen.has(name)) return false;
+    seen.add(name);
+    return true;
+  });
   document.getElementById('fhir-empty').style.display = 'none';
   const list = document.getElementById('fhir-fn-list');
   list.style.display = 'flex';
