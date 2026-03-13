@@ -68,6 +68,16 @@ app = create_app(
 app.add_middleware(_UIMiddleware)
 
 
+@app.get("/api/functions")
+async def get_functions():
+    """Return the FHIR function definitions for the UI."""
+    funcs_path = _ROOT / "data" / "funcs_v1.json"
+    if not funcs_path.exists():
+        raise HTTPException(status_code=404, detail="funcs_v1.json not found")
+    with open(funcs_path) as f:
+        return JSONResponse(content=json.load(f))
+
+
 @app.get("/api/tasks")
 async def get_tasks():
     """Return the task list for the UI."""

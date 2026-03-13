@@ -556,9 +556,9 @@ textarea.body-input { width: 100%; padding: 6px 8px; resize: vertical; min-heigh
   <div class="fhir-tab hidden" id="pane-fhir">
     <div class="fhir-empty" id="fhir-empty">
       <span style="font-size:32px;opacity:.3">🔧</span>
-      <div>Open a patient chart to load available FHIR API tools</div>
+      <div>Loading FHIR API tools…</div>
     </div>
-    <div id="fhir-fn-list" style="display:none;display:flex;flex-direction:column;gap:10px"></div>
+    <div id="fhir-fn-list" style="display:none;flex-direction:column;gap:10px"></div>
   </div>
 
   <div class="overview-tab hidden" id="pane-overview">
@@ -660,7 +660,7 @@ function getPatientInfo(mrn, taskType) {
 
 // ─── Init ─────────────────────────────────────────────────────────────────
 async function init() {
-  await Promise.all([loadTasks(), loadBaseline()]);
+  await Promise.all([loadTasks(), loadBaseline(), loadFhirFunctions()]);
   checkServer();
 }
 
@@ -671,6 +671,16 @@ async function checkServer() {
 function setServerStatus(s) {
   document.getElementById('server-dot').className = 'dot ' + (s === 'online' ? 'dot-green' : 'dot-red');
   document.getElementById('server-label').textContent = s === 'online' ? 'EHR Online' : 'EHR Offline';
+}
+
+// ─── FHIR Functions (pre-load on page open) ───────────────────────────────
+async function loadFhirFunctions() {
+  try {
+    const r = await fetch('/api/functions');
+    if (!r.ok) return;
+    const fns = await r.json();
+    if (fns?.length) renderFhirTab(fns);
+  } catch {}
 }
 
 // ─── Tasks / Patient Queue ────────────────────────────────────────────────
