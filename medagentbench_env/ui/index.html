@@ -388,6 +388,7 @@ textarea.body-input { width: 100%; padding: 6px 8px; resize: vertical; min-heigh
     <div class="type-tabs" id="type-tabs">
       <button class="ttab active" onclick="setTypeFilter('all',this)">All</button>
       <button class="ttab" onclick="setTypeFilter('task3',this)">Vital Signs</button>
+      <button class="ttab" onclick="setTypeFilter('task5',this)">CT Follow-up</button>
       <button class="ttab" onclick="setTypeFilter('task7',this)">QTc Review</button>
       <button class="ttab" onclick="setTypeFilter('task8',this)">Referral</button>
       <button class="ttab" onclick="setTypeFilter('task10',this)">Lab Review</button>
@@ -626,6 +627,7 @@ const FHIR_BASE = 'http://localhost:8080/fhir/';
 
 const TASK_META = {
   task3:  { label: 'Vital Signs Documentation', color: '#4d9de0', visitColor: 'rgba(77,157,224,.15)', desc: 'Nurse documentation — record blood pressure reading' },
+  task5:  { label: 'CT Oncology Follow-up', color: '#f0883e', visitColor: 'rgba(240,136,62,.12)', desc: 'Confirm kidney malignancy — order CT & IR referral if scan overdue' },
   task7:  { label: 'QTc Interval Review', color: '#e84855', visitColor: 'rgba(232,72,85,.12)', desc: 'Check QTc interval — discontinue QT-prolonging meds & order ECG if prolonged' },
   task8:  { label: 'Specialist Referral', color: '#2ecc71', visitColor: 'rgba(46,204,113,.15)', desc: 'Create orthopedic surgery referral order' },
   task10: { label: 'Chronic Disease Review', color: '#9b59b6', visitColor: 'rgba(155,89,182,.15)', desc: 'HbA1c lab review and potential reorder for diabetes management' },
@@ -1305,6 +1307,81 @@ async function autoRunSession() {
 
       setHint('🤖 Agent: signing off…');
       await delay(); await autoStep('FINISH', null, null, ['documented']);
+
+    } else if (type === 'task5') {
+      setHint('🤖 Agent: reviewing demographics…');
+      await delay(); await autoStep('GET', `Patient?identifier=${mrn}`); if (sessionDone) return;
+
+      setHint('🤖 Agent: confirming kidney malignancy diagnosis…');
+      await delay();
+      const condResult = await autoStep('GET', `Condition?patient=${mrn}`); if (sessionDone) return;
+
+      // Check for C64.2 in conditions
+      let hasC642 = false;
+      try {
+        const obs = condResult?.observation || condResult;
+        let jsonStr = obs?.response_text || '';
+        const pi = jsonStr.indexOf('Here is the response from the GET request:\n');
+        if (pi !== -1) jsonStr = jsonStr.substring(pi + 'Here is the response from the GET request:\n'.length);
+        const si = jsonStr.lastIndexOf('. Please call FINISH');
+        if (si !== -1) jsonStr = jsonStr.substring(0, si);
+        const parsed = JSON.parse(jsonStr);
+        hasC642 = (parsed.entry || []).some(e =>
+          e.resource?.code?.coding?.some(c => c.code === 'C64.2')
+        );
+      } catch {}
+
+      if (!hasC642) {
+        setHint('🤖 Agent: diagnosis not confirmed — signing off…');
+        await delay(); await autoStep('FINISH', null, null, ['diagnosis not confirmed']); return;
+      }
+
+      setHint('🤖 Agent: checking last CT Abdomen/Pelvis…');
+      await delay();
+      const procResult = await autoStep('GET', `Procedure?patient=${mrn}&code=74177`); if (sessionDone) return;
+
+      // Check if CT is older than 3 months (90 days)
+      let ctIsOld = true;
+      try {
+        const obs = procResult?.observation || procResult;
+        let jsonStr = obs?.response_text || '';
+        const pi = jsonStr.indexOf('Here is the response from the GET request:\n');
+        if (pi !== -1) jsonStr = jsonStr.substring(pi + 'Here is the response from the GET request:\n'.length);
+        const si = jsonStr.lastIndexOf('. Please call FINISH');
+        if (si !== -1) jsonStr = jsonStr.substring(0, si);
+        const parsed = JSON.parse(jsonStr);
+        const first = parsed.entry?.[0]?.resource;
+        if (first?.performedDateTime) {
+          const daysDiff = (new Date() - new Date(first.performedDateTime)) / (1000 * 60 * 60 * 24);
+          ctIsOld = daysDiff > 90;
+        }
+      } catch {}
+
+      if (ctIsOld) {
+        setHint('🤖 Agent: CT overdue — ordering new CT Abdomen/Pelvis…');
+        await delay();
+        await autoStep('POST', 'ServiceRequest', {
+          resourceType: 'ServiceRequest', status: 'active', intent: 'order', priority: 'stat',
+          code: { coding: [{ system: 'http://www.ama-assn.org/go/cpt', code: '74177', display: 'CT Abdomen/Pelvis with IV contrast' }] },
+          subject: { reference: `Patient/${mrn}` }, authoredOn: dt,
+          note: [{ text: 'Oncologic follow-up CT for malignant neoplasm of left kidney (C64.2).' }]
+        }); if (sessionDone) return;
+
+        setHint('🤖 Agent: placing Interventional Radiology referral…');
+        await delay();
+        await autoStep('POST', 'ServiceRequest', {
+          resourceType: 'ServiceRequest', status: 'active', intent: 'order', priority: 'stat',
+          code: { coding: [{ system: 'http://www.ama-assn.org/go/cpt', code: 'CON417', display: 'Interventional Radiology referral' }] },
+          subject: { reference: `Patient/${mrn}` }, authoredOn: dt,
+          note: [{ text: 'Evaluate renal mass for biopsy or ablation.' }]
+        }); if (sessionDone) return;
+
+        setHint('🤖 Agent: signing off…');
+        await delay(); await autoStep('FINISH', null, null, ['CT ordered', 'IR referral placed']);
+      } else {
+        setHint('🤖 Agent: CT recent — no action needed, signing off…');
+        await delay(); await autoStep('FINISH', null, null, ['CT within 3 months']);
+      }
 
     } else if (type === 'task7') {
       setHint('🤖 Agent: reviewing demographics…');
