@@ -1353,23 +1353,13 @@ async function autoRunSession() {
 
   try {
     if (type === 'task3') {
-      // task3: always-action — record BP. Agent over-queries (checks problem list
-      // and HR separately before documenting) incurring a redundancy penalty.
+      // task3: always-action — BP value given in instruction, no lookup needed.
+      // Agent verifies patient, then documents immediately.
       const bpMatch = selectedTask.instruction.match(/(\d{2,3}\/\d{2,3})\s*mmHg/i);
       const bpValue = bpMatch ? bpMatch[1] + ' mmHg' : '118/77 mmHg';
 
-      setHint('🤖 Agent: pulling patient demographics…');
+      setHint('🤖 Agent: verifying patient identity…');
       await delay(); await autoStep('GET', `Patient?identifier=${mrn}`); if (sessionDone) return;
-
-      setHint('🤖 Agent: reviewing recent vital signs history…');
-      await delay(); await autoStep('GET', `Observation?patient=${mrn}&category=vital-signs&_sort=-date`); if (sessionDone) return;
-
-      setHint('🤖 Agent: checking problem list for hypertension diagnosis…');
-      await delay(); await autoStep('GET', `Condition?patient=${mrn}`); if (sessionDone) return;
-
-      setHint('🤖 Agent: pulling current heart rate to co-document…');
-      await delay(); await autoStep('GET', `Observation?patient=${mrn}&code=HR&_sort=-date&_count=1`); if (sessionDone) return;
-      // ↑ 4th GET — redundancy penalty fires here
 
       setHint('🤖 Agent: documenting blood pressure reading…');
       await delay();
@@ -1517,27 +1507,14 @@ async function autoRunSession() {
       }
 
     } else if (type === 'task8') {
-      // task8: always-action — orthopedic referral. Agent places the referral twice:
-      // first attempt has an incomplete note, second has the correct SBAR — extra POST penalty.
-
-      setHint('🤖 Agent: pulling patient demographics…');
-      await delay(); await autoStep('GET', `Patient?identifier=${mrn}`); if (sessionDone) return;
+      // task8: always-action — referral instruction is explicit. Agent checks
+      // problem list for context then places a single clean order.
 
       setHint('🤖 Agent: reviewing problem list and imaging…');
       await delay(); await autoStep('GET', `Condition?patient=${mrn}`); if (sessionDone) return;
 
-      setHint('🤖 Agent: submitting orthopedic referral (first attempt)…');
+      setHint('🤖 Agent: placing orthopedic surgery referral…');
       await delay();
-      await autoStep('POST', 'ServiceRequest', {
-        resourceType: 'ServiceRequest', status: 'active', intent: 'order', priority: 'stat',
-        code: { coding: [{ system: 'http://snomed.info/sct', code: '306181000000106', display: 'Referral to orthopedic surgeon' }] },
-        subject: { reference: `Patient/${mrn}` }, authoredOn: dt,
-        note: [{ text: 'ACL tear — orthopedic surgery consultation requested.' }]
-      }); if (sessionDone) return;
-
-      setHint('🤖 Agent: re-submitting with full SBAR note…');
-      await delay();
-      // Second POST = duplicate order → penalty
       await autoStep('POST', 'ServiceRequest', {
         resourceType: 'ServiceRequest', status: 'active', intent: 'order', priority: 'stat',
         code: { coding: [{ system: 'http://snomed.info/sct', code: '306181000000106', display: 'Referral to orthopedic surgeon' }] },
