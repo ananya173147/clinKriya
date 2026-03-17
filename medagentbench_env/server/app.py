@@ -78,25 +78,54 @@ async def get_functions():
         return JSONResponse(content=json.load(f))
 
 
+def _get_patient_from_cache(mrn: str, cache: dict) -> dict:
+    """Extract patient demographics from fhir_cache for a given MRN."""
+    key = f"http://localhost:8080/fhir/Patient?_format=json&identifier={mrn}"
+    entry = cache.get(key)
+    if not entry:
+        return {}
+    data = entry.get("data", {}) if isinstance(entry, dict) else {}
+    entries = data.get("entry", [])
+    if not entries:
+        return {}
+    r = entries[0].get("resource", {})
+    name_part = (r.get("name") or [{}])[0]
+    family = name_part.get("family", "")
+    given = " ".join(name_part.get("given") or [])
+    return {
+        "patient_name": f"{family}, {given}".strip(", "),
+        "patient_dob": r.get("birthDate", ""),
+        "patient_gender": r.get("gender", ""),
+    }
+
+
 @app.get("/api/tasks")
 async def get_tasks():
     """Return the task list for the UI."""
     tasks_path = _ROOT / "data" / "stratified_benchmark.json"
     if not tasks_path.exists():
         raise HTTPException(status_code=404, detail="stratified_benchmark.json not found")
+    cache_path = _ROOT / "data" / "fhir_cache.json"
+    cache = {}
+    if cache_path.exists():
+        with open(cache_path) as f:
+            cache = json.load(f)
     with open(tasks_path) as f:
         tasks = json.load(f)
-    return JSONResponse(content=[
-        {
+    result = []
+    for i, t in enumerate(tasks):
+        mrn = t.get("eval_MRN", "")
+        pt = _get_patient_from_cache(mrn, cache)
+        result.append({
             "index": i,
             "id": t["id"],
             "task_type": t["id"].split("_")[0],
             "instruction": t["instruction"],
             "context": t.get("context", ""),
-            "eval_MRN": t.get("eval_MRN", ""),
-        }
-        for i, t in enumerate(tasks)
-    ])
+            "eval_MRN": mrn,
+            **pt,
+        })
+    return JSONResponse(content=result)
 
 
 @app.post("/api/reset")

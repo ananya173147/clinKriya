@@ -628,24 +628,31 @@ let selectedTask = null, sessionActive = false, sessionDone = false;
 let currentStepNumber = 0, maxSteps = 8, currentActionType = 'GET';
 let traceSteps = [], episodeReward = null;
 
-// ─── Patient info generator (deterministic from MRN) ─────────────────────
-function getPatientInfo(mrn, taskType) {
+// ─── Patient info — uses real FHIR demographics returned by /api/tasks ────
+function getPatientInfo(mrn, taskType, task) {
+  // Use real FHIR data when available (task object has patient_name, patient_dob, patient_gender)
+  const realName  = task && task.patient_name  ? task.patient_name  : null;
+  const realDob   = task && task.patient_dob   ? task.patient_dob   : null;
+  const realGender = task && task.patient_gender ? task.patient_gender : null;
+
+  let name = realName || mrn;
+  let dob  = '—';
+  let age  = '—';
+  let gender = realGender ? realGender.charAt(0).toUpperCase() : '—';
+
+  if (realDob) {
+    const d = new Date(realDob + 'T00:00:00');
+    dob = d.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
+    age = new Date().getFullYear() - d.getFullYear();
+  }
+
+  // Deterministic allergy from MRN seed (cosmetic only)
   let seed = 0;
   for (let i = 0; i < mrn.length; i++) seed = ((seed * 31) + mrn.charCodeAt(i)) & 0xffff;
-  const maleFirst = ['James','Robert','Michael','William','David','Richard','Thomas','Charles'];
-  const femaleFirst = ['Mary','Patricia','Jennifer','Linda','Barbara','Susan','Margaret','Dorothy'];
-  const lastNames = ['Smith','Johnson','Williams','Brown','Jones','Garcia','Martinez','Davis','Wilson','Taylor','Anderson','Thomas','Jackson'];
-  const gender = seed % 2 === 0 ? 'M' : 'F';
-  const first = gender === 'M' ? maleFirst[seed % 8] : femaleFirst[(seed >> 1) % 8];
-  const last = lastNames[(seed >> 4) % 13];
-  const baseYears = { task3: 1956, task8: 1970, task10: 1963 };
-  const birthYear = (baseYears[taskType] || 1960) + (seed % 14);
-  const bm = String((seed % 12) + 1).padStart(2,'0');
-  const bd = String((seed % 28) + 1).padStart(2,'0');
-  const age = 2024 - birthYear;
   const allergies = ['NKDA','Penicillin','Sulfa','Aspirin','Codeine','Latex'];
   const allergy = allergies[seed % 6];
-  return { name: `${last}, ${first}`, firstName: first, lastName: last, gender, dob: `${bm}/${bd}/${birthYear}`, age, mrn, allergy };
+
+  return { name, gender, dob, age, mrn, allergy };
 }
 
 // ─── Init ─────────────────────────────────────────────────────────────────
@@ -691,7 +698,7 @@ function renderTaskSelect() {
   const prev = sel.value;
   sel.innerHTML = '<option value="">— select a patient encounter —</option>' +
     filteredTasks.map(t => {
-      const pt = getPatientInfo(t.eval_MRN, t.task_type);
+      const pt = getPatientInfo(t.eval_MRN, t.task_type, t);
       const meta = TASK_META[t.task_type] || {};
       return `<option value="${t.index}">${pt.name} (${pt.age}${pt.gender}) — ${meta.label || t.task_type}</option>`;
     }).join('');
@@ -706,7 +713,7 @@ function onTaskSelect() {
   const startBtn = document.getElementById('start-btn');
   if (!selectedTask) { preview.classList.remove('visible'); startBtn.disabled = true; return; }
   const meta = TASK_META[selectedTask.task_type] || {};
-  const pt = getPatientInfo(selectedTask.eval_MRN, selectedTask.task_type);
+  const pt = getPatientInfo(selectedTask.eval_MRN, selectedTask.task_type, selectedTask);
   document.getElementById('prev-name').textContent = pt.name;
   document.getElementById('prev-demos').textContent = `${pt.dob}  ·  ${pt.age}y  ·  ${pt.gender}`;
   document.getElementById('prev-mrn').textContent = `MRN: ${pt.mrn}`;
@@ -1104,7 +1111,7 @@ function scrollTrace() { const t = document.getElementById('trace'); t.scrollTop
 
 // ─── Patient banner ───────────────────────────────────────────────────────
 function showPatientBanner(task) {
-  const pt = getPatientInfo(task.eval_MRN, task.task_type);
+  const pt = getPatientInfo(task.eval_MRN, task.task_type, task);
   const meta = TASK_META[task.task_type] || {};
   document.getElementById('card-empty').style.display = 'none';
   const content = document.getElementById('card-content');
@@ -1169,7 +1176,7 @@ function updateWorkflowBar(phase) {
 // ─── Session panel ────────────────────────────────────────────────────────
 function updateSessionPanel(status) {
   if (!selectedTask) return;
-  const pt = getPatientInfo(selectedTask.eval_MRN, selectedTask.task_type);
+  const pt = getPatientInfo(selectedTask.eval_MRN, selectedTask.task_type, selectedTask);
   document.getElementById('ss-task').textContent = pt.name.split(',')[0];
   const st = status || (sessionDone ? 'done' : sessionActive ? 'running' : '—');
   const chip = document.getElementById('ss-status');
