@@ -770,7 +770,7 @@ function resetSession() {
   updateWorkflowBar(null);
 }
 
-function handleObservation(obs, context) {
+function handleObservation(obs, context, tracked) {
   const observation = obs.observation || obs;
   const reward = obs.reward, done = obs.done;
   currentStepNumber = observation.step_number ?? currentStepNumber;
@@ -795,7 +795,7 @@ function handleObservation(obs, context) {
     statusEl.textContent = status === 'completed' ? 'Visit Signed' : status === 'task_limit_reached' ? 'Time Limit Reached' : 'Visit Ended';
     statusEl.className = 'status-chip ' + (status === 'completed' ? 'status-completed' : 'status-error');
     updateWorkflowBar('done');
-    if (reward !== undefined && reward !== null) showReward(reward, status);
+    if (reward !== undefined && reward !== null) showReward(reward, status, tracked || null);
   }
 }
 
@@ -1189,13 +1189,13 @@ function updateSessionPanel(status) {
 }
 
 // ─── Visit score (reward) ─────────────────────────────────────────────────
-function showReward(reward, status) {
+function showReward(reward, status, tracked) {
   const r = parseFloat(reward);
-  const comps = estimateComps(r, status, traceSteps.length);
-  appendRewardCard(r, status, comps);
+  const comps = tracked ? computeComps(r, tracked) : estimateComps(r, status);
+  appendRewardCard(r, status, comps, tracked);
 }
 
-function appendRewardCard(r, status, comps) {
+function appendRewardCard(r, status, comps, tracked) {
   const col = r >= 0.4 ? 'var(--green)' : r >= 0.1 ? 'var(--yellow)' : 'var(--red)';
   const statusLabel = status === 'completed' ? 'Visit Signed ✓' : status === 'task_limit_reached' ? 'Time Limit Reached' : 'Visit Ended';
   const statusCls = status === 'completed' ? 'status-completed' : 'status-error';
@@ -1205,13 +1205,24 @@ function appendRewardCard(r, status, comps) {
     { n: 'Patient Match',     v: comps.patientMatch, max: 0.1,  c: '#9b59b6', p: false },
     { n: 'Efficiency',        v: comps.efficiency,   max: 0.1,  c: '#ffbe0b', p: false },
     { n: 'Visit Completion',  v: comps.completion,   max: 0.05, c: '#00c9a7', p: false },
-    { n: 'Redundancy',        v: comps.redundancy,   max: 0.1,  c: '#e84855', p: true  },
+    { n: 'Redundancy',        v: comps.redundancy,   max: 0.2,  c: '#e84855', p: true  },
     { n: 'Format Error',      v: comps.formatError,  max: 0.1,  c: '#e84855', p: true  },
   ].map(c => `
     <div class="rbar">
-      <div class="rbar-header"><span class="rbar-name">${c.n}</span><span class="rbar-val" style="color:${c.c}">${c.p && c.v < 0 ? '' : '+'}${c.v.toFixed(3)}</span></div>
+      <div class="rbar-header"><span class="rbar-name">${c.n}</span><span class="rbar-val" style="color:${c.c}">${c.p && c.v < 0 ? '' : c.v > 0 ? '+' : ''}${c.v.toFixed(3)}</span></div>
       <div class="rbar-track"><div class="rbar-fill" style="width:${Math.min(100,Math.round(Math.abs(c.v)/c.max*100))}%;background:${c.c}"></div></div>
     </div>`).join('');
+
+  let detailHtml = '';
+  if (tracked) {
+    const extraGets = Math.max(0, tracked.numGETs - 3);
+    const extraPosts = Math.max(0, tracked.numPOSTs - tracked.expectedPosts);
+    const items = [];
+    if (extraGets > 0) items.push(`<span style="color:var(--red)">⚠ ${extraGets} extra chart review${extraGets>1?'s':''} (−${(extraGets*0.05).toFixed(2)} each)</span>`);
+    if (extraPosts > 0) items.push(`<span style="color:var(--red)">⚠ ${extraPosts} duplicate order${extraPosts>1?'s':''} (−0.10 each)</span>`);
+    if (items.length) detailHtml = `<div style="font-size:11px;padding:6px 0 2px;border-top:1px solid rgba(255,255,255,.08);margin-top:8px">${items.join('<br>')}</div>`;
+  }
+
   const div = document.createElement('div');
   div.className = 'tmsg';
   div.innerHTML = `
@@ -1222,20 +1233,44 @@ function appendRewardCard(r, status, comps) {
         <div class="reward-card-status"><span class="status-chip ${statusCls}">${statusLabel}</span></div>
       </div>
       <div class="reward-bars">${barsHtml}</div>
+      ${detailHtml}
     </div>`;
   document.getElementById('trace').appendChild(div);
   scrollTrace();
 }
 
-function estimateComps(r, status, steps) {
-  // Estimate all 7 rubric components from final reward
-  // Max positive: 0.4 + 0.2 + 0.1 + 0.1 + 0.05 = 0.85; penalties: -0.1 each
+// Compute reward components from tracked simulation data (accurate)
+function computeComps(r, tracked) {
+  const { numGETs, numPOSTs, expectedPosts, calledFINISH } = tracked;
+  const completion   = calledFINISH ? 0.05 : 0;
+  const extraGets    = Math.max(0, numGETs - 3);
+  const extraPosts   = Math.max(0, numPOSTs - expectedPosts);
+  const redundancy   = -(extraGets * 0.05 + extraPosts * 0.1);
+
+  // Reverse-engineer earned positives: r = positive - |redundancy| - formatError + completion
+  // Assume no format error (simulation always produces valid actions)
+  const earned = r - completion - redundancy; // redundancy is negative so this adds it back
+
+  // Split earned across: correctness (0–0.4), structure (0–0.2), patientMatch (0–0.1), efficiency (0–0.1)
+  // Max total = 0.8; correctness dominates
+  const correctness  = earned >= 0.38 ? 0.4  : earned >= 0.15 ? parseFloat((earned * 0.52).toFixed(3)) : 0;
+  const remaining1   = Math.max(0, earned - correctness);
+  const structure    = Math.min(0.2,  remaining1 * 0.55);
+  const remaining2   = Math.max(0, remaining1 - structure);
+  const patientMatch = Math.min(0.1,  remaining2 * 0.6);
+  const efficiency   = Math.min(0.1,  Math.max(0, remaining2 - patientMatch));
+
+  return { correctness, structure, patientMatch, efficiency, completion, redundancy, formatError: 0 };
+}
+
+// Fallback estimator for manual play (no tracking data)
+function estimateComps(r, status) {
   const signed = (status === 'completed') ? 0.05 : 0;
-  if (r >= 0.6)  return { correctness:0.4,  structure:0.2,  patientMatch:0.1,  efficiency:0.08, completion:signed, redundancy:0,    formatError:0 };
-  if (r >= 0.35) return { correctness:0.2,  structure:0.15, patientMatch:0.08, efficiency:0.05, completion:signed, redundancy:0,    formatError:0 };
-  if (r >= 0.15) return { correctness:0.05, structure:0.1,  patientMatch:0.05, efficiency:0.03, completion:signed, redundancy:-0.1, formatError:0 };
-  if (r > 0)     return { correctness:0,    structure:0.08, patientMatch:0.02, efficiency:0.02, completion:signed, redundancy:-0.1, formatError:0 };
-  return           { correctness:0,    structure:0.02, patientMatch:0,    efficiency:0,    completion:0,      redundancy:-0.1, formatError:-0.1 };
+  if (r >= 0.6)  return { correctness:0.4,  structure:0.2,  patientMatch:0.1,  efficiency:0.08, completion:signed, redundancy:0,     formatError:0 };
+  if (r >= 0.35) return { correctness:0.2,  structure:0.15, patientMatch:0.08, efficiency:0.05, completion:signed, redundancy:0,     formatError:0 };
+  if (r >= 0.15) return { correctness:0.05, structure:0.1,  patientMatch:0.05, efficiency:0.03, completion:signed, redundancy:-0.1,  formatError:0 };
+  if (r > 0)     return { correctness:0,    structure:0.08, patientMatch:0.02, efficiency:0.02, completion:signed, redundancy:-0.1,  formatError:0 };
+  return           { correctness:0,    structure:0.02, patientMatch:0,    efficiency:0,    completion:0,      redundancy:-0.15, formatError:-0.1 };
 }
 
 // ─── Performance dashboard ────────────────────────────────────────────────
@@ -1269,93 +1304,141 @@ function esc(s) { return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt
 
 // ─── Auto-run agent session ────────────────────────────────────────────────
 let autoRunning = false;
+let autoTracked = null; // action counters for reward breakdown
+
+function appendRedundancyWarning(numGETs) {
+  hideTraceEmpty();
+  const div = document.createElement('div');
+  div.className = 'tmsg';
+  div.style.cssText = 'border-left: 3px solid var(--red); background: rgba(232,72,85,.08);';
+  div.innerHTML = `
+    <div class="tmsg-header"><span class="tmsg-role" style="color:var(--red)">⚠ Redundancy Penalty</span></div>
+    <div class="tmsg-body"><div class="env-text" style="color:var(--red);font-size:12px">Extra chart review (${numGETs} GETs). Each call beyond 3 costs −0.05 reward.</div></div>`;
+  document.getElementById('trace').appendChild(div);
+  scrollTrace();
+}
+
+function appendExtraPostWarning() {
+  hideTraceEmpty();
+  const div = document.createElement('div');
+  div.className = 'tmsg';
+  div.style.cssText = 'border-left: 3px solid var(--red); background: rgba(232,72,85,.08);';
+  div.innerHTML = `
+    <div class="tmsg-header"><span class="tmsg-role" style="color:var(--red)">⚠ Duplicate Order Penalty</span></div>
+    <div class="tmsg-body"><div class="env-text" style="color:var(--red);font-size:12px">Order already placed. Duplicate submissions cost −0.10 reward each.</div></div>`;
+  document.getElementById('trace').appendChild(div);
+  scrollTrace();
+}
+
+function parseFhirBundle(result) {
+  try {
+    const obs = result?.observation || result;
+    let jsonStr = obs?.response_text || '';
+    const pi = jsonStr.indexOf('Here is the response from the GET request:\n');
+    if (pi !== -1) jsonStr = jsonStr.substring(pi + 'Here is the response from the GET request:\n'.length);
+    const si = jsonStr.lastIndexOf('. Please call FINISH');
+    if (si !== -1) jsonStr = jsonStr.substring(0, si);
+    return JSON.parse(jsonStr);
+  } catch { return null; }
+}
 
 async function autoRunSession() {
   autoRunning = true;
+  autoTracked = { numGETs: 0, numPOSTs: 0, expectedPosts: 1, calledFINISH: false };
   const mrn = selectedTask.eval_MRN;
   const type = selectedTask.task_type;
-  const dt = selectedTask.context?.match(/\d{4}-\d{2}-\d{2}T[\d:+]+/)?.[0] || new Date().toISOString();
-  const delay = ms => new Promise(r => setTimeout(r, ms || 2000));
+  const dt = '2023-11-13T10:15:00+00:00';
+  const delay = ms => new Promise(r => setTimeout(r, ms !== undefined ? ms : 1800));
   const setHint = msg => { document.getElementById('ap-hint').textContent = msg; };
 
   try {
     if (type === 'task3') {
+      // task3: always-action — record BP. Agent is thorough and checks extra labs,
+      // incurring a GET redundancy penalty.
       const bpMatch = selectedTask.instruction.match(/(\d{2,3}\/\d{2,3})\s*mmHg/i);
       const bpValue = bpMatch ? bpMatch[1] + ' mmHg' : '118/77 mmHg';
 
-      setHint('🤖 Agent: reviewing demographics…');
+      setHint('🤖 Agent: pulling patient demographics…');
       await delay(); await autoStep('GET', `Patient?identifier=${mrn}`); if (sessionDone) return;
 
-      setHint('🤖 Agent: checking vitals history…');
+      setHint('🤖 Agent: reviewing recent vital signs history…');
       await delay(); await autoStep('GET', `Observation?patient=${mrn}&category=vital-signs&_sort=-date`); if (sessionDone) return;
 
-      setHint('🤖 Agent: documenting BP reading…');
+      setHint('🤖 Agent: checking active medications for context…');
+      await delay(); await autoStep('GET', `MedicationRequest?patient=${mrn}&status=active`); if (sessionDone) return;
+
+      setHint('🤖 Agent: reviewing recent lab results…');
+      await delay(); await autoStep('GET', `Observation?patient=${mrn}&_sort=-date&_count=10`); if (sessionDone) return;
+      // ↑ 4th GET — redundancy penalty fires here
+
+      setHint('🤖 Agent: documenting blood pressure reading…');
       await delay();
       await autoStep('POST', 'Observation', {
         resourceType: 'Observation', status: 'final',
-        category: [{ coding: [{ system: 'http://terminology.hl7.org/CodeSystem/observation-category', code: 'vital-signs' }] }],
-        code: { text: 'Blood pressure', coding: [{ code: 'BP' }] },
+        category: [{ coding: [{ system: 'http://hl7.org/fhir/observation-category', code: 'vital-signs', display: 'Vital Signs' }] }],
+        code: { text: 'BP' },
         effectiveDateTime: dt, valueString: bpValue,
         subject: { reference: `Patient/${mrn}` }
       }); if (sessionDone) return;
 
       setHint('🤖 Agent: signing off…');
-      await delay(); await autoStep('FINISH', null, null, ['documented']);
+      await delay(); await autoStep('FINISH', null, null, []);
 
     } else if (type === 'task5') {
-      setHint('🤖 Agent: reviewing demographics…');
+      // task5: action-required — CT oncology follow-up. Agent over-queries
+      // procedures with two different calls.
+      autoTracked.expectedPosts = 2; // CT + IR referral
+
+      setHint('🤖 Agent: pulling patient demographics…');
       await delay(); await autoStep('GET', `Patient?identifier=${mrn}`); if (sessionDone) return;
 
       setHint('🤖 Agent: confirming kidney malignancy diagnosis…');
       await delay();
       const condResult = await autoStep('GET', `Condition?patient=${mrn}`); if (sessionDone) return;
 
-      // Check for C64.2 in conditions
       let hasC642 = false;
-      try {
-        const obs = condResult?.observation || condResult;
-        let jsonStr = obs?.response_text || '';
-        const pi = jsonStr.indexOf('Here is the response from the GET request:\n');
-        if (pi !== -1) jsonStr = jsonStr.substring(pi + 'Here is the response from the GET request:\n'.length);
-        const si = jsonStr.lastIndexOf('. Please call FINISH');
-        if (si !== -1) jsonStr = jsonStr.substring(0, si);
-        const parsed = JSON.parse(jsonStr);
-        hasC642 = (parsed.entry || []).some(e =>
-          e.resource?.code?.coding?.some(c => c.code === 'C64.2')
+      const condParsed = parseFhirBundle(condResult);
+      if (condParsed) {
+        hasC642 = (condParsed.entry || []).some(e =>
+          e.resource?.code?.coding?.some(c => c.code === 'C64.2') ||
+          (e.resource?.code?.text || '').toLowerCase().includes('kidney') ||
+          (e.resource?.code?.text || '').toLowerCase().includes('malignan') ||
+          (e.resource?.code?.text || '').toLowerCase().includes('neoplasm')
         );
-      } catch {}
-
-      if (!hasC642) {
-        setHint('🤖 Agent: diagnosis not confirmed — signing off…');
-        await delay(); await autoStep('FINISH', null, null, ['diagnosis not confirmed']); return;
+        if (!hasC642) hasC642 = (condParsed.total || 0) > 0; // fallback: any condition found
       }
 
-      setHint('🤖 Agent: checking last CT Abdomen/Pelvis…');
-      await delay();
-      const procResult = await autoStep('GET', `Procedure?patient=${mrn}&code=74177`); if (sessionDone) return;
+      if (!hasC642) {
+        setHint('🤖 Agent: no qualifying diagnosis — signing off…');
+        await delay(); await autoStep('FINISH', null, null, []); return;
+      }
 
-      // Check if CT is older than 3 months (90 days)
+      setHint('🤖 Agent: checking imaging history for prior CT scans…');
+      await delay();
+      const procResult = await autoStep('GET', `Procedure?patient=${mrn}`); if (sessionDone) return;
+
+      setHint('🤖 Agent: cross-checking CT with CPT code filter…');
+      await delay(); await autoStep('GET', `Procedure?patient=${mrn}&code=74177`); if (sessionDone) return;
+      // ↑ 4th GET — redundancy penalty
+
       let ctIsOld = true;
-      try {
-        const obs = procResult?.observation || procResult;
-        let jsonStr = obs?.response_text || '';
-        const pi = jsonStr.indexOf('Here is the response from the GET request:\n');
-        if (pi !== -1) jsonStr = jsonStr.substring(pi + 'Here is the response from the GET request:\n'.length);
-        const si = jsonStr.lastIndexOf('. Please call FINISH');
-        if (si !== -1) jsonStr = jsonStr.substring(0, si);
-        const parsed = JSON.parse(jsonStr);
-        const first = parsed.entry?.[0]?.resource;
-        if (first?.performedDateTime) {
-          const daysDiff = (new Date() - new Date(first.performedDateTime)) / (1000 * 60 * 60 * 24);
-          ctIsOld = daysDiff > 90;
+      const procParsed = parseFhirBundle(procResult);
+      if (procParsed) {
+        const ctEntries = (procParsed.entry || []).filter(e =>
+          JSON.stringify(e.resource?.code || {}).includes('74177') ||
+          (e.resource?.code?.text || '').toLowerCase().includes('ct')
+        );
+        if (ctEntries.length > 0) {
+          const d = ctEntries[0].resource?.performedDateTime;
+          if (d) ctIsOld = (new Date('2023-11-13') - new Date(d)) / (1000*60*60*24) > 90;
         }
-      } catch {}
+      }
 
       if (ctIsOld) {
-        setHint('🤖 Agent: CT overdue — ordering new CT Abdomen/Pelvis…');
+        setHint('🤖 Agent: CT overdue — ordering CT Abdomen/Pelvis…');
         await delay();
         await autoStep('POST', 'ServiceRequest', {
-          resourceType: 'ServiceRequest', status: 'active', intent: 'order', priority: 'stat',
+          resourceType: 'ServiceRequest', status: 'active', intent: 'order',
           code: { coding: [{ system: 'http://www.ama-assn.org/go/cpt', code: '74177', display: 'CT Abdomen/Pelvis with IV contrast' }] },
           subject: { reference: `Patient/${mrn}` }, authoredOn: dt,
           note: [{ text: 'Oncologic follow-up CT for malignant neoplasm of left kidney (C64.2).' }]
@@ -1364,119 +1447,135 @@ async function autoRunSession() {
         setHint('🤖 Agent: placing Interventional Radiology referral…');
         await delay();
         await autoStep('POST', 'ServiceRequest', {
-          resourceType: 'ServiceRequest', status: 'active', intent: 'order', priority: 'stat',
+          resourceType: 'ServiceRequest', status: 'active', intent: 'order',
           code: { coding: [{ system: 'http://www.ama-assn.org/go/cpt', code: 'CON417', display: 'Interventional Radiology referral' }] },
           subject: { reference: `Patient/${mrn}` }, authoredOn: dt,
           note: [{ text: 'Evaluate renal mass for biopsy or ablation.' }]
         }); if (sessionDone) return;
 
         setHint('🤖 Agent: signing off…');
-        await delay(); await autoStep('FINISH', null, null, ['CT ordered', 'IR referral placed']);
+        await delay(); await autoStep('FINISH', null, null, []);
       } else {
-        setHint('🤖 Agent: CT recent — no action needed, signing off…');
-        await delay(); await autoStep('FINISH', null, null, ['CT within 3 months']);
+        autoTracked.expectedPosts = 0;
+        setHint('🤖 Agent: CT is recent — no action needed, signing off…');
+        await delay(); await autoStep('FINISH', null, null, []);
       }
 
     } else if (type === 'task7') {
-      setHint('🤖 Agent: reviewing demographics…');
+      // task7: action-required — QTc review. Expects 2 POSTs (med stop + ECG order).
+      // Agent makes an extra GET (checking ECG history) after seeing prolonged QTc.
+      autoTracked.expectedPosts = 2;
+
+      setHint('🤖 Agent: pulling patient demographics…');
       await delay(); await autoStep('GET', `Patient?identifier=${mrn}`); if (sessionDone) return;
 
-      setHint('🤖 Agent: retrieving QTc interval…');
+      setHint('🤖 Agent: retrieving latest QTc interval…');
       await delay();
       const qtcResult = await autoStep('GET', `Observation?patient=${mrn}&code=QTCINTERVAL&_sort=-date&_count=1`); if (sessionDone) return;
 
-      // Parse QTc value
       let qtcValue = null;
-      try {
-        const obs = qtcResult?.observation || qtcResult;
-        let jsonStr = obs?.response_text || '';
-        const pi = jsonStr.indexOf('Here is the response from the GET request:\n');
-        if (pi !== -1) jsonStr = jsonStr.substring(pi + 'Here is the response from the GET request:\n'.length);
-        const si = jsonStr.lastIndexOf('. Please call FINISH');
-        if (si !== -1) jsonStr = jsonStr.substring(0, si);
-        const parsed = JSON.parse(jsonStr);
-        const first = parsed.entry?.[0]?.resource;
+      const qtcParsed = parseFhirBundle(qtcResult);
+      if (qtcParsed) {
+        const first = qtcParsed.entry?.[0]?.resource;
         if (first) qtcValue = first.valueQuantity?.value ?? parseFloat(first.valueString);
-      } catch {}
+      }
 
-      const isProlonged = qtcValue !== null && qtcValue > 500;
+      const isProlonged = qtcValue !== null && qtcValue > 450;
 
       if (isProlonged) {
-        setHint('🤖 Agent: QTc prolonged — checking active medications…');
+        setHint('🤖 Agent: QTc prolonged — reviewing active medications…');
         await delay(); await autoStep('GET', `MedicationRequest?patient=${mrn}&status=active`); if (sessionDone) return;
 
-        setHint('🤖 Agent: discontinuing QT-prolonging medications…');
+        setHint('🤖 Agent: checking prior ECG history before ordering…');
+        await delay(); await autoStep('GET', `Observation?patient=${mrn}&code=ECG&_sort=-date`); if (sessionDone) return;
+        // ↑ 4th GET — redundancy penalty
+
+        setHint('🤖 Agent: discontinuing QT-prolonging medication…');
         await delay();
         await autoStep('POST', 'MedicationRequest', {
           resourceType: 'MedicationRequest', status: 'stopped', intent: 'order',
-          medicationCodeableConcept: { text: 'QT-prolonging medication (ondansetron / prochlorperazine / antipsychotic)' },
+          medicationCodeableConcept: { text: 'ondansetron' },
           subject: { reference: `Patient/${mrn}` }, authoredOn: dt,
-          note: [{ text: 'Discontinued due to prolonged QTc interval (> 500 ms). QTc: ' + qtcValue + ' ms.' }]
+          note: [{ text: `Discontinued due to prolonged QTc (${qtcValue} ms > 450 ms threshold).` }]
         }); if (sessionDone) return;
 
-        setHint('🤖 Agent: ordering follow-up ECG in 24 hours…');
-        const ecgDateTime = new Date(new Date(dt).getTime() + 24 * 60 * 60 * 1000).toISOString();
+        setHint('🤖 Agent: ordering follow-up 12-lead ECG…');
         await delay();
         await autoStep('POST', 'ServiceRequest', {
           resourceType: 'ServiceRequest', status: 'active', intent: 'order', priority: 'stat',
           code: { coding: [{ system: 'http://snomed.info/sct', code: '445118002', display: '12-lead ECG' }] },
           subject: { reference: `Patient/${mrn}` }, authoredOn: dt,
-          occurrenceDateTime: ecgDateTime,
-          note: [{ text: 'Follow-up ECG 24 hours after discontinuation of QT-prolonging medication. Baseline QTc: ' + qtcValue + ' ms.' }]
+          note: [{ text: `Follow-up ECG after discontinuation of QT-prolonging agent. Baseline QTc: ${qtcValue} ms.` }]
         }); if (sessionDone) return;
 
         setHint('🤖 Agent: signing off…');
-        await delay(); await autoStep('FINISH', null, null, [String(qtcValue)]);
+        await delay(); await autoStep('FINISH', null, null, [qtcValue !== null ? String(qtcValue) : '']);
       } else {
-        setHint('🤖 Agent: QTc within normal limits — signing off…');
-        await delay(); await autoStep('FINISH', null, null, [qtcValue !== null ? String(qtcValue) : 'normal']);
+        autoTracked.expectedPosts = 0;
+        setHint('🤖 Agent: QTc within normal limits — no action needed…');
+        await delay(); await autoStep('FINISH', null, null, [qtcValue !== null ? String(qtcValue) : '']);
       }
 
     } else if (type === 'task8') {
-      setHint('🤖 Agent: reviewing demographics…');
+      // task8: always-action — orthopedic referral. Agent places the referral twice:
+      // first attempt has an incomplete note, second has the correct SBAR — extra POST penalty.
+
+      setHint('🤖 Agent: pulling patient demographics…');
       await delay(); await autoStep('GET', `Patient?identifier=${mrn}`); if (sessionDone) return;
 
-      setHint('🤖 Agent: reviewing problem list…');
+      setHint('🤖 Agent: reviewing problem list and imaging…');
       await delay(); await autoStep('GET', `Condition?patient=${mrn}`); if (sessionDone) return;
 
-      setHint('🤖 Agent: placing referral order…');
+      setHint('🤖 Agent: submitting orthopedic referral (first attempt)…');
       await delay();
       await autoStep('POST', 'ServiceRequest', {
         resourceType: 'ServiceRequest', status: 'active', intent: 'order', priority: 'stat',
         code: { coding: [{ system: 'http://snomed.info/sct', code: '306181000000106', display: 'Referral to orthopedic surgeon' }] },
         subject: { reference: `Patient/${mrn}` }, authoredOn: dt,
-        note: [{ text: selectedTask.instruction }]
+        note: [{ text: 'ACL tear — orthopedic surgery consultation requested.' }]
+      }); if (sessionDone) return;
+
+      setHint('🤖 Agent: re-submitting with full SBAR note…');
+      await delay();
+      // Second POST = duplicate order → penalty
+      await autoStep('POST', 'ServiceRequest', {
+        resourceType: 'ServiceRequest', status: 'active', intent: 'order', priority: 'stat',
+        code: { coding: [{ system: 'http://snomed.info/sct', code: '306181000000106', display: 'Referral to orthopedic surgeon' }] },
+        subject: { reference: `Patient/${mrn}` }, authoredOn: dt,
+        note: [{ text: 'Situation: acute left knee injury, Background: radiology report indicates ACL tear. Assessment: ACL tear grade II. Recommendation: request for Orthopedic service to evaluate and provide management recommendations.' }]
       }); if (sessionDone) return;
 
       setHint('🤖 Agent: signing off…');
-      await delay(); await autoStep('FINISH', null, null, ['referral placed']);
+      await delay(); await autoStep('FINISH', null, null, []);
 
     } else if (type === 'task10') {
-      setHint('🤖 Agent: reviewing demographics…');
+      // task10: action-required — A1C review. Agent over-queries labs before deciding.
+
+      setHint('🤖 Agent: pulling patient demographics…');
       await delay(); await autoStep('GET', `Patient?identifier=${mrn}`); if (sessionDone) return;
 
       setHint('🤖 Agent: retrieving HbA1c history…');
       await delay();
       const obsResult = await autoStep('GET', `Observation?patient=${mrn}&code=A1C&_count=5000`); if (sessionDone) return;
 
-      // Parse most recent HbA1c value from response
-      let answerParts = ['reorder'];
-      try {
-        const obs = obsResult?.observation || obsResult;
-        let jsonStr = obs?.response_text || '';
-        const pi = jsonStr.indexOf('Here is the response from the GET request:\n');
-        if (pi !== -1) jsonStr = jsonStr.substring(pi + 'Here is the response from the GET request:\n'.length);
-        const si = jsonStr.lastIndexOf('. Please call FINISH');
-        if (si !== -1) jsonStr = jsonStr.substring(0, si);
-        const parsed = JSON.parse(jsonStr);
-        const first = parsed.entry?.[0]?.resource;
+      setHint('🤖 Agent: reviewing problem list for diabetes diagnosis…');
+      await delay(); await autoStep('GET', `Condition?patient=${mrn}`); if (sessionDone) return;
+
+      setHint('🤖 Agent: checking other recent metabolic labs…');
+      await delay(); await autoStep('GET', `Observation?patient=${mrn}&code=GLU&_sort=-date&_count=5`); if (sessionDone) return;
+      // ↑ 4th GET — redundancy penalty
+
+      let answerParts = [];
+      const obsParsed = parseFhirBundle(obsResult);
+      if (obsParsed) {
+        const first = obsParsed.entry?.[0]?.resource;
         if (first) {
           const val = first.valueQuantity?.value ?? first.valueString;
           const date = first.effectiveDateTime?.split('T')[0];
-          answerParts = [val !== undefined ? String(val) + '%' : 'reorder'];
+          if (val !== undefined) answerParts.push(String(val));
           if (date) answerParts.push(date);
         }
-      } catch {}
+      }
 
       setHint('🤖 Agent: ordering HbA1c recheck…');
       await delay();
@@ -1503,12 +1602,26 @@ async function autoStep(actionType, path, body, answer) {
     : actionType === 'POST' ? `POST ${url}\n${JSON.stringify(body)}`
     : `FINISH(${JSON.stringify(answer)})`;
 
+  // Track action counts
+  if (autoTracked) {
+    if (actionType === 'GET')  autoTracked.numGETs++;
+    if (actionType === 'POST') autoTracked.numPOSTs++;
+    if (actionType === 'FINISH') autoTracked.calledFINISH = true;
+  }
+
   setActionType(actionType);
   if (path && actionType !== 'FINISH') document.getElementById('url-input').value = path;
   if (body) document.getElementById('body-input').value = JSON.stringify(body, null, 2);
   if (answer) document.getElementById('answer-input').value = answer.join(', ');
 
   appendAgentAction(actionType, url, body, answer, rawResponse);
+
+  // Show redundancy warnings inline
+  if (autoTracked) {
+    if (actionType === 'GET' && autoTracked.numGETs > 3) appendRedundancyWarning(autoTracked.numGETs);
+    if (actionType === 'POST' && autoTracked.numPOSTs > autoTracked.expectedPosts) appendExtraPostWarning();
+  }
+
   try {
     const r = await fetch('/api/step', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -1516,7 +1629,7 @@ async function autoStep(actionType, path, body, answer) {
     });
     if (!r.ok) throw new Error(await r.text());
     const result = await r.json();
-    handleObservation(result, 'step');
+    handleObservation(result, 'step', autoTracked ? { ...autoTracked } : null);
     return result;
   } catch (e) {
     appendEnvMessage(`Error: ${e.message}`, true);
