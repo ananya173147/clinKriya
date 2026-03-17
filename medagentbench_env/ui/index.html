@@ -1353,8 +1353,8 @@ async function autoRunSession() {
 
   try {
     if (type === 'task3') {
-      // task3: always-action — record BP. Agent is thorough and checks extra labs,
-      // incurring a GET redundancy penalty.
+      // task3: always-action — record BP. Agent over-queries (checks problem list
+      // and HR separately before documenting) incurring a redundancy penalty.
       const bpMatch = selectedTask.instruction.match(/(\d{2,3}\/\d{2,3})\s*mmHg/i);
       const bpValue = bpMatch ? bpMatch[1] + ' mmHg' : '118/77 mmHg';
 
@@ -1364,11 +1364,11 @@ async function autoRunSession() {
       setHint('🤖 Agent: reviewing recent vital signs history…');
       await delay(); await autoStep('GET', `Observation?patient=${mrn}&category=vital-signs&_sort=-date`); if (sessionDone) return;
 
-      setHint('🤖 Agent: checking active medications for context…');
-      await delay(); await autoStep('GET', `MedicationRequest?patient=${mrn}&status=active`); if (sessionDone) return;
+      setHint('🤖 Agent: checking problem list for hypertension diagnosis…');
+      await delay(); await autoStep('GET', `Condition?patient=${mrn}`); if (sessionDone) return;
 
-      setHint('🤖 Agent: reviewing recent lab results…');
-      await delay(); await autoStep('GET', `Observation?patient=${mrn}&_sort=-date&_count=10`); if (sessionDone) return;
+      setHint('🤖 Agent: pulling current heart rate to co-document…');
+      await delay(); await autoStep('GET', `Observation?patient=${mrn}&code=HR&_sort=-date&_count=1`); if (sessionDone) return;
       // ↑ 4th GET — redundancy penalty fires here
 
       setHint('🤖 Agent: documenting blood pressure reading…');
