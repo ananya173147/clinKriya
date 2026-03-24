@@ -47,22 +47,38 @@ def _build_cache_entries(fhir_api_base: str, tasks: List[Dict]) -> Dict[str, Any
     fhir_base = fhir_api_base.rstrip("/")
 
     # ---- Patterns needed by evaluators and agents ----
+    # _count=5000 ensures we retrieve all records, not just the default page size.
 
-    # All FHIR resource types the agent might query
     resource_queries = [
-        # Task 10: A1C observations (required by evaluator)
-        ("Observation", {"code": "A1C", "_count": "5000", "_format": "json"}),
-        # Common agent queries for context
-        ("Observation", {"category": "vital-signs", "_format": "json"}),
-        ("Observation", {"code": "BP", "_format": "json"}),
-        ("Observation", {"code": "BP", "_count": "5000", "_format": "json"}),
-        ("MedicationRequest", {"_format": "json"}),
-        ("Condition", {"category": "problem-list-item", "_format": "json"}),
-        ("Condition", {"_format": "json"}),
-        ("Patient", {"_format": "json"}),
-        ("Procedure", {"_format": "json"}),
-        # Task 8: agent might look up imaging/radiology
-        ("Observation", {"code": "IMAGINGCODE", "_format": "json"}),
+        # ── Unfiltered (agent exploration + fallback) ────────────────
+        ("Patient",            {"_count": "5000", "_format": "json"}),
+        ("Condition",          {"_count": "5000", "_format": "json"}),
+        ("MedicationRequest",  {"_count": "5000", "_format": "json"}),
+        ("Procedure",          {"_count": "5000", "_format": "json"}),
+        ("Observation",        {"_count": "5000", "_format": "json"}),
+
+        # ── Active medications (task2, task8) ────────────────────────
+        ("MedicationRequest",  {"status": "active", "_count": "5000", "_format": "json"}),
+
+        # ── Observation codes ────────────────────────────────────────
+        ("Observation", {"code": "A1C",         "_count": "5000", "_format": "json"}),  # task10, v2_task10
+        ("Observation", {"code": "QTCINTERVAL", "_count": "5000", "_format": "json"}),  # task7
+        ("Observation", {"code": "TSH",         "_count": "5000", "_format": "json"}),  # task6
+        ("Observation", {"code": "MG",          "_count": "5000", "_format": "json"}),  # v2_task5
+        ("Observation", {"code": "K",           "_count": "5000", "_format": "json"}),  # v2_task9
+        ("Observation", {"code": "BP",          "_count": "5000", "_format": "json"}),  # vitals
+        ("Observation", {"category": "vital-signs", "_count": "5000", "_format": "json"}),
+
+        # ── Procedure codes ──────────────────────────────────────────
+        ("Procedure", {"code": "IMGCT0491",   "_count": "5000", "_format": "json"}),  # task1, task5
+        ("Procedure", {"code": "IMGIL0001",   "_count": "5000", "_format": "json"}),  # task1, task5
+        ("Procedure", {"code": "NUR1373",     "_count": "5000", "_format": "json"}),  # task4
+        ("Procedure", {"code": "90686",       "_count": "5000", "_format": "json"}),  # task9
+        ("Procedure", {"code": "COVIDVACCINE","_count": "5000", "_format": "json"}),  # task10
+
+        # ── Condition codes ──────────────────────────────────────────
+        ("Condition", {"code": "C64.2",       "_count": "5000", "_format": "json"}),  # task5
+        ("Condition", {"category": "problem-list-item", "_count": "5000", "_format": "json"}),
     ]
 
     total = len(mrns) * len(resource_queries)
@@ -227,7 +243,7 @@ def main():
     )
     parser.add_argument(
         "--data-file", type=str, default=None,
-        help="Path to stratified_benchmark.json",
+        help="Path to new_patient_tasks.json (default: auto-detect)",
     )
     parser.add_argument(
         "--output", type=str, default="data/fhir_cache.json",
@@ -239,25 +255,31 @@ def main():
         parser.print_help()
         return
 
-    # Load task data
+    # Load task data — new_patient_tasks.json + v2 tasks for full MRN coverage
+    _HERE = Path(__file__).resolve()
+    _ROOT = _HERE.parents[2]
+
     if args.data_file:
         data_path = Path(args.data_file)
     else:
-        data_path = (
-            Path(__file__).resolve().parents[2]
-            / "medagentbenchv2"
-            / "medagentbench_v2"
-            / "src"
-            / "MedAgentBench"
-            / "data"
-            / "medagentbench"
-            / "stratified_benchmark.json"
-        )
+        data_path = _HERE.parents[1] / "data" / "new_patient_tasks.json"
 
     print(f"Loading tasks from {data_path}")
     with open(data_path) as f:
         tasks = json.load(f)
-    print(f"Loaded {len(tasks)} tasks with {len(_get_all_mrns(tasks))} unique MRNs")
+
+    # Also include v2 task patients (Mg/K+/A1c — different MRN set)
+    v2_path = (
+        _ROOT / "medagentbenchv2" / "medagentbench_v2" / "src"
+        / "MedAgentBench" / "data" / "medagentbench" / "test_data_v2.json"
+    )
+    if v2_path.exists():
+        with open(v2_path) as f:
+            v2_tasks = json.load(f)
+        tasks = tasks + v2_tasks
+        print(f"Also loaded {len(v2_tasks)} v2 tasks")
+
+    print(f"Loaded {len(tasks)} total tasks with {len(_get_all_mrns(tasks))} unique MRNs")
 
     print(f"Building cache from {args.fhir_url}...")
     cache = _build_cache_entries(args.fhir_url, tasks)

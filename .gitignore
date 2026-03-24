@@ -31,3 +31,12 @@ env/
 
 # Benchmark outputs
 medagentbenchv2/medagentbench_v2/benchmark_results/
+
+# Large data files (transfer separately via scp)
+medagentbench_env/data/fhir_cache.json
+
+# Training outputs and model checkpoints
+rl_output/
+*.safetensors
+*.bin
+tokenizer.json

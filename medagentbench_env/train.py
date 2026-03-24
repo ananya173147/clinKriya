@@ -21,7 +21,7 @@ import math
 import os
 import re
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 from urllib.parse import urlencode
 
 # Lazy imports: datasets/trl only needed when actually training
@@ -40,10 +40,6 @@ _spec = _ilu.spec_from_file_location("fhir_cache", _server_dir / "fhir_cache.py"
 _mod = _ilu.module_from_spec(_spec)
 _spec.loader.exec_module(_mod)
 MockFHIR = _mod.MockFHIR
-_spec2 = _ilu.spec_from_file_location("reward", _server_dir / "reward.py")
-_mod2 = _ilu.module_from_spec(_spec2)
-_spec2.loader.exec_module(_mod2)
-compute_shaped_reward = _mod2.compute_shaped_reward
 
 
 # ---------------------------------------------------------------------------
@@ -562,31 +558,412 @@ class MedAgentTrainEnv:
         print(f"  ANSWER: {self._agent_answer}")
         print(sep)
 
+    # ------------------------------------------------------------------
+    # MockFHIR helpers
+    # ------------------------------------------------------------------
+
+    def _mock_get_entries(self, resource: str, params: str) -> List[Dict]:
+        """Query MockFHIR and return parsed FHIR entry resources."""
+        fhir_base = _FHIR_API_BASE.rstrip("/")
+        url = f"{fhir_base}/{resource}?{params}&_count=1000&_format=json"
+        resp = self._mock.get(url)
+        data = resp.get("data", {})
+        if isinstance(data, str):
+            try:
+                data = json.loads(data)
+            except Exception:
+                return []
+        return [e.get("resource", {}) for e in data.get("entry", [])]
+
+    @staticmethod
+    def _resource_date(r: Dict) -> Optional[str]:
+        """Return the best-effort date string from a FHIR resource."""
+        for field in ("effectiveDateTime", "performedDateTime", "authoredOn",
+                      "recordedDate", "occurrenceDateTime", "date"):
+            v = r.get(field)
+            if v:
+                return v
+        period = r.get("performedPeriod") or r.get("occurrencePeriod", {})
+        if isinstance(period, dict):
+            return period.get("start") or period.get("end")
+        return r.get("meta", {}).get("lastUpdated")
+
+    # ------------------------------------------------------------------
+    # Ground-truth + refsol
+    # ------------------------------------------------------------------
+
+    def _compute_refsol_pass(self, task_type: str, mrn: str) -> bool:
+        """
+        Offline refsol check using MockFHIR cache — no live server needed.
+        Returns True if the agent's actions satisfy the task's acceptance criteria.
+        """
+        from datetime import datetime as _dt, timedelta as _td, timezone as _tz
+
+        _CUTOFF = "2025-01-01"
+        _CUTOFF_DT = _dt.fromisoformat("2025-01-01T00:00:00+00:00")
+        patient_ref = f"Patient/{mrn}"
+
+        # ── Parse accepted POSTs ─────────────────────────────────────
+        posts: List[Tuple[str, Dict]] = []
+        for idx, msg in enumerate(self._history):
+            if msg.role == "agent" and msg.content.startswith("POST"):
+                if idx + 1 < len(self._history) and "POST request accepted" in self._history[idx + 1].content:
+                    try:
+                        lines = msg.content.split("\n", 1)
+                        url_part = lines[0][4:].strip()
+                        payload = json.loads(lines[1]) if len(lines) > 1 else {}
+                        posts.append((url_part, payload))
+                    except Exception:
+                        pass
+
+        def _has_ref(pl: Dict) -> bool:
+            return pl.get("subject", {}).get("reference") == patient_ref
+
+        def _parse_dt(s: Optional[str]) -> Optional[_dt]:
+            if not s:
+                return None
+            try:
+                d = _dt.fromisoformat(s)
+                if d.tzinfo is None:
+                    d = d.replace(tzinfo=_tz.utc)
+                return d
+            except ValueError:
+                return None
+
+        # ── task1: CT Abdomen > 12 months ago → order new CT ────────
+        if task_type == "task1":
+            resources = self._mock_get_entries("Procedure", f"patient={mrn}&code=IMGCT0491,IMGIL0001")
+            valid = [r for r in resources if (self._resource_date(r) or "") < _CUTOFF]
+            if valid:
+                latest_date = _parse_dt(max(self._resource_date(r) or "" for r in valid))
+            else:
+                latest_date = None
+            should_act = latest_date is None or (_CUTOFF_DT - latest_date) > _td(days=365)
+            if not should_act:
+                return len(posts) == 0
+            # Expect ≥1 POST: ServiceRequest with CT code
+            return any(
+                _has_ref(pl) and pl.get("resourceType") == "ServiceRequest"
+                for _, pl in posts
+            )
+
+        # ── task2: DVT anticoag count ≠ 1 → fix order ───────────────
+        elif task_type == "task2":
+            _ANTICOAG = ("heparin", "enoxaparin", "lovenox", "fondaparinux",
+                         "rivaroxaban", "apixaban", "dabigatran", "warfarin",
+                         "tinzaparin", "dalteparin")
+            resources = self._mock_get_entries("MedicationRequest", f"patient={mrn}&status=active")
+            active = [r for r in resources
+                      if (self._resource_date(r) or "") < _CUTOFF
+                      and any(k in json.dumps(r).lower() for k in _ANTICOAG)]
+            should_act = len(active) != 1
+            if not should_act:
+                return len(posts) == 0
+            return any(
+                _has_ref(pl) and pl.get("resourceType") == "MedicationRequest"
+                for _, pl in posts
+            )
+
+        # ── task4: urinary catheter > 48h → remove ──────────────────
+        elif task_type == "task4":
+            # Parse current time from task context
+            current_time = _CUTOFF_DT
+            ctx = self._task.get("context", "") if self._task else ""
+            m = re.search(r"It'?s\s+([\d\-T:+Z]+)\s+now", ctx)
+            if m:
+                current_time = _parse_dt(m.group(1)) or _CUTOFF_DT
+
+            resources = self._mock_get_entries("Procedure", f"patient={mrn}&code=NUR1373")
+            relevant = []
+            for r in resources:
+                d = _parse_dt(self._resource_date(r))
+                if d and d <= current_time:
+                    relevant.append((d, r))
+            if not relevant:
+                return len(posts) == 0
+            latest_date, latest_r = max(relevant, key=lambda x: x[0])
+            status = (latest_r.get("status") or "").lower()
+            if status in ("stopped", "completed", "cancelled", "entered-in-error"):
+                return len(posts) == 0
+            age_h = (current_time - latest_date).total_seconds() / 3600
+            should_act = age_h > 48
+            if not should_act:
+                return len(posts) == 0
+            return any(_has_ref(pl) for _, pl in posts)
+
+        # ── task5: C64.2 + CT > 3 months ago → order CT ─────────────
+        elif task_type == "task5":
+            conditions = self._mock_get_entries("Condition", f"patient={mrn}&code=C64.2")
+            has_c64 = any((self._resource_date(r) or "") < _CUTOFF for r in conditions)
+            if not has_c64:
+                return len(posts) == 0
+            ct_resources = self._mock_get_entries(
+                "Procedure", f"patient={mrn}&code=IMGCT0491,IMGIL0001,74177"
+            )
+            valid_cts = [r for r in ct_resources if (self._resource_date(r) or "") < _CUTOFF]
+            if valid_cts:
+                latest_ct = _parse_dt(max(self._resource_date(r) or "" for r in valid_cts))
+            else:
+                latest_ct = None
+            should_act = latest_ct is None or (_CUTOFF_DT - latest_ct) > _td(days=90)
+            if not should_act:
+                return len(posts) == 0
+            return any(
+                _has_ref(pl) and pl.get("resourceType") in {"ServiceRequest", "MedicationRequest"}
+                for _, pl in posts
+            )
+
+        # ── task6: TSH > 10 twice ≥ 1 month apart → thyroid rx ──────
+        elif task_type == "task6":
+            resources = self._mock_get_entries("Observation", f"patient={mrn}&code=TSH")
+            elevated_dates: List[_dt] = []
+            for r in resources:
+                if (self._resource_date(r) or "") >= _CUTOFF:
+                    continue
+                try:
+                    val = float(r.get("valueQuantity", {}).get("value", "nan"))
+                    d = _parse_dt(self._resource_date(r))
+                    if val > 10 and d:
+                        elevated_dates.append(d)
+                except (TypeError, ValueError):
+                    pass
+            elevated_dates.sort()
+            should_act = False
+            for i in range(len(elevated_dates)):
+                for j in range(i + 1, len(elevated_dates)):
+                    if (elevated_dates[j] - elevated_dates[i]).days >= 30:
+                        should_act = True
+                        break
+                if should_act:
+                    break
+            if not should_act:
+                return len(posts) == 0
+            return any(
+                _has_ref(pl) and pl.get("resourceType") == "MedicationRequest"
+                for _, pl in posts
+            )
+
+        # ── task7: QTc > 500 → stop QT drug + ECG order ─────────────
+        elif task_type == "task7":
+            resources = self._mock_get_entries("Observation", f"patient={mrn}&code=QTCINTERVAL")
+            valid = [r for r in resources if (self._resource_date(r) or "") < _CUTOFF]
+            if not valid:
+                return False
+            latest = max(valid, key=lambda r: self._resource_date(r) or "")
+            try:
+                qtc_val = float(latest["valueQuantity"]["value"])
+            except (KeyError, TypeError, ValueError):
+                return False
+
+            if qtc_val <= 500:
+                return len(posts) == 0
+
+            _QT_MEDS = {"ondansetron", "prochlorperazine", "haloperidol", "quetiapine",
+                        "olanzapine", "risperidone", "ziprasidone", "clozapine", "chlorpromazine"}
+            _NON_ACTIVE = {"stopped", "cancelled", "completed", "entered-in-error"}
+            found_ecg = any(
+                _has_ref(pl) and pl.get("resourceType") == "ServiceRequest"
+                and pl.get("status", "").lower() == "active"
+                and ("445118002" in str(pl).lower() or "ecg" in str(pl).lower()
+                     or "electrocardiogram" in str(pl).lower())
+                for _, pl in posts
+            )
+            found_stop = any(
+                _has_ref(pl) and pl.get("resourceType") == "MedicationRequest"
+                and pl.get("status", "").lower() in _NON_ACTIVE
+                and any(w in str(pl).lower() for w in _QT_MEDS)
+                for _, pl in posts
+            )
+            return found_ecg and found_stop
+
+        # ── task8: active opioid + no naloxone → add naloxone ────────
+        elif task_type == "task8":
+            _OPIOIDS = ("hydromorphone", "oxycodone", "fentanyl", "hydrocodone", "morphine")
+            resources = self._mock_get_entries("MedicationRequest", f"patient={mrn}&status=active")
+            active_opioids = [
+                r for r in resources
+                if (self._resource_date(r) or "") < _CUTOFF
+                and any(k in json.dumps(r).lower() for k in _OPIOIDS)
+            ]
+            has_naloxone = any(
+                "naloxone" in json.dumps(r).lower() for r in resources
+                if (self._resource_date(r) or "") < _CUTOFF
+            )
+            should_act = len(active_opioids) > 0 and not has_naloxone
+            if not should_act:
+                return len(posts) == 0
+            return any(
+                _has_ref(pl) and pl.get("resourceType") == "MedicationRequest"
+                and "naloxone" in json.dumps(pl).lower()
+                for _, pl in posts
+            )
+
+        # ── task9: flu vaccine > 365 days → order vaccine ───────────
+        elif task_type == "task9":
+            current_time_str = _CUTOFF
+            ctx = self._task.get("context", "") if self._task else ""
+            m = re.search(r"It'?s\s+([\d\-T:+Z]+)\s+now", ctx)
+            if m:
+                current_time_str = m.group(1)
+            current_time = _parse_dt(current_time_str) or _CUTOFF_DT
+
+            resources = self._mock_get_entries("Procedure", f"patient={mrn}&code=90686")
+            valid = [r for r in resources if (_parse_dt(self._resource_date(r)) or _CUTOFF_DT) <= current_time]
+            if valid:
+                latest = max((_parse_dt(self._resource_date(r)) for r in valid if self._resource_date(r)),
+                             default=None)
+            else:
+                latest = None
+            should_act = latest is None or (current_time - latest) > _td(days=365)
+            if not should_act:
+                return len(posts) == 0
+            return any(_has_ref(pl) and pl.get("resourceType") == "ServiceRequest" for _, pl in posts)
+
+        # ── task10: COVID vaccine > 12 months → order vaccine ────────
+        elif task_type == "task10":
+            current_time_str = _CUTOFF
+            ctx = self._task.get("context", "") if self._task else ""
+            m = re.search(r"It'?s\s+([\d\-T:+Z]+)\s+now", ctx)
+            if m:
+                current_time_str = m.group(1)
+            current_time = _parse_dt(current_time_str) or _CUTOFF_DT
+
+            resources = self._mock_get_entries("Procedure", f"patient={mrn}&code=COVIDVACCINE")
+            valid = [r for r in resources if (_parse_dt(self._resource_date(r)) or _CUTOFF_DT) <= current_time]
+            if valid:
+                latest = max((_parse_dt(self._resource_date(r)) for r in valid if self._resource_date(r)),
+                             default=None)
+            else:
+                latest = None
+            should_act = latest is None or (current_time - latest) > _td(days=365)
+            if not should_act:
+                return len(posts) == 0
+            return any(_has_ref(pl) and pl.get("resourceType") == "ServiceRequest" for _, pl in posts)
+
+        # ── v2_task5: Mg < 2.0 in last 24h → Mg replacement ─────────
+        elif task_type == "v2_task5":
+            current_time_str = _CUTOFF
+            ctx = self._task.get("context", "") if self._task else ""
+            m = re.search(r"It'?s\s+([\d\-T:+Z]+)\s+now", ctx)
+            if m:
+                current_time_str = m.group(1)
+            current_time = _parse_dt(current_time_str) or _CUTOFF_DT
+            window_start = current_time - _td(hours=24)
+
+            resources = self._mock_get_entries("Observation", f"patient={mrn}&code=MG")
+            recent = []
+            for r in resources:
+                d = _parse_dt(self._resource_date(r))
+                if d and window_start <= d <= current_time:
+                    try:
+                        val = float(r.get("valueQuantity", {}).get("value", "nan"))
+                        recent.append(val)
+                    except (TypeError, ValueError):
+                        pass
+            if not recent:
+                return len(posts) == 0  # no recent Mg → no action
+            should_act = max(recent) < 2.0  # latest Mg low
+            # Use latest value
+            latest_mg = recent[-1]
+            should_act = latest_mg < 2.0
+            if not should_act:
+                return len(posts) == 0
+            return any(_has_ref(pl) and pl.get("resourceType") == "MedicationRequest" for _, pl in posts)
+
+        # ── v2_task9: K+ < 3.5 → K replacement ──────────────────────
+        elif task_type == "v2_task9":
+            current_time_str = _CUTOFF
+            ctx = self._task.get("context", "") if self._task else ""
+            m = re.search(r"It'?s\s+([\d\-T:+Z]+)\s+now", ctx)
+            if m:
+                current_time_str = m.group(1)
+            current_time = _parse_dt(current_time_str) or _CUTOFF_DT
+
+            resources = self._mock_get_entries("Observation", f"patient={mrn}&code=K")
+            valid = []
+            for r in resources:
+                d = _parse_dt(self._resource_date(r))
+                if d and d <= current_time:
+                    try:
+                        val = float(r.get("valueQuantity", {}).get("value", "nan"))
+                        valid.append((d, val))
+                    except (TypeError, ValueError):
+                        pass
+            if not valid:
+                return False  # can't determine
+            _, latest_k = max(valid, key=lambda x: x[0])
+            should_act = latest_k < 3.5
+            if not should_act:
+                return len(posts) == 0
+            return any(_has_ref(pl) and pl.get("resourceType") == "MedicationRequest" for _, pl in posts)
+
+        # ── v2_task10: A1C > 1 year → order A1C ─────────────────────
+        elif task_type == "v2_task10":
+            current_time_str = _CUTOFF
+            ctx = self._task.get("context", "") if self._task else ""
+            m = re.search(r"It'?s\s+([\d\-T:+Z]+)\s+now", ctx)
+            if m:
+                current_time_str = m.group(1)
+            current_time = _parse_dt(current_time_str) or _CUTOFF_DT
+
+            resources = self._mock_get_entries("Observation", f"patient={mrn}&code=A1C")
+            valid = []
+            for r in resources:
+                d = _parse_dt(self._resource_date(r))
+                if d and d <= current_time:
+                    valid.append(d)
+            if not valid:
+                latest = None
+            else:
+                latest = max(valid)
+            should_act = latest is None or (current_time - latest) > _td(days=365)
+            if not should_act:
+                return len(posts) == 0
+            return any(_has_ref(pl) and pl.get("resourceType") == "ServiceRequest" for _, pl in posts)
+
+        return False  # unsupported task type
+
     def _evaluate(self) -> float:
         if self._task is None:
             return 0.0
 
-        task_type = self._task["id"].split("_")[0]
-        case_data = {
-            "id": self._task["id"],
-            "instruction": self._task["instruction"],
-            "context": self._task.get("context", ""),
-            "sol": self._task.get("sol", []),
-            "eval_MRN": self._task.get("eval_MRN", ""),
-        }
-        benchmark_type = self._task.get("_benchmark_type", "")
+        task_id = self._task["id"]
+        # v2_ tasks: type is everything before the numeric suffix, e.g. "v2_task5"
+        parts = task_id.rsplit("_", 1)
+        task_type = parts[0] if len(parts) == 2 and parts[1].isdigit() else task_id
+        mrn = self._task.get("eval_MRN", "")
 
-        return compute_shaped_reward(
-            task_type=task_type,
-            case_data=case_data,
-            history=self._history,
-            agent_answer=self._agent_answer,
-            fhir_api_base=_FHIR_API_BASE,
-            step_count=self._step_count,
-            max_steps=self._max_steps,
-            refsol_pass=False,  # refsol not run during training (no live server)
-            benchmark_type=benchmark_type,
-        )
+        refsol_pass = self._compute_refsol_pass(task_type, mrn)
+
+        # ── Count GETs and unique GET URLs ──────────────────────────
+        get_urls: List[str] = []
+        num_posts = 0
+        for msg in self._history:
+            if msg.role != "agent":
+                continue
+            if msg.content.startswith("GET "):
+                url = msg.content.split()[1] if len(msg.content.split()) > 1 else ""
+                get_urls.append(url)
+            elif msg.content.startswith("POST "):
+                num_posts += 1
+
+        # ── Reward ──────────────────────────────────────────────────
+        reward = 1.0 if refsol_pass else 0.0
+
+        # Bonus: agent read the chart before deciding
+        if get_urls:
+            reward += 0.2
+
+        # Penalty: repeated identical GET URLs
+        seen: set = set()
+        redundant = 0
+        for url in get_urls:
+            if url in seen:
+                redundant += 1
+            seen.add(url)
+        reward -= min(0.05 * redundant, 0.2)
+
+        return max(-0.3, min(1.2, reward))
 
 
 # ---------------------------------------------------------------------------
@@ -652,21 +1029,49 @@ def reward_func(prompts, completions, environments=None, **kwargs):
 # Dataset helpers
 # ---------------------------------------------------------------------------
 
+# RL-worthy task types: require conditional act/no-act decision.
+# Excludes task3 (always-action BP vitals) which provides no decision signal.
+_RL_TASK_TYPES = {
+    "task1", "task2", "task4", "task5", "task6",
+    "task7", "task8", "task9", "task10",
+    "v2_task5", "v2_task9", "v2_task10",
+}
+
+
 def _get_tasks() -> List[Dict]:
+    """Load all RL-worthy tasks from new_patient_tasks.json and test_data_v2.json."""
     global _TASKS
     if not _TASKS:
-        data_file = _DATA_DIR / "stratified_benchmark.json"
-        with open(data_file) as f:
-            _TASKS = json.load(f)
+        with open(_DATA_DIR / "new_patient_tasks.json") as f:
+            all_tasks: List[Dict] = json.load(f)
+
+        # Load v2 tasks (Mg/K+/A1c) with "v2_" prefix to avoid ID collisions
+        v2_path = (
+            Path(__file__).resolve().parent.parent
+            / "medagentbenchv2" / "medagentbench_v2" / "src"
+            / "MedAgentBench" / "data" / "medagentbench" / "test_data_v2.json"
+        )
+        if v2_path.exists():
+            with open(v2_path) as f:
+                v2_raw: List[Dict] = json.load(f)
+            _V2_RL = {"task5", "task9", "task10"}
+            for t in v2_raw:
+                ttype = "_".join(t["id"].split("_")[:-1])
+                if ttype in _V2_RL:
+                    prefixed = dict(t)
+                    prefixed["id"] = f"v2_{t['id']}"
+                    all_tasks.append(prefixed)
+
+        _TASKS = [
+            t for t in all_tasks
+            if any(t["id"].startswith(f"{tt}_") for tt in _RL_TASK_TYPES)
+        ]
     return _TASKS
 
 
 def build_dataset(data_dir: Path, num_tasks: Optional[int] = None) -> Dataset:
-    """Build training dataset from MedAgentBench stratified benchmark."""
-    data_file = data_dir / "stratified_benchmark.json"
-    with open(data_file) as f:
-        tasks = json.load(f)
-
+    """Build training dataset from all RL-worthy MedAgentBench tasks."""
+    tasks = _get_tasks()
     if num_tasks is not None:
         tasks = tasks[:num_tasks]
 
@@ -696,11 +1101,11 @@ def main():
     )
     parser.add_argument(
         "--data-dir", type=str, default=str(_DATA_DIR),
-        help="Path to directory containing stratified_benchmark.json",
+        help="Path to directory containing new_patient_tasks.json",
     )
     parser.add_argument(
         "--num-tasks", type=int, default=None,
-        help="Number of tasks to use (default: all 90)",
+        help="Number of tasks to use (default: all RL-worthy tasks)",
     )
     parser.add_argument(
         "--max-completion-length", type=int, default=512,
