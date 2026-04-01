@@ -94,54 +94,49 @@ def _send_get_request_live(url: str) -> Dict[str, Any]:
 # ---------------------------------------------------------------------------
 
 def _load_eval_module():
-    """Try to import the refsol evaluation module from medagentbenchv2."""
-    refsol_path = (
+    """Import new_refsol from medagentbenchevals (v2 graders for all tasks)."""
+    src_dir = (
         _DEFAULT_DATA_DIR.parents[1]
         / "medagentbenchv2"
         / "medagentbench_v2"
         / "src"
-        / "MedAgentBench"
-        / "src"
-        / "server"
-        / "tasks"
-        / "medagentbench"
     )
-    if str(refsol_path) not in sys.path:
-        sys.path.insert(0, str(refsol_path))
-        src_root = refsol_path.parents[3]
-        if str(src_root) not in sys.path:
-            sys.path.insert(0, str(src_root))
+    if str(src_dir) not in sys.path:
+        sys.path.insert(0, str(src_dir))
     try:
         import importlib
-        refsol = importlib.import_module("refsol")
-        return refsol
-    except ImportError:
+        new_refsol = importlib.import_module("medagentbenchevals.new_refsol")
+        return new_refsol
+    except ImportError as e:
+        print(f"Could not load medagentbenchevals.new_refsol: {e}")
         return None
 
 
 def _patch_refsol_with_mock(mock: MockFHIR) -> None:
-    """Monkey-patch the refsol utils module to use our mock FHIR client.
+    """Monkey-patch medagentbenchevals.utils so evaluation works without a live FHIR server.
 
-    The refsol graders call `send_get_request(url)` from their utils module.
-    We replace that function so evaluation works without a real FHIR server.
+    new_refsol graders import send_get_request from their utils module.
+    We replace it with the MockFHIR backend so offline evaluation works.
     """
-    refsol_path = (
+    src_dir = (
         _DEFAULT_DATA_DIR.parents[1]
         / "medagentbenchv2"
         / "medagentbench_v2"
         / "src"
-        / "MedAgentBench"
-        / "src"
-        / "server"
-        / "tasks"
-        / "medagentbench"
     )
-    if str(refsol_path) not in sys.path:
-        sys.path.insert(0, str(refsol_path))
+    if str(src_dir) not in sys.path:
+        sys.path.insert(0, str(src_dir))
     try:
         import importlib
-        utils_mod = importlib.import_module("utils")
-        utils_mod.send_get_request = lambda url, params=None, headers=None: mock.get(url)
+        import json as _json
+        new_refsol = importlib.import_module("medagentbenchevals.new_refsol")
+        # new_refsol uses `from .utils import *` so the copy in its namespace must be patched.
+        new_refsol.send_get_request = (
+            lambda url, params=None, headers=None, _m=mock, _j=_json: {
+                "status_code": 200,
+                "data": _j.dumps(_m.get(url).get("data", {})),
+            }
+        )
     except ImportError:
         pass
 
@@ -410,7 +405,11 @@ class MedAgentBenchEnvironment(
         if task is None:
             return 0.0
 
-        task_type = task.id.split("_")[0]
+        # Extract task type robustly:
+        #   "task1_3"     → "task1"
+        #   "v2_task5_2"  → "v2_task5"   (rsplit only the trailing digit suffix)
+        parts = task.id.rsplit("_", 1)
+        task_type = parts[0] if len(parts) == 2 and parts[1].isdigit() else task.id
 
         case_data = {
             "id": task.id,
@@ -420,12 +419,13 @@ class MedAgentBenchEnvironment(
             "eval_MRN": task.eval_MRN,
         }
 
-        # --- Run binary refsol grader ---
+        # --- Run binary refsol grader (new_refsol has all v1+v2 tasks) ---
         refsol_pass = False
         if self._refsol is None:
             self._refsol = _load_eval_module()
 
         if self._refsol is not None:
+            # new_refsol functions are named task1…task10, v2_task5, v2_task9, v2_task10
             grader_func = getattr(self._refsol, task_type, None)
             if grader_func is not None:
                 eval_results = _EvalResults(
@@ -439,25 +439,14 @@ class MedAgentBenchEnvironment(
                 except Exception as e:
                     print(f"Refsol error for {task.id}: {e}")
 
-        # --- Compute shaped reward ---
-        benchmark_type = ""
-        for t in self._tasks:
-            if t["id"] == task.id:
-                benchmark_type = t.get("_benchmark_type", "")
-                break
-
         adapted_history = [_ChatAdapter(m.role, m.content) for m in self._state.chat_history]
 
         return compute_shaped_reward(
             task_type=task_type,
-            case_data=case_data,
             history=adapted_history,
-            agent_answer=self._state.agent_answer,
-            fhir_api_base=self._fhir_api_base,
+            refsol_pass=refsol_pass,
             step_count=self._state.step_count,
             max_steps=self._max_steps,
-            refsol_pass=refsol_pass,
-            benchmark_type=benchmark_type,
         )
 
 
