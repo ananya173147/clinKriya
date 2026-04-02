@@ -37,6 +37,7 @@ medagentbench_env/data/fhir_cache.json
 
 # Training outputs and model checkpoints
 rl_output/
+output*/
 *.safetensors
 *.bin
 tokenizer.json
