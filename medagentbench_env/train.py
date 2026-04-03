@@ -1397,10 +1397,16 @@ def reward_func(prompts, completions, environments=None, **kwargs):
     n_prompts = len(envs)
     if n_prompts == 0:
         return [0.0] * num_completions
-    
+
     num_generations = num_completions // n_prompts  # e.g. 4 // 2 = 2
     rewards = []
     for env in envs:
+        # Evaluate partial episodes (model stopped without calling finish or
+        # hitting max_steps). This ensures GET_CREDIT and action rewards are
+        # still visible as a learning signal instead of silently returning 0.
+        if not env.done:
+            env.reward = env._evaluate()
+            env._print_trace()
         rewards.extend([float(env.reward)] * num_generations)
     
     # Safety: pad or truncate to exact length GRPO expects
@@ -1642,8 +1648,8 @@ def main():
         help="Task categories to include, e.g. task1 task2 v2_task5",
     )
     parser.add_argument(
-        "--max-completion-length", type=int, default=10000,
-        help="Max tokens per generation (tool calls are short; 512 is enough)",
+        "--max-completion-length", type=int, default=3000,
+        help="Max tokens per generation. Capped to prevent infinite tool-call loops.",
     )
     parser.add_argument(
         "--output-dir", type=str,
@@ -1813,6 +1819,7 @@ def main():
         num_generations=int(args.num_generations),
         beta=0.01,
         temperature=0.9,
+        max_tool_calling_iterations=_MAX_STEPS + 4,
     )
     if "qwen3" in args.model.lower() or args.disable_qwen_thinking:
         _grpo_kwargs["chat_template_kwargs"] = {"enable_thinking": False}
