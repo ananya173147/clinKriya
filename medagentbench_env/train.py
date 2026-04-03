@@ -1648,8 +1648,8 @@ def main():
         help="Task categories to include, e.g. task1 task2 v2_task5",
     )
     parser.add_argument(
-        "--max-completion-length", type=int, default=3000,
-        help="Max tokens per generation. Capped to prevent infinite tool-call loops.",
+        "--max-completion-length", type=int, default=8000,
+        help="Max tokens per generation. max_tool_calling_iterations prevents runaway loops.",
     )
     parser.add_argument(
         "--output-dir", type=str,
@@ -1818,7 +1818,7 @@ def main():
         bf16=False,
         num_generations=int(args.num_generations),
         beta=0.01,
-        temperature=0.9,
+        temperature=1.2,
         max_tool_calling_iterations=_MAX_STEPS + 4,
     )
     if "qwen3" in args.model.lower() or args.disable_qwen_thinking:
