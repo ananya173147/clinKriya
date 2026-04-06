@@ -1151,34 +1151,40 @@ class MedAgentTrainEnv:
         mrn = self._task.get("eval_MRN", "")
 
         # Use new_refsol graders (same as eval) — single source of truth.
+        # Both new_refsol and fallback _compute_refsol_pass run inside a
+        # 60s thread timeout to prevent any grader from hanging the run.
         refsol_pass = False
         new_refsol = _get_new_refsol()
-        if new_refsol is not None:
-            grader_fn = getattr(new_refsol, task_type, None)
-            if grader_fn is not None:
-                case_data = {
-                    "id": task_id,
-                    "instruction": self._task.get("instruction", ""),
-                    "context": self._task.get("context", ""),
-                    "sol": self._task.get("sol", []),
-                    "eval_MRN": mrn,
-                }
-                eval_results = _types.SimpleNamespace(history=self._history, result=None)
+
+        def _run_grader() -> bool:
+            if new_refsol is not None:
+                grader_fn = getattr(new_refsol, task_type, None)
+                if grader_fn is not None:
+                    case_data = {
+                        "id": task_id,
+                        "instruction": self._task.get("instruction", ""),
+                        "context": self._task.get("context", ""),
+                        "sol": self._task.get("sol", []),
+                        "eval_MRN": mrn,
+                    }
+                    eval_results = _types.SimpleNamespace(history=self._history, result=None)
+                    try:
+                        return grader_fn(case_data, eval_results, _FHIR_API_BASE) is True
+                    except Exception as e:
+                        print(f"new_refsol grader error for {task_id}: {e}")
+            return self._compute_refsol_pass(task_type, mrn)
+
+        try:
+            with concurrent.futures.ThreadPoolExecutor(max_workers=1) as _ex:
+                _fut = _ex.submit(_run_grader)
                 try:
-                    with concurrent.futures.ThreadPoolExecutor(max_workers=1) as _ex:
-                        _fut = _ex.submit(grader_fn, case_data, eval_results, _FHIR_API_BASE)
-                        try:
-                            refsol_pass = _fut.result(timeout=60) is True
-                        except concurrent.futures.TimeoutError:
-                            print(f"new_refsol grader timeout for {task_id} — falling back")
-                            refsol_pass = self._compute_refsol_pass(task_type, mrn)
-                except Exception as e:
-                    print(f"new_refsol grader error for {task_id}: {e}")
-                    refsol_pass = self._compute_refsol_pass(task_type, mrn)
-            else:
-                refsol_pass = self._compute_refsol_pass(task_type, mrn)
-        else:
-            refsol_pass = self._compute_refsol_pass(task_type, mrn)
+                    refsol_pass = _fut.result(timeout=60)
+                except concurrent.futures.TimeoutError:
+                    print(f"grader timeout for {task_id} — reward_pass=False")
+                    refsol_pass = False
+        except Exception as e:
+            print(f"grader exception for {task_id}: {e}")
+            refsol_pass = False
 
         # ── Count GETs and unique GET URLs ──────────────────────────
         get_urls: List[str] = []
@@ -1846,8 +1852,8 @@ def main():
         log_completions=True,
         num_completions_to_print=2,
         logging_steps=1,
-        save_steps=25,
-        save_total_limit=4,
+        save_steps=10,
+        save_total_limit=6,
         fp16=True,
         bf16=False,
         num_generations=int(args.num_generations),
