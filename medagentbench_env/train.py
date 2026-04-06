@@ -53,6 +53,15 @@ MockFHIR = _mod.MockFHIR
 _DATA_DIR = Path(__file__).resolve().parent / "data"
 
 _CACHE_PATH = _DATA_DIR / "fhir_cache.json"
+_CACHE_GZ_PATH = _DATA_DIR / "fhir_cache.json.gz"
+
+# Auto-decompress if only the .gz is present (e.g. freshly cloned repo)
+if not _CACHE_PATH.exists() and _CACHE_GZ_PATH.exists():
+    import gzip as _gzip
+    print(f"Decompressing {_CACHE_GZ_PATH} → {_CACHE_PATH} ...")
+    with _gzip.open(_CACHE_GZ_PATH, "rb") as _f_in, open(_CACHE_PATH, "wb") as _f_out:
+        _f_out.write(_f_in.read())
+    print("Done.")
 
 _SYSTEM_PROMPT_PATH = _DATA_DIR / "new_system.txt"
 

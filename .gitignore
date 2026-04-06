@@ -32,7 +32,7 @@ env/
 # Benchmark outputs
 medagentbenchv2/medagentbench_v2/benchmark_results/
 
-# Large data files (transfer separately via scp)
+# Large data files — fhir_cache.json.gz is tracked; .json is auto-decompressed at runtime
 medagentbench_env/data/fhir_cache.json
 
 # Training outputs and model checkpoints
