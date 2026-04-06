@@ -16,6 +16,7 @@ Usage:
 """
 
 import argparse
+import concurrent.futures
 import csv
 import json
 import math
@@ -816,7 +817,10 @@ class MedAgentTrainEnv:
                         pass
 
         def _has_ref(pl: Dict) -> bool:
-            return pl.get("subject", {}).get("reference") == patient_ref
+            subj = pl.get("subject", {})
+            if isinstance(subj, list):
+                subj = subj[0] if subj else {}
+            return subj.get("reference") == patient_ref
 
         def _parse_dt(s: Optional[str]) -> Optional[_dt]:
             if not s:
@@ -1152,7 +1156,13 @@ class MedAgentTrainEnv:
                 }
                 eval_results = _types.SimpleNamespace(history=self._history, result=None)
                 try:
-                    refsol_pass = grader_fn(case_data, eval_results, _FHIR_API_BASE) is True
+                    with concurrent.futures.ThreadPoolExecutor(max_workers=1) as _ex:
+                        _fut = _ex.submit(grader_fn, case_data, eval_results, _FHIR_API_BASE)
+                        try:
+                            refsol_pass = _fut.result(timeout=60) is True
+                        except concurrent.futures.TimeoutError:
+                            print(f"new_refsol grader timeout for {task_id} — falling back")
+                            refsol_pass = self._compute_refsol_pass(task_type, mrn)
                 except Exception as e:
                     print(f"new_refsol grader error for {task_id}: {e}")
                     refsol_pass = self._compute_refsol_pass(task_type, mrn)
@@ -1234,7 +1244,10 @@ class MedAgentTrainEnv:
         patient_ref = f"Patient/{mrn}"
 
         def _has_ref(pl: Dict) -> bool:
-            return pl.get("subject", {}).get("reference") == patient_ref
+            subj = pl.get("subject", {})
+            if isinstance(subj, list):
+                subj = subj[0] if subj else {}
+            return subj.get("reference") == patient_ref
 
         for idx, msg in enumerate(self._history):
             if msg.role == "agent" and msg.content.startswith("POST"):
@@ -1714,6 +1727,18 @@ def main():
         default=os.environ.get("HF_TOKEN") or _DEFAULT_HF_TOKEN,
         help="HuggingFace API token (or set HF_TOKEN env var)",
     )
+    parser.add_argument(
+        "--resume-from-checkpoint", type=str, default=None,
+        help="Path to checkpoint directory to resume training from",
+    )
+    parser.add_argument(
+        "--beta", type=float, default=0.001,
+        help="KL penalty coefficient (default: 0.001)",
+    )
+    parser.add_argument(
+        "--temperature", type=float, default=1.5,
+        help="Sampling temperature for generation (default: 1.5)",
+    )
     args = parser.parse_args()
 
     _SELECTED_TASK_TYPES = set(args.task_types)
@@ -1812,13 +1837,13 @@ def main():
         log_completions=True,
         num_completions_to_print=2,
         logging_steps=1,
-        save_steps=50,
-        save_total_limit=2,
+        save_steps=25,
+        save_total_limit=4,
         fp16=True,
         bf16=False,
         num_generations=int(args.num_generations),
-        beta=0.01,
-        temperature=1.2,
+        beta=args.beta,
+        temperature=args.temperature,
         max_tool_calling_iterations=_MAX_STEPS + 4,
     )
     if "qwen3" in args.model.lower() or args.disable_qwen_thinking:
@@ -1836,7 +1861,7 @@ def main():
         args=grpo_config,
     )
 
-    trainer.train()
+    trainer.train(resume_from_checkpoint=args.resume_from_checkpoint)
     _export_reward_graph(args.output_dir, trainer.state.log_history)
     _export_completions_debug(args.output_dir)
     trainer.save_model(args.output_dir)
