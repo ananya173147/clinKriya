@@ -37,13 +37,25 @@ medagentbench_env/data/fhir_cache.json
 
 # Training outputs and model checkpoints (weights too large for git)
 rl_output/
+output/
+output_rollout_v2/
+output_smoke/
+rl_training_old/
 output_v3/completions/
 output_v3/debug_readable/
 *.safetensors
-*.bin
+*.pt
+*.pth
 tokenizer.json
 
-# Keep logs, docs, and checkpoint metadata
+# Keep logs, docs, checkpoint metadata (not weights)
 !output_v3_*.log
 !output_v3.log
 !output_smoke.log
+output_v3/checkpoint-*/adapter_model.safetensors
+output_v3/checkpoint-*/optimizer.pt
+output_v3/checkpoint-*/rng_state.pth
+output_v3/checkpoint-*/scaler.pt
+output_v3/checkpoint-*/scheduler.pt
+output_v3/checkpoint-*/training_args.bin
+output_v3/checkpoint-*/ref/adapter_model.safetensors
