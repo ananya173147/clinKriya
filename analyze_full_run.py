@@ -120,7 +120,6 @@ def load_episodes():
         path = BASE / lname
         if not path.exists():
             continue
-        current_step = None
         last_pbar = None
         with open(path) as f:
             for line in f:
@@ -130,8 +129,7 @@ def load_episodes():
                 m = _TRACE_RE.search(line)
                 if m:
                     task_id, steps, reward = m.group(1), int(m.group(2)), float(m.group(3))
-                    task_type = re.sub(r"_\d+$", "", task_id)          # e.g. task9_25 → task9
-                    task_type = re.sub(r"^v2_", "", task_type)          # v2_task9 → task9
+                    task_type = re.sub(r"_\d+$", "", task_id)  # e.g. task9_25 → task9, v2_task9_17 → v2_task9
                     episodes.append({
                         "task_id":   task_id,
                         "task_type": task_type,
@@ -280,16 +278,18 @@ def plot_metrics(records, out_path):
 
 # ── Plot 2: per-task-type breakdown ────────────────────────────────────────────
 TASK_LABELS = {
-    "task1":  "T1: CT Abdomen\n(overdue → order scan)",
-    "task2":  "T2: DVT prophylaxis\n(check/create/deduplicate)",
-    "task3":  "T3: Heart rate avg\n(compute 6h & 12h mean)",
-    "task4":  "T4: Urinary catheter\n(>48h → removal order)",
-    "task5":  "T5: Renal CT + referral\n(multi-step: dx → order×2)",
-    "task6":  "T6: TSH/free T4\n(thyroid protocol)",
-    "task7":  "T7: QTc prolonged\n(discontinue meds + ECG)",
-    "task8":  "T8: Opioid + naloxone\n(pair check → order)",
-    "task9":  "T9: Flu vaccine\n(>365d → order vaccine)",
-    "task10": "T10: COVID booster\n(>12mo → order booster)",
+    "task1":     "T1: CT Abdomen\n(overdue → order scan)",
+    "task2":     "T2: DVT prophylaxis\n(check/create/deduplicate)",
+    "task4":     "T4: Urinary catheter\n(>48h → removal order)",
+    "task5":     "T5: Renal CT + referral\n(multi-step: dx → order×2)",
+    "task6":     "T6: TSH/free T4\n(thyroid protocol)",
+    "task7":     "T7: QTc prolonged\n(discontinue meds + ECG)",
+    "task8":     "T8: Opioid + naloxone\n(pair check → order)",
+    "task9":     "T9: Flu vaccine\n(>365d → order vaccine)",
+    "task10":    "T10: COVID booster\n(>12mo → order booster)",
+    "v2_task5":  "v2-T5: Mg dosing\n(lab check → IV repletion)",
+    "v2_task9":  "v2-T9: K+ dosing\n(math + oral repletion)",
+    "v2_task10": "v2-T10: HbA1c order\n(>1yr old → reorder)",
 }
 
 def plot_task_summary(episodes, records, out_path):
@@ -298,7 +298,9 @@ def plot_task_summary(episodes, records, out_path):
     for ep in episodes:
         by_type[ep["task_type"]].append(ep["reward"])
 
-    task_types = sorted(by_type.keys(), key=lambda t: int(re.sub(r"\D","",t) or 0))
+    def _sort_key(t):
+        return (100 if t.startswith("v2_") else 0) + int(re.sub(r"\D", "", t) or 0)
+    task_types = sorted(by_type.keys(), key=_sort_key)
     means  = [np.mean(by_type[t]) for t in task_types]
     stds   = [np.std(by_type[t]) for t in task_types]
     counts = [len(by_type[t]) for t in task_types]
@@ -408,7 +410,9 @@ def print_summary(records, episodes):
 
     print(f"  {'Task':<10} {'N':>5} {'Mean':>7} {'Std':>7} {'Pass(>0.5)':>10}  Description")
     print(f"  {'-'*8:<10} {'-'*4:>5} {'-'*6:>7} {'-'*6:>7} {'-'*9:>10}  -----------")
-    task_types = sorted(by_type.keys(), key=lambda t: int(re.sub(r"\D","",t) or 0))
+    def _sort_key(t):
+        return (100 if t.startswith("v2_") else 0) + int(re.sub(r"\D", "", t) or 0)
+    task_types = sorted(by_type.keys(), key=_sort_key)
     for tt in task_types:
         vals = by_type[tt]
         ppass = sum(1 for v in vals if v > 0.5) / len(vals)
