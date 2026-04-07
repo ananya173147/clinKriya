@@ -35,9 +35,15 @@ medagentbenchv2/medagentbench_v2/benchmark_results/
 # Large data files — fhir_cache.json.gz is tracked; .json is auto-decompressed at runtime
 medagentbench_env/data/fhir_cache.json
 
-# Training outputs and model checkpoints
+# Training outputs and model checkpoints (weights too large for git)
 rl_output/
-output*/
+output_v3/completions/
+output_v3/debug_readable/
 *.safetensors
 *.bin
 tokenizer.json
+
+# Keep logs, docs, and checkpoint metadata
+!output_v3_*.log
+!output_v3.log
+!output_smoke.log

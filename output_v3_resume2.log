@@ -1,0 +1,19 @@
+/usr/local/lib/python3.11/dist-packages/trl/generation/__init__.py:22: UserWarning: TRL currently supports vLLM versions: 0.10.2, 0.11.0, 0.11.1, 0.11.2, 0.12.0. You have version 0.18.0 installed. We recommend installing a supported version to avoid compatibility issues.
+  if is_vllm_available():
+/usr/local/lib/python3.11/dist-packages/trl/generation/vllm_client.py:39: UserWarning: TRL currently supports vLLM versions: 0.10.2, 0.11.0, 0.11.1, 0.11.2, 0.12.0. You have version 0.18.0 installed. We recommend installing a supported version to avoid compatibility issues.
+  if is_vllm_available():
+/usr/local/lib/python3.11/dist-packages/trl/generation/vllm_generation.py:37: UserWarning: TRL currently supports vLLM versions: 0.10.2, 0.11.0, 0.11.1, 0.11.2, 0.12.0. You have version 0.18.0 installed. We recommend installing a supported version to avoid compatibility issues.
+  if is_vllm_available():
+`torch_dtype` is deprecated! Use `dtype` instead!
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Safeguards: max_prompt_length=8192 (trainer compatibility mode), max_history_messages=64, max_tool_response_chars=1500, max_tool_response_entries=12, max_steps=6
+Loaded FHIR cache from /workspace/Healthcare/clinKriya/medagentbench_env/data/fhir_cache.json
+Training dataset: 360 tasks
+Loading weights:   0%|          | 0/311 [00:00<?, ?it/s]Loading weights:   0%|          | 1/311 [00:00<01:33,  3.31it/s]Loading weights:  15%|█▌        | 48/311 [00:00<00:01, 151.99it/s]Loading weights:  27%|██▋       | 83/311 [00:00<00:01, 211.87it/s]Loading weights:  41%|████      | 126/311 [00:00<00:00, 277.05it/s]Loading weights:  53%|█████▎    | 166/311 [00:00<00:00, 313.81it/s]Loading weights:  65%|██████▌   | 203/311 [00:00<00:00, 323.69it/s]Loading weights:  79%|███████▉  | 246/311 [00:00<00:00, 352.16it/s]Loading weights:  93%|█████████▎| 289/311 [00:01<00:00, 375.14it/s]Loading weights: 100%|██████████| 311/311 [00:01<00:00, 281.58it/s]
+chat_template_kwargs: enable_thinking=False
+/workspace/Healthcare/clinKriya/medagentbench_env/train.py:1840: UserWarning: You are using 'environment_factory', which is an experimental feature. This API may change or be removed at any time without prior notice. Silence this warning by setting environment variable TRL_EXPERIMENTAL_SILENCE=1.
+  trainer = GRPOTrainer(
+The tokenizer has new PAD/BOS/EOS tokens that differ from the model config and generation config. The model config and generation config were aligned accordingly, being updated with the tokenizer's values. Updated tokens: {'bos_token_id': None, 'pad_token_id': 151643}.
+Warning: The following arguments do not match the ones in the `trainer_state.json` within the checkpoint directory: 
+	save_steps: 25 (from args) != 50 (from trainer_state.json)
+  0%|          | 0/360 [00:00<?, ?it/s]Passing `generation_config` together with generation-related arguments=({'disable_compile'}) is deprecated and will be removed in future versions. Please pass either a `generation_config` object OR all generation parameters explicitly, but not both.
