@@ -15,7 +15,7 @@ Usage:
 import argparse
 import os
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict
 
 # Lazy imports: only needed when actually training
 try:
