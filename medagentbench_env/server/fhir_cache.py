@@ -56,16 +56,22 @@ def _build_cache_entries(fhir_api_base: str, tasks: List[Dict]) -> Dict[str, Any
         ("MedicationRequest",  {"_count": "5000", "_format": "json"}),
         ("Procedure",          {"_count": "5000", "_format": "json"}),
         ("Observation",        {"_count": "5000", "_format": "json"}),
+        # Server has no Immunization resources (vaccinations stored as Procedure),
+        # but cached so agents can query it without a cache miss.
+        ("Immunization",       {"_count": "5000", "_format": "json"}),
 
         # ── Active medications (task2, task8) ────────────────────────
         ("MedicationRequest",  {"status": "active", "_count": "5000", "_format": "json"}),
 
-        # ── Observation codes ────────────────────────────────────────
+        # ── Observation codes (server uses local codes, not LOINC) ───
         ("Observation", {"code": "A1C",         "_count": "5000", "_format": "json"}),  # task10, v2_task10
         ("Observation", {"code": "QTCINTERVAL", "_count": "5000", "_format": "json"}),  # task7
+        ("Observation", {"code": "QTINTERVAL",  "_count": "5000", "_format": "json"}),  # task7 raw QT
         ("Observation", {"code": "TSH",         "_count": "5000", "_format": "json"}),  # task6
+        ("Observation", {"code": "FT4",         "_count": "5000", "_format": "json"}),  # task6
         ("Observation", {"code": "MG",          "_count": "5000", "_format": "json"}),  # v2_task5
         ("Observation", {"code": "K",           "_count": "5000", "_format": "json"}),  # v2_task9
+        ("Observation", {"code": "HEARTRATE",   "_count": "5000", "_format": "json"}),  # task3
         ("Observation", {"code": "BP",          "_count": "5000", "_format": "json"}),  # vitals
         ("Observation", {"category": "vital-signs", "_count": "5000", "_format": "json"}),
 
@@ -73,8 +79,8 @@ def _build_cache_entries(fhir_api_base: str, tasks: List[Dict]) -> Dict[str, Any
         ("Procedure", {"code": "IMGCT0491",   "_count": "5000", "_format": "json"}),  # task1, task5
         ("Procedure", {"code": "IMGIL0001",   "_count": "5000", "_format": "json"}),  # task1, task5
         ("Procedure", {"code": "NUR1373",     "_count": "5000", "_format": "json"}),  # task4
-        ("Procedure", {"code": "90686",       "_count": "5000", "_format": "json"}),  # task9
-        ("Procedure", {"code": "COVIDVACCINE","_count": "5000", "_format": "json"}),  # task10
+        ("Procedure", {"code": "90686",       "_count": "5000", "_format": "json"}),  # task9 flu vax
+        ("Procedure", {"code": "COVIDVACCINE","_count": "5000", "_format": "json"}),  # task10 covid vax
 
         # ── Condition codes ──────────────────────────────────────────
         ("Condition", {"code": "C64.2",       "_count": "5000", "_format": "json"}),  # task5
@@ -154,6 +160,11 @@ class MockFHIR:
     def __init__(self, cache: Dict[str, Any], fhir_api_base: str = ""):
         self._cache = cache
         self._fhir_api_base = fhir_api_base.rstrip("/")
+        # Lazy index: (family.lower, given.lower, birthDate) → identifier-cache value.
+        # Built on first name+DOB Patient lookup to support v1_task1
+        # (cache only contains Patient?identifier= queries; no name+DOB queries
+        # were captured when the cache was built against the live HAPI server).
+        self._patient_name_index: Optional[Dict[tuple, Dict[str, Any]]] = None
 
     @classmethod
     def from_cache(cls, cache_path: str, fhir_api_base: str = "") -> "MockFHIR":
@@ -161,11 +172,18 @@ class MockFHIR:
             cache = json.load(f)
         return cls(cache, fhir_api_base)
 
+    # Resource types that require a patient parameter to be a valid query
+    _PATIENT_REQUIRED = frozenset({
+        "Observation", "MedicationRequest", "Procedure", "Condition",
+        "ServiceRequest", "AllergyIntolerance", "Immunization", "DiagnosticReport",
+    })
+
     def get(self, url: str) -> Dict[str, Any]:
         """Look up a cached response for the given URL.
 
-        Returns dict with 'status_code' and 'data', or a fallback
-        empty FHIR Bundle if the URL isn't cached.
+        Returns dict with 'status_code' and 'data', or an error dict if the
+        query is structurally invalid (missing required patient param), or an
+        empty FHIR Bundle for valid but uncached queries.
         """
         key = _normalize_url(url)
 
@@ -183,6 +201,32 @@ class MockFHIR:
         if fuzzy_match is not None:
             return fuzzy_match
 
+        # Patient name+DOB search — synthesize from the identifier-cache.
+        parsed = urlparse(key)
+        path = parsed.path.rstrip("/").split("/")[-1]
+        params = parse_qs(parsed.query)
+        if path == "Patient" and "identifier" not in params and (
+            "family" in params or "given" in params or "birthdate" in params
+        ):
+            synth = self._patient_name_dob_lookup(params)
+            if synth is not None:
+                return synth
+
+        # Multi-code query (`code=A,B`): merge per-code lookups.
+        # The HAPI FHIR server interprets a comma-separated list as OR-of-codes,
+        # but the cache only stores per-code keys. Without this, the v2-new
+        # graders for task1/9/10 (which query e.g. code=IMGCT0491,IMGIL0001)
+        # always return empty Bundles, breaking the no-action branch grader.
+        if "code" in params and "," in (params["code"][0] or ""):
+            merged = self._merge_multi_code_query(key, params)
+            if merged is not None:
+                return merged
+
+        # Return an error for clinical resource queries missing the patient param —
+        # this activates the invalid_fhir penalty so malformed queries get penalised.
+        if path in self._PATIENT_REQUIRED and "patient" not in params:
+            return {"error": f"Missing required 'patient' parameter for {path} query"}
+
         # Fallback: return an empty FHIR Bundle (valid response, no data)
         return {
             "status_code": 200,
@@ -194,12 +238,111 @@ class MockFHIR:
             },
         }
 
+    def _build_patient_name_index(self) -> Dict[tuple, Dict[str, Any]]:
+        """Index identifier-cache Patient entries by (family, given, birthDate)."""
+        index: Dict[tuple, Dict[str, Any]] = {}
+        for cached_key, cached_val in self._cache.items():
+            if "/Patient?" not in cached_key or "identifier=" not in cached_key:
+                continue
+            data = cached_val.get("data") if isinstance(cached_val, dict) else None
+            if isinstance(data, str):
+                try: data = json.loads(data)
+                except Exception: continue
+            if not isinstance(data, dict): continue
+            for entry in data.get("entry", []):
+                res = entry.get("resource", {})
+                dob = res.get("birthDate")
+                for name in res.get("name", []):
+                    family = (name.get("family") or "").lower()
+                    for given in name.get("given", []):
+                        index[(family, given.lower(), dob)] = cached_val
+                        # Also key on family alone or given alone for partial-name lookups
+        return index
+
+    def _merge_multi_code_query(self, key: str, params: Dict[str, list]) -> Optional[Dict[str, Any]]:
+        """For a query with `code=A,B,C`, look up each code individually and
+        union the resulting Bundle entries. Returns a merged Bundle, or None
+        if no per-code keys hit."""
+        codes = [c.strip() for c in params["code"][0].split(",") if c.strip()]
+        merged_entries = []
+        seen_ids = set()
+        any_hit = False
+        for code in codes:
+            new_params = dict(params)
+            new_params["code"] = [code]
+            qs = "&".join(
+                f"{k}={v[0]}" for k, v in sorted(new_params.items())
+            )
+            sub_key = key.split("?")[0] + "?" + qs
+            sub_norm = _normalize_url(sub_key)
+            sub_resp = self._cache.get(sub_norm) or self._cache.get(
+                re.sub(r'[&?]_format=json', '', sub_norm).rstrip('?').rstrip('&')
+            )
+            if not sub_resp:
+                # Try fuzzy with single code
+                sub_resp = self._fuzzy_lookup(sub_norm)
+            if not sub_resp:
+                continue
+            any_hit = True
+            data = sub_resp.get("data", {})
+            if isinstance(data, str):
+                try: data = json.loads(data)
+                except Exception: continue
+            for entry in data.get("entry", []) or []:
+                rid = entry.get("resource", {}).get("id")
+                if rid in seen_ids: continue
+                seen_ids.add(rid)
+                merged_entries.append(entry)
+        if not any_hit:
+            return None
+        return {
+            "status_code": 200,
+            "data": {
+                "resourceType": "Bundle", "type": "searchset",
+                "total": len(merged_entries), "entry": merged_entries,
+            },
+        }
+
+    def _patient_name_dob_lookup(self, params: Dict[str, list]) -> Optional[Dict[str, Any]]:
+        """Synthesize a name+DOB Patient search response from the identifier-cache.
+
+        Returns a search Bundle wrapping the matched Patient, or an empty Bundle
+        if no match exists in the cache. None if the cache index is unusable.
+        """
+        if self._patient_name_index is None:
+            self._patient_name_index = self._build_patient_name_index()
+        family = (params.get("family", [""])[0] or "").lower()
+        given = (params.get("given", [""])[0] or "").lower()
+        birthdate = params.get("birthdate", [""])[0] or ""
+        # Require at least family+birthdate or given+birthdate to avoid spurious matches
+        if not birthdate or not (family or given):
+            return None
+        cached_val = self._patient_name_index.get((family, given, birthdate))
+        if cached_val is None:
+            return {
+                "status_code": 200,
+                "data": {
+                    "resourceType": "Bundle", "type": "searchset",
+                    "total": 0, "entry": [],
+                },
+            }
+        # The cached identifier-lookup IS already a search Bundle of total=1; reuse it.
+        return cached_val
+
     def _fuzzy_lookup(self, key: str) -> Optional[Dict[str, Any]]:
-        """Try to match by resource type + patient MRN + code."""
+        """Match on resource path + patient + code (symmetric) + category (symmetric).
+
+        Both code and category are matched symmetrically: if the query specifies
+        a value, the cached entry must have the same value; if the query omits it,
+        the cached entry must also omit it. This prevents broad no-code queries
+        from returning code-specific cached entries, which would hide incorrect
+        query patterns from the agent.
+        """
         parsed = urlparse(key)
         params = parse_qs(parsed.query)
         patient = params.get("patient", [None])[0]
         code = params.get("code", [None])[0]
+        category = params.get("category", [None])[0]
         path = parsed.path.rstrip("/").split("/")[-1]  # e.g. "Observation"
 
         if not patient:
@@ -210,10 +353,15 @@ class MockFHIR:
             cached_params = parse_qs(cached_parsed.query)
             cached_path = cached_parsed.path.rstrip("/").split("/")[-1]
 
-            if (cached_path == path
-                and cached_params.get("patient", [None])[0] == patient
-                and (code is None or cached_params.get("code", [None])[0] == code)):
-                return cached_val
+            if cached_path != path:
+                continue
+            if cached_params.get("patient", [None])[0] != patient:
+                continue
+            if code != cached_params.get("code", [None])[0]:
+                continue
+            if category != cached_params.get("category", [None])[0]:
+                continue
+            return cached_val
 
         return None
 

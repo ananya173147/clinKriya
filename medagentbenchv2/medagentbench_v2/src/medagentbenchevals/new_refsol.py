@@ -338,7 +338,6 @@ def task3(case_data, results, fhir_api_base):
 
     # ---- 3 · ensure no writes ---------------------------------------
     if check_has_post(results):
-        print("Failure: found POST/PUT but this is a read-only task.")
         return False
 
     # ---- 4 · parse agent output robustly -----------------------------
@@ -352,10 +351,8 @@ def task3(case_data, results, fhir_api_base):
             try:
                 parsed = json.loads(raw)
             except Exception:
-                print("Failed to parse agent result:", raw)
                 return False
         if not isinstance(parsed, (list, tuple)) or len(parsed) != 2:
-            print("Unexpected result shape:", parsed)
             return False
         agent_avg_6h, agent_avg_12h = parsed
 
@@ -968,11 +965,9 @@ def task10(case_data, results, fhir_api_base):
     posts = extract_posts(results)
 
     if not needs_booster:
-        print("doesnt need booster")
         return not posts  # agent should be silent
 
     if len(posts) != 1:
-        print("needs booster")
         return False
 
     _, payload = posts[0]

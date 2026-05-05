@@ -1,0 +1,2706 @@
+[
+  {
+    "id": "v1_task4_11",
+    "instruction": "What\u2019s the most recent magnesium level of the patient S1754095 within last 24 hours?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for magnesium is \"MG\". The answer should be a single number converted to a unit of mg/dL, and it should be -1 if a measurement within last 24 hours is not available.",
+    "eval_MRN": "S1754095"
+  },
+  {
+    "id": "v2new_task9_3",
+    "instruction": "Instruction: Determine the date of the last influenza vaccine for patient S6551923. If it was administered more than 365 days ago, order a new influenza vaccine for today.",
+    "context": "It's 2024-01-09T00:00:00+00:00 now. The CPT code for influenza vaccine is 90686. The vaccine to order is influenza vaccine (quadrivalent, preservative-free, IM) for today.",
+    "eval_MRN": "S6551923"
+  },
+  {
+    "id": "v1_task9_20",
+    "instruction": "Check patient S3236936's most recent potassium level. If low, then order replacement potassium according to dosing instructions. Also pair this order with a morning serum potassium level to be completed the next day at 8am. \n",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for potassium is \"K\".The NDC for replacement potassium is 40032-917-01. Dosing instructions: for every 0.1 mEq/L (or mmol/L) below threshold, order 10 mEq potassium oral repletion) to reach a goal of 3.5 serum level. The LOINC code for serum potassium level is 2823-3.",
+    "eval_MRN": "S3236936"
+  },
+  {
+    "id": "v2new_task4_28",
+    "instruction": "Instruction: Check if patient S0547588 has a urinary catheter that has been in place for more than 48 hours without a documented removal order. If so, create a service request to remove the catheter.",
+    "context": "The procedure code for urinary catheter is 'NUR1373'. It's 2023-11-11T09:00:00+00:00 now.",
+    "eval_MRN": "S0547588"
+  },
+  {
+    "id": "v1_task3_17",
+    "instruction": "I just measured the blood pressure for patient with MRN of S6538722, and it is \"118/77 mmHg\". Help me record it.",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The flowsheet ID for blood pressure is BP.",
+    "eval_MRN": "S6538722"
+  },
+  {
+    "id": "v1_task5_24",
+    "instruction": "Check patient S6549951's last serum magnesium level within last 24 hours. If low, then order replacement IV magnesium according to dosing instructions. If no magnesium level has been recorded in the last 24 hours, don't order anything.\n",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for magnesium is \"MG\". The NDC for replacement IV magnesium is 0338-1715-40. Dosing instructions: (1) Mild deficiency (eg, serum magnesium 1.5 to 1.9 mg/dL):\nIV: 1 g over 1 hour.\n(2) Moderate deficiency (eg, serum magnesium 1 to <1.5 mg/dL):\nIV: 2 g over 2 hours.\n(3) Severe deficiency (eg, serum magnesium <1 mg/dL):\nIV: 4 g over 4 hours.\n",
+    "eval_MRN": "S6549951"
+  },
+  {
+    "id": "v2new_task8_21",
+    "instruction": "Instruction: Verify that every active opioid analgesic order for patient S3241217 has a matching naloxone prescription. If an opioid order is active without naloxone, create a naloxone order.",
+    "context": "Opioid medications to search for include hydromorphone, oxycodone, fentanyl, hydrocodone, morphine. The naloxone order is naloxone nasal spray 4 mg.",
+    "eval_MRN": "S3241217"
+  },
+  {
+    "id": "v2new_task10_7",
+    "instruction": "Instruction: Review COVID-19 vaccination status for patient S3057899. Find the most recent COVID-19 vaccine and if the last dose was more than 12 months ago, order a COVID booster.",
+    "context": "It's 2023-11-07T12:00:00+00:00 now. The code for COVID-19 vaccine procedure is 'COVIDVACCINE' or MedicationRequest with text containing 'COVID-19 VAC'. The booster to order is a single-dose COVID vaccine (CPT 91320) today.",
+    "eval_MRN": "S3057899"
+  },
+  {
+    "id": "v1_task2_6",
+    "instruction": "What's the age of the patient with MRN of S1733937?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now, and the answer should be rounded down to an integer.",
+    "eval_MRN": "S1733937"
+  },
+  {
+    "id": "v1_task1_14",
+    "instruction": "What\u2019s the MRN of the patient with name Pamela Merritt and DOB of 1994-09-15? If the patient does not exist, the answer should be \"Patient not found\"",
+    "context": "",
+    "sol": [
+      "S2197736"
+    ],
+    "eval_MRN": "S2197736"
+  },
+  {
+    "id": "v1_task2_29",
+    "instruction": "What's the age of the patient with MRN of S2016972?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now, and the answer should be rounded down to an integer.",
+    "eval_MRN": "S2016972"
+  },
+  {
+    "id": "v2new_task1_25",
+    "instruction": "Instruction: Find the date of the most recent CT Abdomen procedure for patient S6550473. If the study was performed more than 12 months ago, order a new CT Abdomen with IV contrast indication 'Renal mass follow-up'.",
+    "context": "The CPT codes for existing CT studies are IMGCT0491 or IMGIL0001. The CPT code for the new study is 74177.",
+    "eval_MRN": "S6550473"
+  },
+  {
+    "id": "v2new_task4_19",
+    "instruction": "Instruction: Check if patient S1986380 has a urinary catheter that has been in place for more than 48 hours without a documented removal order. If so, create a service request to remove the catheter.",
+    "context": "The procedure code for urinary catheter is 'NUR1373'. It's 2023-11-11T09:00:00+00:00 now.",
+    "eval_MRN": "S1986380"
+  },
+  {
+    "id": "v2new_task9_14",
+    "instruction": "Instruction: Determine the date of the last influenza vaccine for patient S3195056. If it was administered more than 365 days ago, order a new influenza vaccine for today.",
+    "context": "It's 2024-01-09T00:00:00+00:00 now. The CPT code for influenza vaccine is 90686. The vaccine to order is influenza vaccine (quadrivalent, preservative-free, IM) for today.",
+    "eval_MRN": "S3195056"
+  },
+  {
+    "id": "v2new_task2_4",
+    "instruction": "Instruction: Verify that patient S0611496 has exactly one active DVT prophylaxis order. If there are zero orders, create one. If there are multiple orders, discontinue duplicates keeping only the newest.",
+    "context": "The specific order is heparin 5000 units SC q8h prophylaxis. Ensure exactly one active order remains. For context, a duplicate order could be any anti-coagulant medication (for example, LMWH, DOAC, etc).",
+    "eval_MRN": "S0611496"
+  },
+  {
+    "id": "v2new_task1_15",
+    "instruction": "Instruction: Find the date of the most recent CT Abdomen procedure for patient S6541353. If the study was performed more than 12 months ago, order a new CT Abdomen with IV contrast indication 'Renal mass follow-up'.",
+    "context": "The CPT codes for existing CT studies are IMGCT0491 or IMGIL0001. The CPT code for the new study is 74177.",
+    "eval_MRN": "S6541353"
+  },
+  {
+    "id": "v1_task3_2",
+    "instruction": "I just measured the blood pressure for patient with MRN of S1353305, and it is \"118/77 mmHg\". Help me record it.",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The flowsheet ID for blood pressure is BP.",
+    "eval_MRN": "S1353305"
+  },
+  {
+    "id": "v1_task4_9",
+    "instruction": "What\u2019s the most recent magnesium level of the patient S6468480 within last 24 hours?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for magnesium is \"MG\". The answer should be a single number converted to a unit of mg/dL, and it should be -1 if a measurement within last 24 hours is not available.",
+    "eval_MRN": "S6468480"
+  },
+  {
+    "id": "v2new_task3_27",
+    "instruction": "Instruction: Calculate the average heart rate over the past 6 hours and the past 12 hours for patient S2016972.",
+    "context": "The code for heart rate is 'HEARTRATE'. It's 2023-11-11T23:07:00+00:00 now",
+    "eval_MRN": "S2016972"
+  },
+  {
+    "id": "v2new_task10_18",
+    "instruction": "Instruction: Review COVID-19 vaccination status for patient S3032536. Find the most recent COVID-19 vaccine and if the last dose was more than 12 months ago, order a COVID booster.",
+    "context": "It's 2023-11-07T12:00:00+00:00 now. The code for COVID-19 vaccine procedure is 'COVIDVACCINE' or MedicationRequest with text containing 'COVID-19 VAC'. The booster to order is a single-dose COVID vaccine (CPT 91320) today.",
+    "eval_MRN": "S3032536"
+  },
+  {
+    "id": "v1_task1_17",
+    "instruction": "What\u2019s the MRN of the patient with name Shannon Palmer and DOB of 1956-11-16? If the patient does not exist, the answer should be \"Patient not found\"",
+    "context": "",
+    "sol": [
+      "S2119664"
+    ],
+    "eval_MRN": "S2119664"
+  },
+  {
+    "id": "v1_task3_21",
+    "instruction": "I just measured the blood pressure for patient with MRN of S3241217, and it is \"118/77 mmHg\". Help me record it.",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The flowsheet ID for blood pressure is BP.",
+    "eval_MRN": "S3241217"
+  },
+  {
+    "id": "v2new_task1_30",
+    "instruction": "Instruction: Find the date of the most recent CT Abdomen procedure for patient S0611496. If the study was performed more than 12 months ago, order a new CT Abdomen with IV contrast indication 'Renal mass follow-up'.",
+    "context": "The CPT codes for existing CT studies are IMGCT0491 or IMGIL0001. The CPT code for the new study is 74177.",
+    "eval_MRN": "S0611496"
+  },
+  {
+    "id": "v2new_task1_9",
+    "instruction": "Instruction: Find the date of the most recent CT Abdomen procedure for patient S3070524. If the study was performed more than 12 months ago, order a new CT Abdomen with IV contrast indication 'Renal mass follow-up'.",
+    "context": "The CPT codes for existing CT studies are IMGCT0491 or IMGIL0001. The CPT code for the new study is 74177.",
+    "eval_MRN": "S3070524"
+  },
+  {
+    "id": "v1_task2_17",
+    "instruction": "What's the age of the patient with MRN of S0611496?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now, and the answer should be rounded down to an integer.",
+    "eval_MRN": "S0611496"
+  },
+  {
+    "id": "v1_task2_3",
+    "instruction": "What's the age of the patient with MRN of S6541609?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now, and the answer should be rounded down to an integer.",
+    "eval_MRN": "S6541609"
+  },
+  {
+    "id": "v1_task9_11",
+    "instruction": "Check patient S3213957's most recent potassium level. If low, then order replacement potassium according to dosing instructions. Also pair this order with a morning serum potassium level to be completed the next day at 8am. \n",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for potassium is \"K\".The NDC for replacement potassium is 40032-917-01. Dosing instructions: for every 0.1 mEq/L (or mmol/L) below threshold, order 10 mEq potassium oral repletion) to reach a goal of 3.5 serum level. The LOINC code for serum potassium level is 2823-3.",
+    "eval_MRN": "S3213957"
+  },
+  {
+    "id": "v2new_task2_3",
+    "instruction": "Instruction: Verify that patient S0789363 has exactly one active DVT prophylaxis order. If there are zero orders, create one. If there are multiple orders, discontinue duplicates keeping only the newest.",
+    "context": "The specific order is heparin 5000 units SC q8h prophylaxis. Ensure exactly one active order remains. For context, a duplicate order could be any anti-coagulant medication (for example, LMWH, DOAC, etc).",
+    "eval_MRN": "S0789363"
+  },
+  {
+    "id": "v1_task7_30",
+    "instruction": "What is the most recent CBG of the patient S6531922?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for CBG is \"GLU\"",
+    "eval_MRN": "S6531922"
+  },
+  {
+    "id": "v1_task1_8",
+    "instruction": "What\u2019s the MRN of the patient with name Brian Buchanan and DOB of 1954-08-10? If the patient does not exist, the answer should be \"Patient not found\"",
+    "context": "",
+    "sol": [
+      "S6530532"
+    ],
+    "eval_MRN": "S6530532"
+  },
+  {
+    "id": "v2new_task2_10",
+    "instruction": "Instruction: Verify that patient S3032536 has exactly one active DVT prophylaxis order. If there are zero orders, create one. If there are multiple orders, discontinue duplicates keeping only the newest.",
+    "context": "The specific order is heparin 5000 units SC q8h prophylaxis. Ensure exactly one active order remains. For context, a duplicate order could be any anti-coagulant medication (for example, LMWH, DOAC, etc).",
+    "eval_MRN": "S3032536"
+  },
+  {
+    "id": "v1_task9_10",
+    "instruction": "Check patient S3084624's most recent potassium level. If low, then order replacement potassium according to dosing instructions. Also pair this order with a morning serum potassium level to be completed the next day at 8am. \n",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for potassium is \"K\".The NDC for replacement potassium is 40032-917-01. Dosing instructions: for every 0.1 mEq/L (or mmol/L) below threshold, order 10 mEq potassium oral repletion) to reach a goal of 3.5 serum level. The LOINC code for serum potassium level is 2823-3.",
+    "eval_MRN": "S3084624"
+  },
+  {
+    "id": "v2new_task3_30",
+    "instruction": "Instruction: Calculate the average heart rate over the past 6 hours and the past 12 hours for patient S2161163.",
+    "context": "The code for heart rate is 'HEARTRATE'. It's 2021-11-11T18:47:00+00:00 now",
+    "eval_MRN": "S2161163"
+  },
+  {
+    "id": "v2new_task2_9",
+    "instruction": "Instruction: Verify that patient S6352985 has exactly one active DVT prophylaxis order. If there are zero orders, create one. If there are multiple orders, discontinue duplicates keeping only the newest.",
+    "context": "The specific order is heparin 5000 units SC q8h prophylaxis. Ensure exactly one active order remains. For context, a duplicate order could be any anti-coagulant medication (for example, LMWH, DOAC, etc).",
+    "eval_MRN": "S6352985"
+  },
+  {
+    "id": "v1_task10_10",
+    "instruction": "What\u2019s the last HbA1C (hemoglobin A1C) value in the chart for patient S6488980 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test. ",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for HbA1C is \"A1C\". The LOINC code for ordering HbA1C lab is: 4548-4. The answer should be [-1] if a measurement is not available.",
+    "eval_MRN": "S6488980"
+  },
+  {
+    "id": "v1_task9_3",
+    "instruction": "Check patient S6550627's most recent potassium level. If low, then order replacement potassium according to dosing instructions. Also pair this order with a morning serum potassium level to be completed the next day at 8am. \n",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for potassium is \"K\".The NDC for replacement potassium is 40032-917-01. Dosing instructions: for every 0.1 mEq/L (or mmol/L) below threshold, order 10 mEq potassium oral repletion) to reach a goal of 3.5 serum level. The LOINC code for serum potassium level is 2823-3.",
+    "eval_MRN": "S6550627"
+  },
+  {
+    "id": "v1_task10_3",
+    "instruction": "What\u2019s the last HbA1C (hemoglobin A1C) value in the chart for patient S6474456 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test. ",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for HbA1C is \"A1C\". The LOINC code for ordering HbA1C lab is: 4548-4. The answer should be [-1] if a measurement is not available.",
+    "eval_MRN": "S6474456"
+  },
+  {
+    "id": "v2new_task2_27",
+    "instruction": "Instruction: Verify that patient S6426560 has exactly one active DVT prophylaxis order. If there are zero orders, create one. If there are multiple orders, discontinue duplicates keeping only the newest.",
+    "context": "The specific order is heparin 5000 units SC q8h prophylaxis. Ensure exactly one active order remains. For context, a duplicate order could be any anti-coagulant medication (for example, LMWH, DOAC, etc).",
+    "eval_MRN": "S6426560"
+  },
+  {
+    "id": "v1_task7_27",
+    "instruction": "What is the most recent CBG of the patient S1698248?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for CBG is \"GLU\"",
+    "eval_MRN": "S1698248"
+  },
+  {
+    "id": "v2new_task10_8",
+    "instruction": "Instruction: Review COVID-19 vaccination status for patient S6537563. Find the most recent COVID-19 vaccine and if the last dose was more than 12 months ago, order a COVID booster.",
+    "context": "It's 2023-11-07T12:00:00+00:00 now. The code for COVID-19 vaccine procedure is 'COVIDVACCINE' or MedicationRequest with text containing 'COVID-19 VAC'. The booster to order is a single-dose COVID vaccine (CPT 91320) today.",
+    "eval_MRN": "S6537563"
+  },
+  {
+    "id": "v2new_task9_18",
+    "instruction": "Instruction: Determine the date of the last influenza vaccine for patient S3032536. If it was administered more than 365 days ago, order a new influenza vaccine for today.",
+    "context": "It's 2024-01-09T00:00:00+00:00 now. The CPT code for influenza vaccine is 90686. The vaccine to order is influenza vaccine (quadrivalent, preservative-free, IM) for today.",
+    "eval_MRN": "S3032536"
+  },
+  {
+    "id": "v2new_task5_15",
+    "instruction": "Instruction: Confirm patient S6537563 has a malignant neoplasm of left kidney diagnosis. If true and the last CT Abdomen/Pelvis is more than 3 months old, order a new CT and referral to Interventional Radiology.",
+    "context": "The ICD-10 code for malignant neoplasm of left kidney is C64.2. The CPT code for CT Abdomen/Pelvis with IV contrast is 74177 (for oncologic follow-up). The CPT code for Interventional Radiology referral is CON417 with the request: 'Evaluate renal mass for biopsy or ablation.'",
+    "eval_MRN": "S6537563"
+  },
+  {
+    "id": "v1_task4_14",
+    "instruction": "What\u2019s the most recent magnesium level of the patient S6530532 within last 24 hours?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for magnesium is \"MG\". The answer should be a single number converted to a unit of mg/dL, and it should be -1 if a measurement within last 24 hours is not available.",
+    "eval_MRN": "S6530532"
+  },
+  {
+    "id": "v2new_task2_29",
+    "instruction": "Instruction: Verify that patient S2111822 has exactly one active DVT prophylaxis order. If there are zero orders, create one. If there are multiple orders, discontinue duplicates keeping only the newest.",
+    "context": "The specific order is heparin 5000 units SC q8h prophylaxis. Ensure exactly one active order remains. For context, a duplicate order could be any anti-coagulant medication (for example, LMWH, DOAC, etc).",
+    "eval_MRN": "S2111822"
+  },
+  {
+    "id": "v1_task8_16",
+    "instruction": "Order orthopedic surgery referral for patient S6541609. Specify within the free text of the referral, \"Situation: acute left knee injury, Background: radiology report indicates ACL tear. Assessment: ACL tear grade II. Recommendation: request for Orthopedic service to evaluate and provide management recommendations.\"",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The SNOMED code for orthopedic surgery referral is 306181000000106.",
+    "eval_MRN": "S6541609"
+  },
+  {
+    "id": "v1_task8_3",
+    "instruction": "Order orthopedic surgery referral for patient S1478444. Specify within the free text of the referral, \"Situation: acute left knee injury, Background: radiology report indicates ACL tear. Assessment: ACL tear grade II. Recommendation: request for Orthopedic service to evaluate and provide management recommendations.\"",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The SNOMED code for orthopedic surgery referral is 306181000000106.",
+    "eval_MRN": "S1478444"
+  },
+  {
+    "id": "v1_task2_13",
+    "instruction": "What's the age of the patient with MRN of S2154941?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now, and the answer should be rounded down to an integer.",
+    "eval_MRN": "S2154941"
+  },
+  {
+    "id": "v1_task8_29",
+    "instruction": "Order orthopedic surgery referral for patient S6307599. Specify within the free text of the referral, \"Situation: acute left knee injury, Background: radiology report indicates ACL tear. Assessment: ACL tear grade II. Recommendation: request for Orthopedic service to evaluate and provide management recommendations.\"",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The SNOMED code for orthopedic surgery referral is 306181000000106.",
+    "eval_MRN": "S6307599"
+  },
+  {
+    "id": "v2new_task1_16",
+    "instruction": "Instruction: Find the date of the most recent CT Abdomen procedure for patient S2748981. If the study was performed more than 12 months ago, order a new CT Abdomen with IV contrast indication 'Renal mass follow-up'.",
+    "context": "The CPT codes for existing CT studies are IMGCT0491 or IMGIL0001. The CPT code for the new study is 74177.",
+    "eval_MRN": "S2748981"
+  },
+  {
+    "id": "v1_task7_18",
+    "instruction": "What is the most recent CBG of the patient S6521727?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for CBG is \"GLU\"",
+    "eval_MRN": "S6521727"
+  },
+  {
+    "id": "v2new_task3_4",
+    "instruction": "Instruction: Calculate the average heart rate over the past 6 hours and the past 12 hours for patient S3084624.",
+    "context": "The code for heart rate is 'HEARTRATE'. It's 2023-11-07T22:00:00+00:00 now",
+    "eval_MRN": "S3084624"
+  },
+  {
+    "id": "v2new_task3_20",
+    "instruction": "Instruction: Calculate the average heart rate over the past 6 hours and the past 12 hours for patient S1891852.",
+    "context": "The code for heart rate is 'HEARTRATE'. It's 2023-11-07T22:47:00+00:00 now",
+    "eval_MRN": "S1891852"
+  },
+  {
+    "id": "v2new_task6_13",
+    "instruction": "Instruction: Retrieve the most recent TSH and free T4 values for patient S3228213. Based on the results, take appropriate action according to the protocol.",
+    "context": "The code for TSH is 'TSH' and for free T4 is 'FT4'. Protocol: If TSH > 10 uIU/mL on two separate instances of lab values (separated by at least one month in date of lab collection), start levothyroxine 25 mcg PO daily and order repeat TSH/FT4 in 6 weeks. If TSH is 4.5\u201310 uIU/mL and free T4 is normal (0.8\u20131.8 ng/dL), order repeat TSH/FT4 in 3 months (no medication yet).",
+    "eval_MRN": "S3228213"
+  },
+  {
+    "id": "v1_task6_22",
+    "instruction": "What is the average CBG of the patient S6530813 over the last 24 hours?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for CBG is \"GLU\". The answer should be a single number converted to a unit of mg/dL, and it should be -1 if a measurement within last 24 hours is not available.",
+    "eval_MRN": "S6530813"
+  },
+  {
+    "id": "v2new_task7_14",
+    "instruction": "Instruction: Check the latest QTc interval for patient S6541609. If prolonged, discontinue QT-prolonging medications and order a follow-up ECG for 24 hours later.",
+    "context": "The code for QTc interval is 'QTCINTERVAL'. The threshold for prolonged QTc is > 500 ms. QT-prolonging medications to discontinue include text containing ondansetron, prochlorperazine and most antipsychotic medications. The SNOMED code for 12-lead ECG is 445118002. Order the ECG to be performed in 24 hours.",
+    "eval_MRN": "S6541609"
+  },
+  {
+    "id": "v2new_task10_24",
+    "instruction": "Instruction: Review COVID-19 vaccination status for patient S2874099. Find the most recent COVID-19 vaccine and if the last dose was more than 12 months ago, order a COVID booster.",
+    "context": "It's 2023-11-07T12:00:00+00:00 now. The code for COVID-19 vaccine procedure is 'COVIDVACCINE' or MedicationRequest with text containing 'COVID-19 VAC'. The booster to order is a single-dose COVID vaccine (CPT 91320) today.",
+    "eval_MRN": "S2874099"
+  },
+  {
+    "id": "v1_task7_19",
+    "instruction": "What is the most recent CBG of the patient S6426560?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for CBG is \"GLU\"",
+    "eval_MRN": "S6426560"
+  },
+  {
+    "id": "v1_task2_26",
+    "instruction": "What's the age of the patient with MRN of S6530532?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now, and the answer should be rounded down to an integer.",
+    "eval_MRN": "S6530532"
+  },
+  {
+    "id": "v2new_task1_12",
+    "instruction": "Instruction: Find the date of the most recent CT Abdomen procedure for patient S1152319. If the study was performed more than 12 months ago, order a new CT Abdomen with IV contrast indication 'Renal mass follow-up'.",
+    "context": "The CPT codes for existing CT studies are IMGCT0491 or IMGIL0001. The CPT code for the new study is 74177.",
+    "eval_MRN": "S1152319"
+  },
+  {
+    "id": "v1_task8_5",
+    "instruction": "Order orthopedic surgery referral for patient S6550627. Specify within the free text of the referral, \"Situation: acute left knee injury, Background: radiology report indicates ACL tear. Assessment: ACL tear grade II. Recommendation: request for Orthopedic service to evaluate and provide management recommendations.\"",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The SNOMED code for orthopedic surgery referral is 306181000000106.",
+    "eval_MRN": "S6550627"
+  },
+  {
+    "id": "v2new_task5_7",
+    "instruction": "Instruction: Confirm patient S1733937 has a malignant neoplasm of left kidney diagnosis. If true and the last CT Abdomen/Pelvis is more than 3 months old, order a new CT and referral to Interventional Radiology.",
+    "context": "The ICD-10 code for malignant neoplasm of left kidney is C64.2. The CPT code for CT Abdomen/Pelvis with IV contrast is 74177 (for oncologic follow-up). The CPT code for Interventional Radiology referral is CON417 with the request: 'Evaluate renal mass for biopsy or ablation.'",
+    "eval_MRN": "S1733937"
+  },
+  {
+    "id": "v1_task3_5",
+    "instruction": "I just measured the blood pressure for patient with MRN of S1521703, and it is \"118/77 mmHg\". Help me record it.",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The flowsheet ID for blood pressure is BP.",
+    "eval_MRN": "S1521703"
+  },
+  {
+    "id": "v1_task3_7",
+    "instruction": "I just measured the blood pressure for patient with MRN of S1579803, and it is \"118/77 mmHg\". Help me record it.",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The flowsheet ID for blood pressure is BP.",
+    "eval_MRN": "S1579803"
+  },
+  {
+    "id": "v1_task6_28",
+    "instruction": "What is the average CBG of the patient S6542579 over the last 24 hours?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for CBG is \"GLU\". The answer should be a single number converted to a unit of mg/dL, and it should be -1 if a measurement within last 24 hours is not available.",
+    "eval_MRN": "S6542579"
+  },
+  {
+    "id": "v2new_task7_1",
+    "instruction": "Instruction: Check the latest QTc interval for patient S6474456. If prolonged, discontinue QT-prolonging medications and order a follow-up ECG for 24 hours later.",
+    "context": "The code for QTc interval is 'QTCINTERVAL'. The threshold for prolonged QTc is > 500 ms. QT-prolonging medications to discontinue include text containing ondansetron, prochlorperazine and most antipsychotic medications. The SNOMED code for 12-lead ECG is 445118002. Order the ECG to be performed in 24 hours.",
+    "eval_MRN": "S6474456"
+  },
+  {
+    "id": "v2new_task8_22",
+    "instruction": "Instruction: Verify that every active opioid analgesic order for patient S1777769 has a matching naloxone prescription. If an opioid order is active without naloxone, create a naloxone order.",
+    "context": "Opioid medications to search for include hydromorphone, oxycodone, fentanyl, hydrocodone, morphine. The naloxone order is naloxone nasal spray 4 mg.",
+    "eval_MRN": "S1777769"
+  },
+  {
+    "id": "v1_task5_18",
+    "instruction": "Check patient S6534835's last serum magnesium level within last 24 hours. If low, then order replacement IV magnesium according to dosing instructions. If no magnesium level has been recorded in the last 24 hours, don't order anything.\n",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for magnesium is \"MG\". The NDC for replacement IV magnesium is 0338-1715-40. Dosing instructions: (1) Mild deficiency (eg, serum magnesium 1.5 to 1.9 mg/dL):\nIV: 1 g over 1 hour.\n(2) Moderate deficiency (eg, serum magnesium 1 to <1.5 mg/dL):\nIV: 2 g over 2 hours.\n(3) Severe deficiency (eg, serum magnesium <1 mg/dL):\nIV: 4 g over 4 hours.\n",
+    "eval_MRN": "S6534835"
+  },
+  {
+    "id": "v1_task8_12",
+    "instruction": "Order orthopedic surgery referral for patient S1521703. Specify within the free text of the referral, \"Situation: acute left knee injury, Background: radiology report indicates ACL tear. Assessment: ACL tear grade II. Recommendation: request for Orthopedic service to evaluate and provide management recommendations.\"",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The SNOMED code for orthopedic surgery referral is 306181000000106.",
+    "eval_MRN": "S1521703"
+  },
+  {
+    "id": "v2new_task10_23",
+    "instruction": "Instruction: Review COVID-19 vaccination status for patient S2863714. Find the most recent COVID-19 vaccine and if the last dose was more than 12 months ago, order a COVID booster.",
+    "context": "It's 2023-11-07T12:00:00+00:00 now. The code for COVID-19 vaccine procedure is 'COVIDVACCINE' or MedicationRequest with text containing 'COVID-19 VAC'. The booster to order is a single-dose COVID vaccine (CPT 91320) today.",
+    "eval_MRN": "S2863714"
+  },
+  {
+    "id": "v1_task5_12",
+    "instruction": "Check patient S2016972's last serum magnesium level within last 24 hours. If low, then order replacement IV magnesium according to dosing instructions. If no magnesium level has been recorded in the last 24 hours, don't order anything.\n",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for magnesium is \"MG\". The NDC for replacement IV magnesium is 0338-1715-40. Dosing instructions: (1) Mild deficiency (eg, serum magnesium 1.5 to 1.9 mg/dL):\nIV: 1 g over 1 hour.\n(2) Moderate deficiency (eg, serum magnesium 1 to <1.5 mg/dL):\nIV: 2 g over 2 hours.\n(3) Severe deficiency (eg, serum magnesium <1 mg/dL):\nIV: 4 g over 4 hours.\n",
+    "eval_MRN": "S2016972"
+  },
+  {
+    "id": "v2new_task9_2",
+    "instruction": "Instruction: Determine the date of the last influenza vaccine for patient S6265496. If it was administered more than 365 days ago, order a new influenza vaccine for today.",
+    "context": "It's 2024-01-09T00:00:00+00:00 now. The CPT code for influenza vaccine is 90686. The vaccine to order is influenza vaccine (quadrivalent, preservative-free, IM) for today.",
+    "eval_MRN": "S6265496"
+  },
+  {
+    "id": "v2new_task4_20",
+    "instruction": "Instruction: Check if patient S6538722 has a urinary catheter that has been in place for more than 48 hours without a documented removal order. If so, create a service request to remove the catheter.",
+    "context": "The procedure code for urinary catheter is 'NUR1373'. It's 2023-11-11T09:00:00+00:00 now.",
+    "eval_MRN": "S6538722"
+  },
+  {
+    "id": "v1_task5_21",
+    "instruction": "Check patient S3084624's last serum magnesium level within last 24 hours. If low, then order replacement IV magnesium according to dosing instructions. If no magnesium level has been recorded in the last 24 hours, don't order anything.\n",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for magnesium is \"MG\". The NDC for replacement IV magnesium is 0338-1715-40. Dosing instructions: (1) Mild deficiency (eg, serum magnesium 1.5 to 1.9 mg/dL):\nIV: 1 g over 1 hour.\n(2) Moderate deficiency (eg, serum magnesium 1 to <1.5 mg/dL):\nIV: 2 g over 2 hours.\n(3) Severe deficiency (eg, serum magnesium <1 mg/dL):\nIV: 4 g over 4 hours.\n",
+    "eval_MRN": "S3084624"
+  },
+  {
+    "id": "v2new_task9_28",
+    "instruction": "Instruction: Determine the date of the last influenza vaccine for patient S1478444. If it was administered more than 365 days ago, order a new influenza vaccine for today.",
+    "context": "It's 2024-01-09T00:00:00+00:00 now. The CPT code for influenza vaccine is 90686. The vaccine to order is influenza vaccine (quadrivalent, preservative-free, IM) for today.",
+    "eval_MRN": "S1478444"
+  },
+  {
+    "id": "v1_task7_29",
+    "instruction": "What is the most recent CBG of the patient S1374652?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for CBG is \"GLU\"",
+    "eval_MRN": "S1374652"
+  },
+  {
+    "id": "v1_task7_13",
+    "instruction": "What is the most recent CBG of the patient S3213957?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for CBG is \"GLU\"",
+    "eval_MRN": "S3213957"
+  },
+  {
+    "id": "v1_task9_16",
+    "instruction": "Check patient S2823623's most recent potassium level. If low, then order replacement potassium according to dosing instructions. Also pair this order with a morning serum potassium level to be completed the next day at 8am. \n",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for potassium is \"K\".The NDC for replacement potassium is 40032-917-01. Dosing instructions: for every 0.1 mEq/L (or mmol/L) below threshold, order 10 mEq potassium oral repletion) to reach a goal of 3.5 serum level. The LOINC code for serum potassium level is 2823-3.",
+    "eval_MRN": "S2823623"
+  },
+  {
+    "id": "v2new_task9_16",
+    "instruction": "Instruction: Determine the date of the last influenza vaccine for patient S1579803. If it was administered more than 365 days ago, order a new influenza vaccine for today.",
+    "context": "It's 2024-01-09T00:00:00+00:00 now. The CPT code for influenza vaccine is 90686. The vaccine to order is influenza vaccine (quadrivalent, preservative-free, IM) for today.",
+    "eval_MRN": "S1579803"
+  },
+  {
+    "id": "v2new_task6_12",
+    "instruction": "Instruction: Retrieve the most recent TSH and free T4 values for patient S6222362. Based on the results, take appropriate action according to the protocol.",
+    "context": "The code for TSH is 'TSH' and for free T4 is 'FT4'. Protocol: If TSH > 10 uIU/mL on two separate instances of lab values (separated by at least one month in date of lab collection), start levothyroxine 25 mcg PO daily and order repeat TSH/FT4 in 6 weeks. If TSH is 4.5\u201310 uIU/mL and free T4 is normal (0.8\u20131.8 ng/dL), order repeat TSH/FT4 in 3 months (no medication yet).",
+    "eval_MRN": "S6222362"
+  },
+  {
+    "id": "v1_task1_5",
+    "instruction": "What\u2019s the MRN of the patient with name Justin Gould and DOB of 1943-05-19? If the patient does not exist, the answer should be \"Patient not found\"",
+    "context": "",
+    "sol": [
+      "S2703270"
+    ],
+    "eval_MRN": "S2703270"
+  },
+  {
+    "id": "v1_task4_2",
+    "instruction": "What\u2019s the most recent magnesium level of the patient S2863714 within last 24 hours?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for magnesium is \"MG\". The answer should be a single number converted to a unit of mg/dL, and it should be -1 if a measurement within last 24 hours is not available.",
+    "eval_MRN": "S2863714"
+  },
+  {
+    "id": "v1_task1_13",
+    "instruction": "What\u2019s the MRN of the patient with name Emily Hicks and DOB of 1942-05-11? If the patient does not exist, the answer should be \"Patient not found\"",
+    "context": "",
+    "sol": [
+      "S2154941"
+    ],
+    "eval_MRN": "S2154941"
+  },
+  {
+    "id": "v1_task10_29",
+    "instruction": "What\u2019s the last HbA1C (hemoglobin A1C) value in the chart for patient S2703270 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test. ",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for HbA1C is \"A1C\". The LOINC code for ordering HbA1C lab is: 4548-4. The answer should be [-1] if a measurement is not available.",
+    "eval_MRN": "S2703270"
+  },
+  {
+    "id": "v2new_task8_5",
+    "instruction": "Instruction: Verify that every active opioid analgesic order for patient S1736710 has a matching naloxone prescription. If an opioid order is active without naloxone, create a naloxone order.",
+    "context": "Opioid medications to search for include hydromorphone, oxycodone, fentanyl, hydrocodone, morphine. The naloxone order is naloxone nasal spray 4 mg.",
+    "eval_MRN": "S1736710"
+  },
+  {
+    "id": "v1_task8_18",
+    "instruction": "Order orthopedic surgery referral for patient S6426560. Specify within the free text of the referral, \"Situation: acute left knee injury, Background: radiology report indicates ACL tear. Assessment: ACL tear grade II. Recommendation: request for Orthopedic service to evaluate and provide management recommendations.\"",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The SNOMED code for orthopedic surgery referral is 306181000000106.",
+    "eval_MRN": "S6426560"
+  },
+  {
+    "id": "v1_task9_4",
+    "instruction": "Check patient S1374652's most recent potassium level. If low, then order replacement potassium according to dosing instructions. Also pair this order with a morning serum potassium level to be completed the next day at 8am. \n",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for potassium is \"K\".The NDC for replacement potassium is 40032-917-01. Dosing instructions: for every 0.1 mEq/L (or mmol/L) below threshold, order 10 mEq potassium oral repletion) to reach a goal of 3.5 serum level. The LOINC code for serum potassium level is 2823-3.",
+    "eval_MRN": "S1374652"
+  },
+  {
+    "id": "v2new_task7_16",
+    "instruction": "Instruction: Check the latest QTc interval for patient S6227720. If prolonged, discontinue QT-prolonging medications and order a follow-up ECG for 24 hours later.",
+    "context": "The code for QTc interval is 'QTCINTERVAL'. The threshold for prolonged QTc is > 500 ms. QT-prolonging medications to discontinue include text containing ondansetron, prochlorperazine and most antipsychotic medications. The SNOMED code for 12-lead ECG is 445118002. Order the ECG to be performed in 24 hours.",
+    "eval_MRN": "S6227720"
+  },
+  {
+    "id": "v1_task4_7",
+    "instruction": "What\u2019s the most recent magnesium level of the patient S2937751 within last 24 hours?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for magnesium is \"MG\". The answer should be a single number converted to a unit of mg/dL, and it should be -1 if a measurement within last 24 hours is not available.",
+    "eval_MRN": "S2937751"
+  },
+  {
+    "id": "v2new_task8_23",
+    "instruction": "Instruction: Verify that every active opioid analgesic order for patient S6550627 has a matching naloxone prescription. If an opioid order is active without naloxone, create a naloxone order.",
+    "context": "Opioid medications to search for include hydromorphone, oxycodone, fentanyl, hydrocodone, morphine. The naloxone order is naloxone nasal spray 4 mg.",
+    "eval_MRN": "S6550627"
+  },
+  {
+    "id": "v1_task10_7",
+    "instruction": "What\u2019s the last HbA1C (hemoglobin A1C) value in the chart for patient S1891852 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test. ",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for HbA1C is \"A1C\". The LOINC code for ordering HbA1C lab is: 4548-4. The answer should be [-1] if a measurement is not available.",
+    "eval_MRN": "S1891852"
+  },
+  {
+    "id": "v1_task3_30",
+    "instruction": "I just measured the blood pressure for patient with MRN of S6531922, and it is \"118/77 mmHg\". Help me record it.",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The flowsheet ID for blood pressure is BP.",
+    "eval_MRN": "S6531922"
+  },
+  {
+    "id": "v1_task8_22",
+    "instruction": "Order orthopedic surgery referral for patient S1715871. Specify within the free text of the referral, \"Situation: acute left knee injury, Background: radiology report indicates ACL tear. Assessment: ACL tear grade II. Recommendation: request for Orthopedic service to evaluate and provide management recommendations.\"",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The SNOMED code for orthopedic surgery referral is 306181000000106.",
+    "eval_MRN": "S1715871"
+  },
+  {
+    "id": "v1_task5_20",
+    "instruction": "Check patient S1715871's last serum magnesium level within last 24 hours. If low, then order replacement IV magnesium according to dosing instructions. If no magnesium level has been recorded in the last 24 hours, don't order anything.\n",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for magnesium is \"MG\". The NDC for replacement IV magnesium is 0338-1715-40. Dosing instructions: (1) Mild deficiency (eg, serum magnesium 1.5 to 1.9 mg/dL):\nIV: 1 g over 1 hour.\n(2) Moderate deficiency (eg, serum magnesium 1 to <1.5 mg/dL):\nIV: 2 g over 2 hours.\n(3) Severe deficiency (eg, serum magnesium <1 mg/dL):\nIV: 4 g over 4 hours.\n",
+    "eval_MRN": "S1715871"
+  },
+  {
+    "id": "v1_task7_25",
+    "instruction": "What is the most recent CBG of the patient S0789363?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for CBG is \"GLU\"",
+    "eval_MRN": "S0789363"
+  },
+  {
+    "id": "v2new_task1_2",
+    "instruction": "Instruction: Find the date of the most recent CT Abdomen procedure for patient S2703270. If the study was performed more than 12 months ago, order a new CT Abdomen with IV contrast indication 'Renal mass follow-up'.",
+    "context": "The CPT codes for existing CT studies are IMGCT0491 or IMGIL0001. The CPT code for the new study is 74177.",
+    "eval_MRN": "S2703270"
+  },
+  {
+    "id": "v2new_task4_9",
+    "instruction": "Instruction: Check if patient S2197736 has a urinary catheter that has been in place for more than 48 hours without a documented removal order. If so, create a service request to remove the catheter.",
+    "context": "The procedure code for urinary catheter is 'NUR1373'. It's 2023-11-11T09:00:00+00:00 now.",
+    "eval_MRN": "S2197736"
+  },
+  {
+    "id": "v2new_task8_26",
+    "instruction": "Instruction: Verify that every active opioid analgesic order for patient S1796597 has a matching naloxone prescription. If an opioid order is active without naloxone, create a naloxone order.",
+    "context": "Opioid medications to search for include hydromorphone, oxycodone, fentanyl, hydrocodone, morphine. The naloxone order is naloxone nasal spray 4 mg.",
+    "eval_MRN": "S1796597"
+  },
+  {
+    "id": "v1_task7_23",
+    "instruction": "What is the most recent CBG of the patient S6550627?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for CBG is \"GLU\"",
+    "eval_MRN": "S6550627"
+  },
+  {
+    "id": "v1_task4_16",
+    "instruction": "What\u2019s the most recent magnesium level of the patient S1635224 within last 24 hours?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for magnesium is \"MG\". The answer should be a single number converted to a unit of mg/dL, and it should be -1 if a measurement within last 24 hours is not available.",
+    "eval_MRN": "S1635224"
+  },
+  {
+    "id": "v1_task6_14",
+    "instruction": "What is the average CBG of the patient S3032536 over the last 24 hours?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for CBG is \"GLU\". The answer should be a single number converted to a unit of mg/dL, and it should be -1 if a measurement within last 24 hours is not available.",
+    "eval_MRN": "S3032536"
+  },
+  {
+    "id": "v1_task8_25",
+    "instruction": "Order orthopedic surgery referral for patient S6192632. Specify within the free text of the referral, \"Situation: acute left knee injury, Background: radiology report indicates ACL tear. Assessment: ACL tear grade II. Recommendation: request for Orthopedic service to evaluate and provide management recommendations.\"",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The SNOMED code for orthopedic surgery referral is 306181000000106.",
+    "eval_MRN": "S6192632"
+  },
+  {
+    "id": "v2new_task8_8",
+    "instruction": "Instruction: Verify that every active opioid analgesic order for patient S6415739 has a matching naloxone prescription. If an opioid order is active without naloxone, create a naloxone order.",
+    "context": "Opioid medications to search for include hydromorphone, oxycodone, fentanyl, hydrocodone, morphine. The naloxone order is naloxone nasal spray 4 mg.",
+    "eval_MRN": "S6415739"
+  },
+  {
+    "id": "v1_task7_14",
+    "instruction": "What is the most recent CBG of the patient S6539215?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for CBG is \"GLU\"",
+    "eval_MRN": "S6539215"
+  },
+  {
+    "id": "v1_task6_1",
+    "instruction": "What is the average CBG of the patient S6307599 over the last 24 hours?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for CBG is \"GLU\". The answer should be a single number converted to a unit of mg/dL, and it should be -1 if a measurement within last 24 hours is not available.",
+    "eval_MRN": "S6307599"
+  },
+  {
+    "id": "v2new_task10_16",
+    "instruction": "Instruction: Review COVID-19 vaccination status for patient S1374652. Find the most recent COVID-19 vaccine and if the last dose was more than 12 months ago, order a COVID booster.",
+    "context": "It's 2023-11-07T12:00:00+00:00 now. The code for COVID-19 vaccine procedure is 'COVIDVACCINE' or MedicationRequest with text containing 'COVID-19 VAC'. The booster to order is a single-dose COVID vaccine (CPT 91320) today.",
+    "eval_MRN": "S1374652"
+  },
+  {
+    "id": "v1_task10_14",
+    "instruction": "What\u2019s the last HbA1C (hemoglobin A1C) value in the chart for patient S6541609 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test. ",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for HbA1C is \"A1C\". The LOINC code for ordering HbA1C lab is: 4548-4. The answer should be [-1] if a measurement is not available.",
+    "eval_MRN": "S6541609"
+  },
+  {
+    "id": "v1_task10_18",
+    "instruction": "What\u2019s the last HbA1C (hemoglobin A1C) value in the chart for patient S1311412 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test. ",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for HbA1C is \"A1C\". The LOINC code for ordering HbA1C lab is: 4548-4. The answer should be [-1] if a measurement is not available.",
+    "eval_MRN": "S1311412"
+  },
+  {
+    "id": "v1_task7_26",
+    "instruction": "What is the most recent CBG of the patient S2199765?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for CBG is \"GLU\"",
+    "eval_MRN": "S2199765"
+  },
+  {
+    "id": "v1_task1_29",
+    "instruction": "What's the MRN of the patient with name Debra Dunn and DOB of 1969-05-15? If the patient does not exist, the answer should be \"Patient not found\"",
+    "context": "",
+    "sol": [
+      "Patient not found"
+    ]
+  },
+  {
+    "id": "v2new_task4_2",
+    "instruction": "Instruction: Check if patient S6192632 has a urinary catheter that has been in place for more than 48 hours without a documented removal order. If so, create a service request to remove the catheter.",
+    "context": "The procedure code for urinary catheter is 'NUR1373'. It's 2022-05-30T07:00:00+00:00 now.",
+    "eval_MRN": "S6192632"
+  },
+  {
+    "id": "v2new_task5_11",
+    "instruction": "Instruction: Confirm patient S0869531 has a malignant neoplasm of left kidney diagnosis. If true and the last CT Abdomen/Pelvis is more than 3 months old, order a new CT and referral to Interventional Radiology.",
+    "context": "The ICD-10 code for malignant neoplasm of left kidney is C64.2. The CPT code for CT Abdomen/Pelvis with IV contrast is 74177 (for oncologic follow-up). The CPT code for Interventional Radiology referral is CON417 with the request: 'Evaluate renal mass for biopsy or ablation.'",
+    "eval_MRN": "S0869531"
+  },
+  {
+    "id": "v2new_task2_22",
+    "instruction": "Instruction: Verify that patient S1521703 has exactly one active DVT prophylaxis order. If there are zero orders, create one. If there are multiple orders, discontinue duplicates keeping only the newest.",
+    "context": "The specific order is heparin 5000 units SC q8h prophylaxis. Ensure exactly one active order remains. For context, a duplicate order could be any anti-coagulant medication (for example, LMWH, DOAC, etc).",
+    "eval_MRN": "S1521703"
+  },
+  {
+    "id": "v1_task10_4",
+    "instruction": "What\u2019s the last HbA1C (hemoglobin A1C) value in the chart for patient S2161163 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test. ",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for HbA1C is \"A1C\". The LOINC code for ordering HbA1C lab is: 4548-4. The answer should be [-1] if a measurement is not available.",
+    "eval_MRN": "S2161163"
+  },
+  {
+    "id": "v1_task2_4",
+    "instruction": "What's the age of the patient with MRN of S6549951?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now, and the answer should be rounded down to an integer.",
+    "eval_MRN": "S6549951"
+  },
+  {
+    "id": "v2new_task9_4",
+    "instruction": "Instruction: Determine the date of the last influenza vaccine for patient S3228213. If it was administered more than 365 days ago, order a new influenza vaccine for today.",
+    "context": "It's 2024-01-09T00:00:00+00:00 now. The CPT code for influenza vaccine is 90686. The vaccine to order is influenza vaccine (quadrivalent, preservative-free, IM) for today.",
+    "eval_MRN": "S3228213"
+  },
+  {
+    "id": "v2new_task2_17",
+    "instruction": "Instruction: Verify that patient S6415739 has exactly one active DVT prophylaxis order. If there are zero orders, create one. If there are multiple orders, discontinue duplicates keeping only the newest.",
+    "context": "The specific order is heparin 5000 units SC q8h prophylaxis. Ensure exactly one active order remains. For context, a duplicate order could be any anti-coagulant medication (for example, LMWH, DOAC, etc).",
+    "eval_MRN": "S6415739"
+  },
+  {
+    "id": "v2new_task5_16",
+    "instruction": "Instruction: Confirm patient S1777769 has a malignant neoplasm of left kidney diagnosis. If true and the last CT Abdomen/Pelvis is more than 3 months old, order a new CT and referral to Interventional Radiology.",
+    "context": "The ICD-10 code for malignant neoplasm of left kidney is C64.2. The CPT code for CT Abdomen/Pelvis with IV contrast is 74177 (for oncologic follow-up). The CPT code for Interventional Radiology referral is CON417 with the request: 'Evaluate renal mass for biopsy or ablation.'",
+    "eval_MRN": "S1777769"
+  },
+  {
+    "id": "v2new_task4_8",
+    "instruction": "Instruction: Check if patient S2075210 has a urinary catheter that has been in place for more than 48 hours without a documented removal order. If so, create a service request to remove the catheter.",
+    "context": "The procedure code for urinary catheter is 'NUR1373'. It's 2023-11-11T09:00:00+00:00 now.",
+    "eval_MRN": "S2075210"
+  },
+  {
+    "id": "v1_task3_6",
+    "instruction": "I just measured the blood pressure for patient with MRN of S6415739, and it is \"118/77 mmHg\". Help me record it.",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The flowsheet ID for blood pressure is BP.",
+    "eval_MRN": "S6415739"
+  },
+  {
+    "id": "v1_task8_4",
+    "instruction": "Order orthopedic surgery referral for patient S2748981. Specify within the free text of the referral, \"Situation: acute left knee injury, Background: radiology report indicates ACL tear. Assessment: ACL tear grade II. Recommendation: request for Orthopedic service to evaluate and provide management recommendations.\"",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The SNOMED code for orthopedic surgery referral is 306181000000106.",
+    "eval_MRN": "S2748981"
+  },
+  {
+    "id": "v1_task10_1",
+    "instruction": "What\u2019s the last HbA1C (hemoglobin A1C) value in the chart for patient S6227720 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test. ",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for HbA1C is \"A1C\". The LOINC code for ordering HbA1C lab is: 4548-4. The answer should be [-1] if a measurement is not available.",
+    "eval_MRN": "S6227720"
+  },
+  {
+    "id": "v1_task2_19",
+    "instruction": "What's the age of the patient with MRN of S6542579?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now, and the answer should be rounded down to an integer.",
+    "eval_MRN": "S6542579"
+  },
+  {
+    "id": "v2new_task3_22",
+    "instruction": "Instruction: Calculate the average heart rate over the past 6 hours and the past 12 hours for patient S6200102.",
+    "context": "The code for heart rate is 'HEARTRATE'. It's 2023-11-07T22:47:00+00:00 now",
+    "eval_MRN": "S6200102"
+  },
+  {
+    "id": "v1_task2_24",
+    "instruction": "What's the age of the patient with MRN of S1796597?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now, and the answer should be rounded down to an integer.",
+    "eval_MRN": "S1796597"
+  },
+  {
+    "id": "v2new_task8_29",
+    "instruction": "Instruction: Verify that every active opioid analgesic order for patient S6500497 has a matching naloxone prescription. If an opioid order is active without naloxone, create a naloxone order.",
+    "context": "Opioid medications to search for include hydromorphone, oxycodone, fentanyl, hydrocodone, morphine. The naloxone order is naloxone nasal spray 4 mg.",
+    "eval_MRN": "S6500497"
+  },
+  {
+    "id": "v1_task3_19",
+    "instruction": "I just measured the blood pressure for patient with MRN of S6537563, and it is \"118/77 mmHg\". Help me record it.",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The flowsheet ID for blood pressure is BP.",
+    "eval_MRN": "S6537563"
+  },
+  {
+    "id": "v2new_task5_17",
+    "instruction": "Instruction: Confirm patient S6426560 has a malignant neoplasm of left kidney diagnosis. If true and the last CT Abdomen/Pelvis is more than 3 months old, order a new CT and referral to Interventional Radiology.",
+    "context": "The ICD-10 code for malignant neoplasm of left kidney is C64.2. The CPT code for CT Abdomen/Pelvis with IV contrast is 74177 (for oncologic follow-up). The CPT code for Interventional Radiology referral is CON417 with the request: 'Evaluate renal mass for biopsy or ablation.'",
+    "eval_MRN": "S6426560"
+  },
+  {
+    "id": "v2new_task3_24",
+    "instruction": "Instruction: Calculate the average heart rate over the past 6 hours and the past 12 hours for patient S1579803.",
+    "context": "The code for heart rate is 'HEARTRATE'. It's 2021-03-02T10:00:00+00:00 now",
+    "eval_MRN": "S1579803"
+  },
+  {
+    "id": "v2new_task10_2",
+    "instruction": "Instruction: Review COVID-19 vaccination status for patient S2119664. Find the most recent COVID-19 vaccine and if the last dose was more than 12 months ago, order a COVID booster.",
+    "context": "It's 2023-11-07T12:00:00+00:00 now. The code for COVID-19 vaccine procedure is 'COVIDVACCINE' or MedicationRequest with text containing 'COVID-19 VAC'. The booster to order is a single-dose COVID vaccine (CPT 91320) today.",
+    "eval_MRN": "S2119664"
+  },
+  {
+    "id": "v1_task4_1",
+    "instruction": "What\u2019s the most recent magnesium level of the patient S3032536 within last 24 hours?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for magnesium is \"MG\". The answer should be a single number converted to a unit of mg/dL, and it should be -1 if a measurement within last 24 hours is not available.",
+    "eval_MRN": "S3032536"
+  },
+  {
+    "id": "v1_task2_5",
+    "instruction": "What's the age of the patient with MRN of S6227720?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now, and the answer should be rounded down to an integer.",
+    "eval_MRN": "S6227720"
+  },
+  {
+    "id": "v2new_task6_3",
+    "instruction": "Instruction: Retrieve the most recent TSH and free T4 values for patient S1478444. Based on the results, take appropriate action according to the protocol.",
+    "context": "The code for TSH is 'TSH' and for free T4 is 'FT4'. Protocol: If TSH > 10 uIU/mL on two separate instances of lab values (separated by at least one month in date of lab collection), start levothyroxine 25 mcg PO daily and order repeat TSH/FT4 in 6 weeks. If TSH is 4.5\u201310 uIU/mL and free T4 is normal (0.8\u20131.8 ng/dL), order repeat TSH/FT4 in 3 months (no medication yet).",
+    "eval_MRN": "S1478444"
+  },
+  {
+    "id": "v2new_task7_15",
+    "instruction": "Instruction: Check the latest QTc interval for patient S2748981. If prolonged, discontinue QT-prolonging medications and order a follow-up ECG for 24 hours later.",
+    "context": "The code for QTc interval is 'QTCINTERVAL'. The threshold for prolonged QTc is > 500 ms. QT-prolonging medications to discontinue include text containing ondansetron, prochlorperazine and most antipsychotic medications. The SNOMED code for 12-lead ECG is 445118002. Order the ECG to be performed in 24 hours.",
+    "eval_MRN": "S2748981"
+  },
+  {
+    "id": "v1_task1_10",
+    "instruction": "What\u2019s the MRN of the patient with name Joshua Martinez and DOB of 1967-03-11? If the patient does not exist, the answer should be \"Patient not found\"",
+    "context": "",
+    "sol": [
+      "S6264184"
+    ],
+    "eval_MRN": "S6264184"
+  },
+  {
+    "id": "v2new_task1_13",
+    "instruction": "Instruction: Find the date of the most recent CT Abdomen procedure for patient S0658561. If the study was performed more than 12 months ago, order a new CT Abdomen with IV contrast indication 'Renal mass follow-up'.",
+    "context": "The CPT codes for existing CT studies are IMGCT0491 or IMGIL0001. The CPT code for the new study is 74177.",
+    "eval_MRN": "S0658561"
+  },
+  {
+    "id": "v1_task5_4",
+    "instruction": "Check patient S6468480's last serum magnesium level within last 24 hours. If low, then order replacement IV magnesium according to dosing instructions. If no magnesium level has been recorded in the last 24 hours, don't order anything.\n",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for magnesium is \"MG\". The NDC for replacement IV magnesium is 0338-1715-40. Dosing instructions: (1) Mild deficiency (eg, serum magnesium 1.5 to 1.9 mg/dL):\nIV: 1 g over 1 hour.\n(2) Moderate deficiency (eg, serum magnesium 1 to <1.5 mg/dL):\nIV: 2 g over 2 hours.\n(3) Severe deficiency (eg, serum magnesium <1 mg/dL):\nIV: 4 g over 4 hours.\n",
+    "eval_MRN": "S6468480"
+  },
+  {
+    "id": "v2new_task1_22",
+    "instruction": "Instruction: Find the date of the most recent CT Abdomen procedure for patient S1478444. If the study was performed more than 12 months ago, order a new CT Abdomen with IV contrast indication 'Renal mass follow-up'.",
+    "context": "The CPT codes for existing CT studies are IMGCT0491 or IMGIL0001. The CPT code for the new study is 74177.",
+    "eval_MRN": "S1478444"
+  },
+  {
+    "id": "v2new_task6_7",
+    "instruction": "Instruction: Retrieve the most recent TSH and free T4 values for patient S2199765. Based on the results, take appropriate action according to the protocol.",
+    "context": "The code for TSH is 'TSH' and for free T4 is 'FT4'. Protocol: If TSH > 10 uIU/mL on two separate instances of lab values (separated by at least one month in date of lab collection), start levothyroxine 25 mcg PO daily and order repeat TSH/FT4 in 6 weeks. If TSH is 4.5\u201310 uIU/mL and free T4 is normal (0.8\u20131.8 ng/dL), order repeat TSH/FT4 in 3 months (no medication yet).",
+    "eval_MRN": "S2199765"
+  },
+  {
+    "id": "v1_task7_24",
+    "instruction": "What is the most recent CBG of the patient S2075210?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for CBG is \"GLU\"",
+    "eval_MRN": "S2075210"
+  },
+  {
+    "id": "v1_task4_22",
+    "instruction": "What\u2019s the most recent magnesium level of the patient S6200102 within last 24 hours?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for magnesium is \"MG\". The answer should be a single number converted to a unit of mg/dL, and it should be -1 if a measurement within last 24 hours is not available.",
+    "eval_MRN": "S6200102"
+  },
+  {
+    "id": "v2new_task1_20",
+    "instruction": "Instruction: Find the date of the most recent CT Abdomen procedure for patient S2016972. If the study was performed more than 12 months ago, order a new CT Abdomen with IV contrast indication 'Renal mass follow-up'.",
+    "context": "The CPT codes for existing CT studies are IMGCT0491 or IMGIL0001. The CPT code for the new study is 74177.",
+    "eval_MRN": "S2016972"
+  },
+  {
+    "id": "v1_task1_1",
+    "instruction": "What\u2019s the MRN of the patient with name Peter Stafford and DOB of 1932-12-29? If the patient does not exist, the answer should be \"Patient not found\"",
+    "context": "",
+    "sol": [
+      "S6534835"
+    ],
+    "eval_MRN": "S6534835"
+  },
+  {
+    "id": "v1_task2_9",
+    "instruction": "What's the age of the patient with MRN of S0722219?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now, and the answer should be rounded down to an integer.",
+    "eval_MRN": "S0722219"
+  },
+  {
+    "id": "v2new_task4_6",
+    "instruction": "Instruction: Check if patient S6484983 has a urinary catheter that has been in place for more than 48 hours without a documented removal order. If so, create a service request to remove the catheter.",
+    "context": "The procedure code for urinary catheter is 'NUR1373'. It's 2023-11-11T09:00:00+00:00 now.",
+    "eval_MRN": "S6484983"
+  },
+  {
+    "id": "v2new_task6_14",
+    "instruction": "Instruction: Retrieve the most recent TSH and free T4 values for patient S1796597. Based on the results, take appropriate action according to the protocol.",
+    "context": "The code for TSH is 'TSH' and for free T4 is 'FT4'. Protocol: If TSH > 10 uIU/mL on two separate instances of lab values (separated by at least one month in date of lab collection), start levothyroxine 25 mcg PO daily and order repeat TSH/FT4 in 6 weeks. If TSH is 4.5\u201310 uIU/mL and free T4 is normal (0.8\u20131.8 ng/dL), order repeat TSH/FT4 in 3 months (no medication yet).",
+    "eval_MRN": "S1796597"
+  },
+  {
+    "id": "v2new_task6_10",
+    "instruction": "Instruction: Retrieve the most recent TSH and free T4 values for patient S1891852. Based on the results, take appropriate action according to the protocol.",
+    "context": "The code for TSH is 'TSH' and for free T4 is 'FT4'. Protocol: If TSH > 10 uIU/mL on two separate instances of lab values (separated by at least one month in date of lab collection), start levothyroxine 25 mcg PO daily and order repeat TSH/FT4 in 6 weeks. If TSH is 4.5\u201310 uIU/mL and free T4 is normal (0.8\u20131.8 ng/dL), order repeat TSH/FT4 in 3 months (no medication yet).",
+    "eval_MRN": "S1891852"
+  },
+  {
+    "id": "v2new_task3_9",
+    "instruction": "Instruction: Calculate the average heart rate over the past 6 hours and the past 12 hours for patient S2075210.",
+    "context": "The code for heart rate is 'HEARTRATE'. It's 2023-02-08T22:00:00+00:00 now",
+    "eval_MRN": "S2075210"
+  },
+  {
+    "id": "v2new_task9_7",
+    "instruction": "Instruction: Determine the date of the last influenza vaccine for patient S1521703. If it was administered more than 365 days ago, order a new influenza vaccine for today.",
+    "context": "It's 2024-01-09T00:00:00+00:00 now. The CPT code for influenza vaccine is 90686. The vaccine to order is influenza vaccine (quadrivalent, preservative-free, IM) for today.",
+    "eval_MRN": "S1521703"
+  },
+  {
+    "id": "v1_task7_7",
+    "instruction": "What is the most recent CBG of the patient S3084624?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for CBG is \"GLU\"",
+    "eval_MRN": "S3084624"
+  },
+  {
+    "id": "v1_task2_7",
+    "instruction": "What's the age of the patient with MRN of S6307599?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now, and the answer should be rounded down to an integer.",
+    "eval_MRN": "S6307599"
+  },
+  {
+    "id": "v2new_task6_9",
+    "instruction": "Instruction: Retrieve the most recent TSH and free T4 values for patient S2111822. Based on the results, take appropriate action according to the protocol.",
+    "context": "The code for TSH is 'TSH' and for free T4 is 'FT4'. Protocol: If TSH > 10 uIU/mL on two separate instances of lab values (separated by at least one month in date of lab collection), start levothyroxine 25 mcg PO daily and order repeat TSH/FT4 in 6 weeks. If TSH is 4.5\u201310 uIU/mL and free T4 is normal (0.8\u20131.8 ng/dL), order repeat TSH/FT4 in 3 months (no medication yet).",
+    "eval_MRN": "S2111822"
+  },
+  {
+    "id": "v2new_task6_6",
+    "instruction": "Instruction: Retrieve the most recent TSH and free T4 values for patient S6264184. Based on the results, take appropriate action according to the protocol.",
+    "context": "The code for TSH is 'TSH' and for free T4 is 'FT4'. Protocol: If TSH > 10 uIU/mL on two separate instances of lab values (separated by at least one month in date of lab collection), start levothyroxine 25 mcg PO daily and order repeat TSH/FT4 in 6 weeks. If TSH is 4.5\u201310 uIU/mL and free T4 is normal (0.8\u20131.8 ng/dL), order repeat TSH/FT4 in 3 months (no medication yet).",
+    "eval_MRN": "S6264184"
+  },
+  {
+    "id": "v2new_task8_1",
+    "instruction": "Instruction: Verify that every active opioid analgesic order for patient S6474456 has a matching naloxone prescription. If an opioid order is active without naloxone, create a naloxone order.",
+    "context": "Opioid medications to search for include hydromorphone, oxycodone, fentanyl, hydrocodone, morphine. The naloxone order is naloxone nasal spray 4 mg.",
+    "eval_MRN": "S6474456"
+  },
+  {
+    "id": "v1_task10_9",
+    "instruction": "What\u2019s the last HbA1C (hemoglobin A1C) value in the chart for patient S1698248 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test. ",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for HbA1C is \"A1C\". The LOINC code for ordering HbA1C lab is: 4548-4. The answer should be [-1] if a measurement is not available.",
+    "eval_MRN": "S1698248"
+  },
+  {
+    "id": "v1_task3_20",
+    "instruction": "I just measured the blood pressure for patient with MRN of S6222362, and it is \"118/77 mmHg\". Help me record it.",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The flowsheet ID for blood pressure is BP.",
+    "eval_MRN": "S6222362"
+  },
+  {
+    "id": "v2new_task4_14",
+    "instruction": "Instruction: Check if patient S6545016 has a urinary catheter that has been in place for more than 48 hours without a documented removal order. If so, create a service request to remove the catheter.",
+    "context": "The procedure code for urinary catheter is 'NUR1373'. It's 2023-11-11T09:00:00+00:00 now.",
+    "eval_MRN": "S6545016"
+  },
+  {
+    "id": "v2new_task7_6",
+    "instruction": "Instruction: Check the latest QTc interval for patient S1698248. If prolonged, discontinue QT-prolonging medications and order a follow-up ECG for 24 hours later.",
+    "context": "The code for QTc interval is 'QTCINTERVAL'. The threshold for prolonged QTc is > 500 ms. QT-prolonging medications to discontinue include text containing ondansetron, prochlorperazine and most antipsychotic medications. The SNOMED code for 12-lead ECG is 445118002. Order the ECG to be performed in 24 hours.",
+    "eval_MRN": "S1698248"
+  },
+  {
+    "id": "v2new_task8_9",
+    "instruction": "Instruction: Verify that every active opioid analgesic order for patient S1353305 has a matching naloxone prescription. If an opioid order is active without naloxone, create a naloxone order.",
+    "context": "Opioid medications to search for include hydromorphone, oxycodone, fentanyl, hydrocodone, morphine. The naloxone order is naloxone nasal spray 4 mg.",
+    "eval_MRN": "S1353305"
+  },
+  {
+    "id": "v1_task4_15",
+    "instruction": "What\u2019s the most recent magnesium level of the patient S3057899 within last 24 hours?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for magnesium is \"MG\". The answer should be a single number converted to a unit of mg/dL, and it should be -1 if a measurement within last 24 hours is not available.",
+    "eval_MRN": "S3057899"
+  },
+  {
+    "id": "v1_task6_4",
+    "instruction": "What is the average CBG of the patient S6541609 over the last 24 hours?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for CBG is \"GLU\". The answer should be a single number converted to a unit of mg/dL, and it should be -1 if a measurement within last 24 hours is not available.",
+    "eval_MRN": "S6541609"
+  },
+  {
+    "id": "v2new_task8_10",
+    "instruction": "Instruction: Verify that every active opioid analgesic order for patient S6530813 has a matching naloxone prescription. If an opioid order is active without naloxone, create a naloxone order.",
+    "context": "Opioid medications to search for include hydromorphone, oxycodone, fentanyl, hydrocodone, morphine. The naloxone order is naloxone nasal spray 4 mg.",
+    "eval_MRN": "S6530813"
+  },
+  {
+    "id": "v2new_task3_26",
+    "instruction": "Instruction: Calculate the average heart rate over the past 6 hours and the past 12 hours for patient S3213957.",
+    "context": "The code for heart rate is 'HEARTRATE'. It's 2023-04-25T21:41:00+00:00 now",
+    "eval_MRN": "S3213957"
+  },
+  {
+    "id": "v1_task8_11",
+    "instruction": "Order orthopedic surgery referral for patient S3114648. Specify within the free text of the referral, \"Situation: acute left knee injury, Background: radiology report indicates ACL tear. Assessment: ACL tear grade II. Recommendation: request for Orthopedic service to evaluate and provide management recommendations.\"",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The SNOMED code for orthopedic surgery referral is 306181000000106.",
+    "eval_MRN": "S3114648"
+  },
+  {
+    "id": "v2new_task8_30",
+    "instruction": "Instruction: Verify that every active opioid analgesic order for patient S1754095 has a matching naloxone prescription. If an opioid order is active without naloxone, create a naloxone order.",
+    "context": "Opioid medications to search for include hydromorphone, oxycodone, fentanyl, hydrocodone, morphine. The naloxone order is naloxone nasal spray 4 mg.",
+    "eval_MRN": "S1754095"
+  },
+  {
+    "id": "v1_task2_27",
+    "instruction": "What's the age of the patient with MRN of S1311412?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now, and the answer should be rounded down to an integer.",
+    "eval_MRN": "S1311412"
+  },
+  {
+    "id": "v1_task1_4",
+    "instruction": "What\u2019s the MRN of the patient with name James Snyder and DOB of 1953-08-03? If the patient does not exist, the answer should be \"Patient not found\"",
+    "context": "",
+    "sol": [
+      "S6484983"
+    ],
+    "eval_MRN": "S6484983"
+  },
+  {
+    "id": "v2new_task6_1",
+    "instruction": "Instruction: Retrieve the most recent TSH and free T4 values for patient S6474456. Based on the results, take appropriate action according to the protocol.",
+    "context": "The code for TSH is 'TSH' and for free T4 is 'FT4'. Protocol: If TSH > 10 uIU/mL on two separate instances of lab values (separated by at least one month in date of lab collection), start levothyroxine 25 mcg PO daily and order repeat TSH/FT4 in 6 weeks. If TSH is 4.5\u201310 uIU/mL and free T4 is normal (0.8\u20131.8 ng/dL), order repeat TSH/FT4 in 3 months (no medication yet).",
+    "eval_MRN": "S6474456"
+  },
+  {
+    "id": "v1_task3_26",
+    "instruction": "I just measured the blood pressure for patient with MRN of S1152319, and it is \"118/77 mmHg\". Help me record it.",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The flowsheet ID for blood pressure is BP.",
+    "eval_MRN": "S1152319"
+  },
+  {
+    "id": "v2new_task5_5",
+    "instruction": "Instruction: Confirm patient S1478444 has a malignant neoplasm of left kidney diagnosis. If true and the last CT Abdomen/Pelvis is more than 3 months old, order a new CT and referral to Interventional Radiology.",
+    "context": "The ICD-10 code for malignant neoplasm of left kidney is C64.2. The CPT code for CT Abdomen/Pelvis with IV contrast is 74177 (for oncologic follow-up). The CPT code for Interventional Radiology referral is CON417 with the request: 'Evaluate renal mass for biopsy or ablation.'",
+    "eval_MRN": "S1478444"
+  },
+  {
+    "id": "v2new_task4_12",
+    "instruction": "Instruction: Check if patient S1754095 has a urinary catheter that has been in place for more than 48 hours without a documented removal order. If so, create a service request to remove the catheter.",
+    "context": "The procedure code for urinary catheter is 'NUR1373'. It's 2023-11-11T09:00:00+00:00 now.",
+    "eval_MRN": "S1754095"
+  },
+  {
+    "id": "v2new_task5_12",
+    "instruction": "Instruction: Confirm patient S6550627 has a malignant neoplasm of left kidney diagnosis. If true and the last CT Abdomen/Pelvis is more than 3 months old, order a new CT and referral to Interventional Radiology.",
+    "context": "The ICD-10 code for malignant neoplasm of left kidney is C64.2. The CPT code for CT Abdomen/Pelvis with IV contrast is 74177 (for oncologic follow-up). The CPT code for Interventional Radiology referral is CON417 with the request: 'Evaluate renal mass for biopsy or ablation.'",
+    "eval_MRN": "S6550627"
+  },
+  {
+    "id": "v2new_task3_11",
+    "instruction": "Instruction: Calculate the average heart rate over the past 6 hours and the past 12 hours for patient S3241217.",
+    "context": "The code for heart rate is 'HEARTRATE'. It's 2023-07-07T20:00:00+00:00 now",
+    "eval_MRN": "S3241217"
+  },
+  {
+    "id": "v1_task5_27",
+    "instruction": "Check patient S6547257's last serum magnesium level within last 24 hours. If low, then order replacement IV magnesium according to dosing instructions. If no magnesium level has been recorded in the last 24 hours, don't order anything.\n",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for magnesium is \"MG\". The NDC for replacement IV magnesium is 0338-1715-40. Dosing instructions: (1) Mild deficiency (eg, serum magnesium 1.5 to 1.9 mg/dL):\nIV: 1 g over 1 hour.\n(2) Moderate deficiency (eg, serum magnesium 1 to <1.5 mg/dL):\nIV: 2 g over 2 hours.\n(3) Severe deficiency (eg, serum magnesium <1 mg/dL):\nIV: 4 g over 4 hours.\n",
+    "eval_MRN": "S6547257"
+  },
+  {
+    "id": "v1_task5_26",
+    "instruction": "Check patient S1478444's last serum magnesium level within last 24 hours. If low, then order replacement IV magnesium according to dosing instructions. If no magnesium level has been recorded in the last 24 hours, don't order anything.\n",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for magnesium is \"MG\". The NDC for replacement IV magnesium is 0338-1715-40. Dosing instructions: (1) Mild deficiency (eg, serum magnesium 1.5 to 1.9 mg/dL):\nIV: 1 g over 1 hour.\n(2) Moderate deficiency (eg, serum magnesium 1 to <1.5 mg/dL):\nIV: 2 g over 2 hours.\n(3) Severe deficiency (eg, serum magnesium <1 mg/dL):\nIV: 4 g over 4 hours.\n",
+    "eval_MRN": "S1478444"
+  },
+  {
+    "id": "v1_task6_27",
+    "instruction": "What is the average CBG of the patient S2402518 over the last 24 hours?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for CBG is \"GLU\". The answer should be a single number converted to a unit of mg/dL, and it should be -1 if a measurement within last 24 hours is not available.",
+    "eval_MRN": "S2402518"
+  },
+  {
+    "id": "v2new_task9_25",
+    "instruction": "Instruction: Determine the date of the last influenza vaccine for patient S0658561. If it was administered more than 365 days ago, order a new influenza vaccine for today.",
+    "context": "It's 2024-01-09T00:00:00+00:00 now. The CPT code for influenza vaccine is 90686. The vaccine to order is influenza vaccine (quadrivalent, preservative-free, IM) for today.",
+    "eval_MRN": "S0658561"
+  },
+  {
+    "id": "v1_task6_25",
+    "instruction": "What is the average CBG of the patient S1754095 over the last 24 hours?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for CBG is \"GLU\". The answer should be a single number converted to a unit of mg/dL, and it should be -1 if a measurement within last 24 hours is not available.",
+    "eval_MRN": "S1754095"
+  },
+  {
+    "id": "v2new_task10_30",
+    "instruction": "Instruction: Review COVID-19 vaccination status for patient S6222362. Find the most recent COVID-19 vaccine and if the last dose was more than 12 months ago, order a COVID booster.",
+    "context": "It's 2023-11-07T12:00:00+00:00 now. The code for COVID-19 vaccine procedure is 'COVIDVACCINE' or MedicationRequest with text containing 'COVID-19 VAC'. The booster to order is a single-dose COVID vaccine (CPT 91320) today.",
+    "eval_MRN": "S6222362"
+  },
+  {
+    "id": "v1_task10_26",
+    "instruction": "What\u2019s the last HbA1C (hemoglobin A1C) value in the chart for patient S6352985 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test. ",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for HbA1C is \"A1C\". The LOINC code for ordering HbA1C lab is: 4548-4. The answer should be [-1] if a measurement is not available.",
+    "eval_MRN": "S6352985"
+  },
+  {
+    "id": "v1_task4_13",
+    "instruction": "What\u2019s the most recent magnesium level of the patient S3114648 within last 24 hours?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for magnesium is \"MG\". The answer should be a single number converted to a unit of mg/dL, and it should be -1 if a measurement within last 24 hours is not available.",
+    "eval_MRN": "S3114648"
+  },
+  {
+    "id": "v2new_task1_18",
+    "instruction": "Instruction: Find the date of the most recent CT Abdomen procedure for patient S6537563. If the study was performed more than 12 months ago, order a new CT Abdomen with IV contrast indication 'Renal mass follow-up'.",
+    "context": "The CPT codes for existing CT studies are IMGCT0491 or IMGIL0001. The CPT code for the new study is 74177.",
+    "eval_MRN": "S6537563"
+  },
+  {
+    "id": "v1_task7_21",
+    "instruction": "What is the most recent CBG of the patient S2874099?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for CBG is \"GLU\"",
+    "eval_MRN": "S2874099"
+  },
+  {
+    "id": "v1_task4_29",
+    "instruction": "What\u2019s the most recent magnesium level of the patient S6309742 within last 24 hours?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for magnesium is \"MG\". The answer should be a single number converted to a unit of mg/dL, and it should be -1 if a measurement within last 24 hours is not available.",
+    "eval_MRN": "S6309742"
+  },
+  {
+    "id": "v2new_task5_9",
+    "instruction": "Instruction: Confirm patient S6415739 has a malignant neoplasm of left kidney diagnosis. If true and the last CT Abdomen/Pelvis is more than 3 months old, order a new CT and referral to Interventional Radiology.",
+    "context": "The ICD-10 code for malignant neoplasm of left kidney is C64.2. The CPT code for CT Abdomen/Pelvis with IV contrast is 74177 (for oncologic follow-up). The CPT code for Interventional Radiology referral is CON417 with the request: 'Evaluate renal mass for biopsy or ablation.'",
+    "eval_MRN": "S6415739"
+  },
+  {
+    "id": "v1_task3_9",
+    "instruction": "I just measured the blood pressure for patient with MRN of S1986380, and it is \"118/77 mmHg\". Help me record it.",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The flowsheet ID for blood pressure is BP.",
+    "eval_MRN": "S1986380"
+  },
+  {
+    "id": "v1_task4_12",
+    "instruction": "What\u2019s the most recent magnesium level of the patient S1777769 within last 24 hours?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for magnesium is \"MG\". The answer should be a single number converted to a unit of mg/dL, and it should be -1 if a measurement within last 24 hours is not available.",
+    "eval_MRN": "S1777769"
+  },
+  {
+    "id": "v2new_task2_16",
+    "instruction": "Instruction: Verify that patient S6538722 has exactly one active DVT prophylaxis order. If there are zero orders, create one. If there are multiple orders, discontinue duplicates keeping only the newest.",
+    "context": "The specific order is heparin 5000 units SC q8h prophylaxis. Ensure exactly one active order remains. For context, a duplicate order could be any anti-coagulant medication (for example, LMWH, DOAC, etc).",
+    "eval_MRN": "S6538722"
+  },
+  {
+    "id": "v2new_task7_9",
+    "instruction": "Instruction: Check the latest QTc interval for patient S0658561. If prolonged, discontinue QT-prolonging medications and order a follow-up ECG for 24 hours later.",
+    "context": "The code for QTc interval is 'QTCINTERVAL'. The threshold for prolonged QTc is > 500 ms. QT-prolonging medications to discontinue include text containing ondansetron, prochlorperazine and most antipsychotic medications. The SNOMED code for 12-lead ECG is 445118002. Order the ECG to be performed in 24 hours.",
+    "eval_MRN": "S0658561"
+  },
+  {
+    "id": "v2new_task9_9",
+    "instruction": "Instruction: Determine the date of the last influenza vaccine for patient S1891852. If it was administered more than 365 days ago, order a new influenza vaccine for today.",
+    "context": "It's 2024-01-09T00:00:00+00:00 now. The CPT code for influenza vaccine is 90686. The vaccine to order is influenza vaccine (quadrivalent, preservative-free, IM) for today.",
+    "eval_MRN": "S1891852"
+  },
+  {
+    "id": "v2new_task2_23",
+    "instruction": "Instruction: Verify that patient S1715871 has exactly one active DVT prophylaxis order. If there are zero orders, create one. If there are multiple orders, discontinue duplicates keeping only the newest.",
+    "context": "The specific order is heparin 5000 units SC q8h prophylaxis. Ensure exactly one active order remains. For context, a duplicate order could be any anti-coagulant medication (for example, LMWH, DOAC, etc).",
+    "eval_MRN": "S1715871"
+  },
+  {
+    "id": "v1_task3_22",
+    "instruction": "I just measured the blood pressure for patient with MRN of S6329254, and it is \"118/77 mmHg\". Help me record it.",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The flowsheet ID for blood pressure is BP.",
+    "eval_MRN": "S6329254"
+  },
+  {
+    "id": "v1_task6_6",
+    "instruction": "What is the average CBG of the patient S3070524 over the last 24 hours?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for CBG is \"GLU\". The answer should be a single number converted to a unit of mg/dL, and it should be -1 if a measurement within last 24 hours is not available.",
+    "eval_MRN": "S3070524"
+  },
+  {
+    "id": "v2new_task8_18",
+    "instruction": "Instruction: Verify that every active opioid analgesic order for patient S6484983 has a matching naloxone prescription. If an opioid order is active without naloxone, create a naloxone order.",
+    "context": "Opioid medications to search for include hydromorphone, oxycodone, fentanyl, hydrocodone, morphine. The naloxone order is naloxone nasal spray 4 mg.",
+    "eval_MRN": "S6484983"
+  },
+  {
+    "id": "v1_task1_25",
+    "instruction": "What\u2019s the MRN of the patient with name Russell Shields and DOB of 1964-01-02? If the patient does not exist, the answer should be \"Patient not found\"",
+    "context": "",
+    "sol": [
+      "S6545016"
+    ],
+    "eval_MRN": "S6545016"
+  },
+  {
+    "id": "v1_task9_2",
+    "instruction": "Check patient S1023381's most recent potassium level. If low, then order replacement potassium according to dosing instructions. Also pair this order with a morning serum potassium level to be completed the next day at 8am. \n",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for potassium is \"K\".The NDC for replacement potassium is 40032-917-01. Dosing instructions: for every 0.1 mEq/L (or mmol/L) below threshold, order 10 mEq potassium oral repletion) to reach a goal of 3.5 serum level. The LOINC code for serum potassium level is 2823-3.",
+    "eval_MRN": "S1023381"
+  },
+  {
+    "id": "v2new_task3_6",
+    "instruction": "Instruction: Calculate the average heart rate over the past 6 hours and the past 12 hours for patient S6538722.",
+    "context": "The code for heart rate is 'HEARTRATE'. It's 2023-11-13T02:01:00+00:00 now",
+    "eval_MRN": "S6538722"
+  },
+  {
+    "id": "v2new_task8_4",
+    "instruction": "Instruction: Verify that every active opioid analgesic order for patient S6534835 has a matching naloxone prescription. If an opioid order is active without naloxone, create a naloxone order.",
+    "context": "Opioid medications to search for include hydromorphone, oxycodone, fentanyl, hydrocodone, morphine. The naloxone order is naloxone nasal spray 4 mg.",
+    "eval_MRN": "S6534835"
+  },
+  {
+    "id": "v1_task5_2",
+    "instruction": "Check patient S6541353's last serum magnesium level within last 24 hours. If low, then order replacement IV magnesium according to dosing instructions. If no magnesium level has been recorded in the last 24 hours, don't order anything.\n",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for magnesium is \"MG\". The NDC for replacement IV magnesium is 0338-1715-40. Dosing instructions: (1) Mild deficiency (eg, serum magnesium 1.5 to 1.9 mg/dL):\nIV: 1 g over 1 hour.\n(2) Moderate deficiency (eg, serum magnesium 1 to <1.5 mg/dL):\nIV: 2 g over 2 hours.\n(3) Severe deficiency (eg, serum magnesium <1 mg/dL):\nIV: 4 g over 4 hours.\n",
+    "eval_MRN": "S6541353"
+  },
+  {
+    "id": "v1_task3_8",
+    "instruction": "I just measured the blood pressure for patient with MRN of S2033286, and it is \"118/77 mmHg\". Help me record it.",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The flowsheet ID for blood pressure is BP.",
+    "eval_MRN": "S2033286"
+  },
+  {
+    "id": "v2new_task2_8",
+    "instruction": "Instruction: Verify that patient S6265496 has exactly one active DVT prophylaxis order. If there are zero orders, create one. If there are multiple orders, discontinue duplicates keeping only the newest.",
+    "context": "The specific order is heparin 5000 units SC q8h prophylaxis. Ensure exactly one active order remains. For context, a duplicate order could be any anti-coagulant medication (for example, LMWH, DOAC, etc).",
+    "eval_MRN": "S6265496"
+  },
+  {
+    "id": "v1_task8_24",
+    "instruction": "Order orthopedic surgery referral for patient S3032536. Specify within the free text of the referral, \"Situation: acute left knee injury, Background: radiology report indicates ACL tear. Assessment: ACL tear grade II. Recommendation: request for Orthopedic service to evaluate and provide management recommendations.\"",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The SNOMED code for orthopedic surgery referral is 306181000000106.",
+    "eval_MRN": "S3032536"
+  },
+  {
+    "id": "v2new_task8_27",
+    "instruction": "Instruction: Verify that every active opioid analgesic order for patient S1311412 has a matching naloxone prescription. If an opioid order is active without naloxone, create a naloxone order.",
+    "context": "Opioid medications to search for include hydromorphone, oxycodone, fentanyl, hydrocodone, morphine. The naloxone order is naloxone nasal spray 4 mg.",
+    "eval_MRN": "S1311412"
+  },
+  {
+    "id": "v1_task10_28",
+    "instruction": "What\u2019s the last HbA1C (hemoglobin A1C) value in the chart for patient S6530532 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test. ",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for HbA1C is \"A1C\". The LOINC code for ordering HbA1C lab is: 4548-4. The answer should be [-1] if a measurement is not available.",
+    "eval_MRN": "S6530532"
+  },
+  {
+    "id": "v1_task6_8",
+    "instruction": "What is the average CBG of the patient S2450227 over the last 24 hours?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for CBG is \"GLU\". The answer should be a single number converted to a unit of mg/dL, and it should be -1 if a measurement within last 24 hours is not available.",
+    "eval_MRN": "S2450227"
+  },
+  {
+    "id": "v1_task7_16",
+    "instruction": "What is the most recent CBG of the patient S6547257?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for CBG is \"GLU\"",
+    "eval_MRN": "S6547257"
+  },
+  {
+    "id": "v2new_task8_19",
+    "instruction": "Instruction: Verify that every active opioid analgesic order for patient S6530532 has a matching naloxone prescription. If an opioid order is active without naloxone, create a naloxone order.",
+    "context": "Opioid medications to search for include hydromorphone, oxycodone, fentanyl, hydrocodone, morphine. The naloxone order is naloxone nasal spray 4 mg.",
+    "eval_MRN": "S6530532"
+  },
+  {
+    "id": "v1_task8_15",
+    "instruction": "Order orthopedic surgery referral for patient S6227720. Specify within the free text of the referral, \"Situation: acute left knee injury, Background: radiology report indicates ACL tear. Assessment: ACL tear grade II. Recommendation: request for Orthopedic service to evaluate and provide management recommendations.\"",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The SNOMED code for orthopedic surgery referral is 306181000000106.",
+    "eval_MRN": "S6227720"
+  },
+  {
+    "id": "v1_task7_17",
+    "instruction": "What is the most recent CBG of the patient S1353305?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for CBG is \"GLU\"",
+    "eval_MRN": "S1353305"
+  },
+  {
+    "id": "v2new_task1_28",
+    "instruction": "Instruction: Find the date of the most recent CT Abdomen procedure for patient S3114648. If the study was performed more than 12 months ago, order a new CT Abdomen with IV contrast indication 'Renal mass follow-up'.",
+    "context": "The CPT codes for existing CT studies are IMGCT0491 or IMGIL0001. The CPT code for the new study is 74177.",
+    "eval_MRN": "S3114648"
+  },
+  {
+    "id": "v2new_task5_2",
+    "instruction": "Instruction: Confirm patient S2119664 has a malignant neoplasm of left kidney diagnosis. If true and the last CT Abdomen/Pelvis is more than 3 months old, order a new CT and referral to Interventional Radiology.",
+    "context": "The ICD-10 code for malignant neoplasm of left kidney is C64.2. The CPT code for CT Abdomen/Pelvis with IV contrast is 74177 (for oncologic follow-up). The CPT code for Interventional Radiology referral is CON417 with the request: 'Evaluate renal mass for biopsy or ablation.'",
+    "eval_MRN": "S2119664"
+  },
+  {
+    "id": "v1_task6_20",
+    "instruction": "What is the average CBG of the patient S6426560 over the last 24 hours?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for CBG is \"GLU\". The answer should be a single number converted to a unit of mg/dL, and it should be -1 if a measurement within last 24 hours is not available.",
+    "eval_MRN": "S6426560"
+  },
+  {
+    "id": "v1_task7_4",
+    "instruction": "What is the most recent CBG of the patient S6530532?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for CBG is \"GLU\"",
+    "eval_MRN": "S6530532"
+  },
+  {
+    "id": "v1_task6_24",
+    "instruction": "What is the average CBG of the patient S0581164 over the last 24 hours?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for CBG is \"GLU\". The answer should be a single number converted to a unit of mg/dL, and it should be -1 if a measurement within last 24 hours is not available.",
+    "eval_MRN": "S0581164"
+  },
+  {
+    "id": "v1_task1_9",
+    "instruction": "What\u2019s the MRN of the patient with name Katrina Golden and DOB of 1960-08-18? If the patient does not exist, the answer should be \"Patient not found\"",
+    "context": "",
+    "sol": [
+      "S6539215"
+    ],
+    "eval_MRN": "S6539215"
+  },
+  {
+    "id": "v1_task2_28",
+    "instruction": "What's the age of the patient with MRN of S2863714?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now, and the answer should be rounded down to an integer.",
+    "eval_MRN": "S2863714"
+  },
+  {
+    "id": "v1_task9_8",
+    "instruction": "Check patient S1635224's most recent potassium level. If low, then order replacement potassium according to dosing instructions. Also pair this order with a morning serum potassium level to be completed the next day at 8am. \n",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for potassium is \"K\".The NDC for replacement potassium is 40032-917-01. Dosing instructions: for every 0.1 mEq/L (or mmol/L) below threshold, order 10 mEq potassium oral repletion) to reach a goal of 3.5 serum level. The LOINC code for serum potassium level is 2823-3.",
+    "eval_MRN": "S1635224"
+  },
+  {
+    "id": "v2new_task8_24",
+    "instruction": "Instruction: Verify that every active opioid analgesic order for patient S2937751 has a matching naloxone prescription. If an opioid order is active without naloxone, create a naloxone order.",
+    "context": "Opioid medications to search for include hydromorphone, oxycodone, fentanyl, hydrocodone, morphine. The naloxone order is naloxone nasal spray 4 mg.",
+    "eval_MRN": "S2937751"
+  },
+  {
+    "id": "v1_task4_4",
+    "instruction": "What\u2019s the most recent magnesium level of the patient S6474456 within last 24 hours?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for magnesium is \"MG\". The answer should be a single number converted to a unit of mg/dL, and it should be -1 if a measurement within last 24 hours is not available.",
+    "eval_MRN": "S6474456"
+  },
+  {
+    "id": "v1_task7_2",
+    "instruction": "What is the most recent CBG of the patient S2197736?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for CBG is \"GLU\"",
+    "eval_MRN": "S2197736"
+  },
+  {
+    "id": "v1_task6_26",
+    "instruction": "What is the average CBG of the patient S3228213 over the last 24 hours?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for CBG is \"GLU\". The answer should be a single number converted to a unit of mg/dL, and it should be -1 if a measurement within last 24 hours is not available.",
+    "eval_MRN": "S3228213"
+  },
+  {
+    "id": "v1_task9_5",
+    "instruction": "Check patient S1796597's most recent potassium level. If low, then order replacement potassium according to dosing instructions. Also pair this order with a morning serum potassium level to be completed the next day at 8am. \n",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for potassium is \"K\".The NDC for replacement potassium is 40032-917-01. Dosing instructions: for every 0.1 mEq/L (or mmol/L) below threshold, order 10 mEq potassium oral repletion) to reach a goal of 3.5 serum level. The LOINC code for serum potassium level is 2823-3.",
+    "eval_MRN": "S1796597"
+  },
+  {
+    "id": "v1_task1_30",
+    "instruction": "What's the MRN of the patient with name Kyle Jia and DOB of 1969-05-15? If the patient does not exist, the answer should be \"Patient not found\"",
+    "context": "",
+    "sol": [
+      "Patient not found"
+    ]
+  },
+  {
+    "id": "v1_task6_13",
+    "instruction": "What is the average CBG of the patient S2075210 over the last 24 hours?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for CBG is \"GLU\". The answer should be a single number converted to a unit of mg/dL, and it should be -1 if a measurement within last 24 hours is not available.",
+    "eval_MRN": "S2075210"
+  },
+  {
+    "id": "v1_task10_20",
+    "instruction": "What\u2019s the last HbA1C (hemoglobin A1C) value in the chart for patient S0722219 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test. ",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for HbA1C is \"A1C\". The LOINC code for ordering HbA1C lab is: 4548-4. The answer should be [-1] if a measurement is not available.",
+    "eval_MRN": "S0722219"
+  },
+  {
+    "id": "v1_task3_24",
+    "instruction": "I just measured the blood pressure for patient with MRN of S2119664, and it is \"118/77 mmHg\". Help me record it.",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The flowsheet ID for blood pressure is BP.",
+    "eval_MRN": "S2119664"
+  },
+  {
+    "id": "v2new_task1_6",
+    "instruction": "Instruction: Find the date of the most recent CT Abdomen procedure for patient S2450227. If the study was performed more than 12 months ago, order a new CT Abdomen with IV contrast indication 'Renal mass follow-up'.",
+    "context": "The CPT codes for existing CT studies are IMGCT0491 or IMGIL0001. The CPT code for the new study is 74177.",
+    "eval_MRN": "S2450227"
+  },
+  {
+    "id": "v1_task8_17",
+    "instruction": "Order orthopedic surgery referral for patient S2111822. Specify within the free text of the referral, \"Situation: acute left knee injury, Background: radiology report indicates ACL tear. Assessment: ACL tear grade II. Recommendation: request for Orthopedic service to evaluate and provide management recommendations.\"",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The SNOMED code for orthopedic surgery referral is 306181000000106.",
+    "eval_MRN": "S2111822"
+  },
+  {
+    "id": "v2new_task2_20",
+    "instruction": "Instruction: Verify that patient S1733937 has exactly one active DVT prophylaxis order. If there are zero orders, create one. If there are multiple orders, discontinue duplicates keeping only the newest.",
+    "context": "The specific order is heparin 5000 units SC q8h prophylaxis. Ensure exactly one active order remains. For context, a duplicate order could be any anti-coagulant medication (for example, LMWH, DOAC, etc).",
+    "eval_MRN": "S1733937"
+  },
+  {
+    "id": "v2new_task1_3",
+    "instruction": "Instruction: Find the date of the most recent CT Abdomen procedure for patient S1521703. If the study was performed more than 12 months ago, order a new CT Abdomen with IV contrast indication 'Renal mass follow-up'.",
+    "context": "The CPT codes for existing CT studies are IMGCT0491 or IMGIL0001. The CPT code for the new study is 74177.",
+    "eval_MRN": "S1521703"
+  },
+  {
+    "id": "v1_task7_10",
+    "instruction": "What is the most recent CBG of the patient S0674240?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for CBG is \"GLU\"",
+    "eval_MRN": "S0674240"
+  },
+  {
+    "id": "v1_task8_26",
+    "instruction": "Order orthopedic surgery referral for patient S6549951. Specify within the free text of the referral, \"Situation: acute left knee injury, Background: radiology report indicates ACL tear. Assessment: ACL tear grade II. Recommendation: request for Orthopedic service to evaluate and provide management recommendations.\"",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The SNOMED code for orthopedic surgery referral is 306181000000106.",
+    "eval_MRN": "S6549951"
+  },
+  {
+    "id": "v2new_task10_5",
+    "instruction": "Instruction: Review COVID-19 vaccination status for patient S2197736. Find the most recent COVID-19 vaccine and if the last dose was more than 12 months ago, order a COVID booster.",
+    "context": "It's 2023-11-07T12:00:00+00:00 now. The code for COVID-19 vaccine procedure is 'COVIDVACCINE' or MedicationRequest with text containing 'COVID-19 VAC'. The booster to order is a single-dose COVID vaccine (CPT 91320) today.",
+    "eval_MRN": "S2197736"
+  },
+  {
+    "id": "v2new_task9_27",
+    "instruction": "Instruction: Determine the date of the last influenza vaccine for patient S2090974. If it was administered more than 365 days ago, order a new influenza vaccine for today.",
+    "context": "It's 2024-01-09T00:00:00+00:00 now. The CPT code for influenza vaccine is 90686. The vaccine to order is influenza vaccine (quadrivalent, preservative-free, IM) for today.",
+    "eval_MRN": "S2090974"
+  },
+  {
+    "id": "v2new_task2_1",
+    "instruction": "Instruction: Verify that patient S6315806 has exactly one active DVT prophylaxis order. If there are zero orders, create one. If there are multiple orders, discontinue duplicates keeping only the newest.",
+    "context": "The specific order is heparin 5000 units SC q8h prophylaxis. Ensure exactly one active order remains. For context, a duplicate order could be any anti-coagulant medication (for example, LMWH, DOAC, etc).",
+    "eval_MRN": "S6315806"
+  },
+  {
+    "id": "v1_task3_15",
+    "instruction": "I just measured the blood pressure for patient with MRN of S3070524, and it is \"118/77 mmHg\". Help me record it.",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The flowsheet ID for blood pressure is BP.",
+    "eval_MRN": "S3070524"
+  },
+  {
+    "id": "v2new_task8_11",
+    "instruction": "Instruction: Verify that every active opioid analgesic order for patient S2154941 has a matching naloxone prescription. If an opioid order is active without naloxone, create a naloxone order.",
+    "context": "Opioid medications to search for include hydromorphone, oxycodone, fentanyl, hydrocodone, morphine. The naloxone order is naloxone nasal spray 4 mg.",
+    "eval_MRN": "S2154941"
+  },
+  {
+    "id": "v2new_task10_3",
+    "instruction": "Instruction: Review COVID-19 vaccination status for patient S1876702. Find the most recent COVID-19 vaccine and if the last dose was more than 12 months ago, order a COVID booster.",
+    "context": "It's 2023-11-07T12:00:00+00:00 now. The code for COVID-19 vaccine procedure is 'COVIDVACCINE' or MedicationRequest with text containing 'COVID-19 VAC'. The booster to order is a single-dose COVID vaccine (CPT 91320) today.",
+    "eval_MRN": "S1876702"
+  },
+  {
+    "id": "v2new_task4_15",
+    "instruction": "Instruction: Check if patient S6541609 has a urinary catheter that has been in place for more than 48 hours without a documented removal order. If so, create a service request to remove the catheter.",
+    "context": "The procedure code for urinary catheter is 'NUR1373'. It's 2023-11-11T09:00:00+00:00 now.",
+    "eval_MRN": "S6541609"
+  },
+  {
+    "id": "v1_task4_24",
+    "instruction": "What\u2019s the most recent magnesium level of the patient S2197736 within last 24 hours?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for magnesium is \"MG\". The answer should be a single number converted to a unit of mg/dL, and it should be -1 if a measurement within last 24 hours is not available.",
+    "eval_MRN": "S2197736"
+  },
+  {
+    "id": "v1_task2_18",
+    "instruction": "What's the age of the patient with MRN of S3195056?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now, and the answer should be rounded down to an integer.",
+    "eval_MRN": "S3195056"
+  },
+  {
+    "id": "v1_task6_3",
+    "instruction": "What is the average CBG of the patient S2863714 over the last 24 hours?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for CBG is \"GLU\". The answer should be a single number converted to a unit of mg/dL, and it should be -1 if a measurement within last 24 hours is not available.",
+    "eval_MRN": "S2863714"
+  },
+  {
+    "id": "v1_task10_13",
+    "instruction": "What\u2019s the last HbA1C (hemoglobin A1C) value in the chart for patient S6521727 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test. ",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for HbA1C is \"A1C\". The LOINC code for ordering HbA1C lab is: 4548-4. The answer should be [-1] if a measurement is not available.",
+    "eval_MRN": "S6521727"
+  },
+  {
+    "id": "v2new_task3_10",
+    "instruction": "Instruction: Calculate the average heart rate over the past 6 hours and the past 12 hours for patient S1374652.",
+    "context": "The code for heart rate is 'HEARTRATE'. It's 2023-11-06T18:00:00+00:00 now",
+    "eval_MRN": "S1374652"
+  },
+  {
+    "id": "v1_task5_10",
+    "instruction": "Check patient S2874099's last serum magnesium level within last 24 hours. If low, then order replacement IV magnesium according to dosing instructions. If no magnesium level has been recorded in the last 24 hours, don't order anything.\n",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for magnesium is \"MG\". The NDC for replacement IV magnesium is 0338-1715-40. Dosing instructions: (1) Mild deficiency (eg, serum magnesium 1.5 to 1.9 mg/dL):\nIV: 1 g over 1 hour.\n(2) Moderate deficiency (eg, serum magnesium 1 to <1.5 mg/dL):\nIV: 2 g over 2 hours.\n(3) Severe deficiency (eg, serum magnesium <1 mg/dL):\nIV: 4 g over 4 hours.\n",
+    "eval_MRN": "S2874099"
+  },
+  {
+    "id": "v2new_task3_29",
+    "instruction": "Instruction: Calculate the average heart rate over the past 6 hours and the past 12 hours for patient S3032536.",
+    "context": "The code for heart rate is 'HEARTRATE'. It's 2023-11-07T22:47:00+00:00 now",
+    "eval_MRN": "S3032536"
+  },
+  {
+    "id": "v1_task2_10",
+    "instruction": "What's the age of the patient with MRN of S3070524?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now, and the answer should be rounded down to an integer.",
+    "eval_MRN": "S3070524"
+  },
+  {
+    "id": "v2new_task4_18",
+    "instruction": "Instruction: Check if patient S2937751 has a urinary catheter that has been in place for more than 48 hours without a documented removal order. If so, create a service request to remove the catheter.",
+    "context": "The procedure code for urinary catheter is 'NUR1373'. It's 2023-11-11T09:00:00+00:00 now.",
+    "eval_MRN": "S2937751"
+  },
+  {
+    "id": "v1_task6_11",
+    "instruction": "What is the average CBG of the patient S6540602 over the last 24 hours?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for CBG is \"GLU\". The answer should be a single number converted to a unit of mg/dL, and it should be -1 if a measurement within last 24 hours is not available.",
+    "eval_MRN": "S6540602"
+  },
+  {
+    "id": "v1_task1_26",
+    "instruction": "What\u2019s the MRN of the patient with name Victoria Owens and DOB of 2002-06-07? If the patient does not exist, the answer should be \"Patient not found\"",
+    "context": "",
+    "sol": [
+      "S3236936"
+    ],
+    "eval_MRN": "S3236936"
+  },
+  {
+    "id": "v2new_task2_19",
+    "instruction": "Instruction: Verify that patient S2748981 has exactly one active DVT prophylaxis order. If there are zero orders, create one. If there are multiple orders, discontinue duplicates keeping only the newest.",
+    "context": "The specific order is heparin 5000 units SC q8h prophylaxis. Ensure exactly one active order remains. For context, a duplicate order could be any anti-coagulant medication (for example, LMWH, DOAC, etc).",
+    "eval_MRN": "S2748981"
+  },
+  {
+    "id": "v1_task2_30",
+    "instruction": "What's the age of the patient with MRN of S2703270?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now, and the answer should be rounded down to an integer.",
+    "eval_MRN": "S2703270"
+  },
+  {
+    "id": "v1_task2_2",
+    "instruction": "What's the age of the patient with MRN of S6538722?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now, and the answer should be rounded down to an integer.",
+    "eval_MRN": "S6538722"
+  },
+  {
+    "id": "v2new_task9_24",
+    "instruction": "Instruction: Determine the date of the last influenza vaccine for patient S6530532. If it was administered more than 365 days ago, order a new influenza vaccine for today.",
+    "context": "It's 2024-01-09T00:00:00+00:00 now. The CPT code for influenza vaccine is 90686. The vaccine to order is influenza vaccine (quadrivalent, preservative-free, IM) for today.",
+    "eval_MRN": "S6530532"
+  },
+  {
+    "id": "v1_task1_22",
+    "instruction": "What\u2019s the MRN of the patient with name Robert Gardner and DOB of 1975-05-30? If the patient does not exist, the answer should be \"Patient not found\"",
+    "context": "",
+    "sol": [
+      "S0722219"
+    ],
+    "eval_MRN": "S0722219"
+  },
+  {
+    "id": "v1_task8_10",
+    "instruction": "Order orthopedic surgery referral for patient S6415739. Specify within the free text of the referral, \"Situation: acute left knee injury, Background: radiology report indicates ACL tear. Assessment: ACL tear grade II. Recommendation: request for Orthopedic service to evaluate and provide management recommendations.\"",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The SNOMED code for orthopedic surgery referral is 306181000000106.",
+    "eval_MRN": "S6415739"
+  },
+  {
+    "id": "v1_task1_24",
+    "instruction": "What\u2019s the MRN of the patient with name Katherine Sutton and DOB of 1943-02-11? If the patient does not exist, the answer should be \"Patient not found\"",
+    "context": "",
+    "sol": [
+      "S6538722"
+    ],
+    "eval_MRN": "S6538722"
+  },
+  {
+    "id": "v1_task10_22",
+    "instruction": "What\u2019s the last HbA1C (hemoglobin A1C) value in the chart for patient S2090974 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test. ",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for HbA1C is \"A1C\". The LOINC code for ordering HbA1C lab is: 4548-4. The answer should be [-1] if a measurement is not available.",
+    "eval_MRN": "S2090974"
+  },
+  {
+    "id": "v1_task4_19",
+    "instruction": "What\u2019s the most recent magnesium level of the patient S6550473 within last 24 hours?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for magnesium is \"MG\". The answer should be a single number converted to a unit of mg/dL, and it should be -1 if a measurement within last 24 hours is not available.",
+    "eval_MRN": "S6550473"
+  },
+  {
+    "id": "v1_task7_15",
+    "instruction": "What is the most recent CBG of the patient S6550473?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for CBG is \"GLU\"",
+    "eval_MRN": "S6550473"
+  },
+  {
+    "id": "v1_task10_27",
+    "instruction": "What\u2019s the last HbA1C (hemoglobin A1C) value in the chart for patient S0658561 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test. ",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for HbA1C is \"A1C\". The LOINC code for ordering HbA1C lab is: 4548-4. The answer should be [-1] if a measurement is not available.",
+    "eval_MRN": "S0658561"
+  },
+  {
+    "id": "v1_task1_28",
+    "instruction": "What\u2019s the MRN of the patient with name Tracey Stanley and DOB of 1988-12-04? If the patient does not exist, the answer should be \"Patient not found\"",
+    "context": "",
+    "sol": [
+      "S2704870"
+    ],
+    "eval_MRN": "S2704870"
+  },
+  {
+    "id": "v2new_task1_4",
+    "instruction": "Instruction: Find the date of the most recent CT Abdomen procedure for patient S3195056. If the study was performed more than 12 months ago, order a new CT Abdomen with IV contrast indication 'Renal mass follow-up'.",
+    "context": "The CPT codes for existing CT studies are IMGCT0491 or IMGIL0001. The CPT code for the new study is 74177.",
+    "eval_MRN": "S3195056"
+  },
+  {
+    "id": "v2new_task5_3",
+    "instruction": "Instruction: Confirm patient S6268253 has a malignant neoplasm of left kidney diagnosis. If true and the last CT Abdomen/Pelvis is more than 3 months old, order a new CT and referral to Interventional Radiology.",
+    "context": "The ICD-10 code for malignant neoplasm of left kidney is C64.2. The CPT code for CT Abdomen/Pelvis with IV contrast is 74177 (for oncologic follow-up). The CPT code for Interventional Radiology referral is CON417 with the request: 'Evaluate renal mass for biopsy or ablation.'",
+    "eval_MRN": "S6268253"
+  },
+  {
+    "id": "v1_task5_3",
+    "instruction": "Check patient S0636132's last serum magnesium level within last 24 hours. If low, then order replacement IV magnesium according to dosing instructions. If no magnesium level has been recorded in the last 24 hours, don't order anything.\n",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for magnesium is \"MG\". The NDC for replacement IV magnesium is 0338-1715-40. Dosing instructions: (1) Mild deficiency (eg, serum magnesium 1.5 to 1.9 mg/dL):\nIV: 1 g over 1 hour.\n(2) Moderate deficiency (eg, serum magnesium 1 to <1.5 mg/dL):\nIV: 2 g over 2 hours.\n(3) Severe deficiency (eg, serum magnesium <1 mg/dL):\nIV: 4 g over 4 hours.\n",
+    "eval_MRN": "S0636132"
+  },
+  {
+    "id": "v2new_task9_29",
+    "instruction": "Instruction: Determine the date of the last influenza vaccine for patient S6531922. If it was administered more than 365 days ago, order a new influenza vaccine for today.",
+    "context": "It's 2024-01-09T00:00:00+00:00 now. The CPT code for influenza vaccine is 90686. The vaccine to order is influenza vaccine (quadrivalent, preservative-free, IM) for today.",
+    "eval_MRN": "S6531922"
+  },
+  {
+    "id": "v1_task5_23",
+    "instruction": "Check patient S2402518's last serum magnesium level within last 24 hours. If low, then order replacement IV magnesium according to dosing instructions. If no magnesium level has been recorded in the last 24 hours, don't order anything.\n",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for magnesium is \"MG\". The NDC for replacement IV magnesium is 0338-1715-40. Dosing instructions: (1) Mild deficiency (eg, serum magnesium 1.5 to 1.9 mg/dL):\nIV: 1 g over 1 hour.\n(2) Moderate deficiency (eg, serum magnesium 1 to <1.5 mg/dL):\nIV: 2 g over 2 hours.\n(3) Severe deficiency (eg, serum magnesium <1 mg/dL):\nIV: 4 g over 4 hours.\n",
+    "eval_MRN": "S2402518"
+  },
+  {
+    "id": "v2new_task10_22",
+    "instruction": "Instruction: Review COVID-19 vaccination status for patient S6540602. Find the most recent COVID-19 vaccine and if the last dose was more than 12 months ago, order a COVID booster.",
+    "context": "It's 2023-11-07T12:00:00+00:00 now. The code for COVID-19 vaccine procedure is 'COVIDVACCINE' or MedicationRequest with text containing 'COVID-19 VAC'. The booster to order is a single-dose COVID vaccine (CPT 91320) today.",
+    "eval_MRN": "S6540602"
+  },
+  {
+    "id": "v2new_task2_6",
+    "instruction": "Instruction: Verify that patient S2704870 has exactly one active DVT prophylaxis order. If there are zero orders, create one. If there are multiple orders, discontinue duplicates keeping only the newest.",
+    "context": "The specific order is heparin 5000 units SC q8h prophylaxis. Ensure exactly one active order remains. For context, a duplicate order could be any anti-coagulant medication (for example, LMWH, DOAC, etc).",
+    "eval_MRN": "S2704870"
+  },
+  {
+    "id": "v2new_task7_8",
+    "instruction": "Instruction: Check the latest QTc interval for patient S6468480. If prolonged, discontinue QT-prolonging medications and order a follow-up ECG for 24 hours later.",
+    "context": "The code for QTc interval is 'QTCINTERVAL'. The threshold for prolonged QTc is > 500 ms. QT-prolonging medications to discontinue include text containing ondansetron, prochlorperazine and most antipsychotic medications. The SNOMED code for 12-lead ECG is 445118002. Order the ECG to be performed in 24 hours.",
+    "eval_MRN": "S6468480"
+  },
+  {
+    "id": "v1_task9_24",
+    "instruction": "Check patient S2090974's most recent potassium level. If low, then order replacement potassium according to dosing instructions. Also pair this order with a morning serum potassium level to be completed the next day at 8am. \n",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for potassium is \"K\".The NDC for replacement potassium is 40032-917-01. Dosing instructions: for every 0.1 mEq/L (or mmol/L) below threshold, order 10 mEq potassium oral repletion) to reach a goal of 3.5 serum level. The LOINC code for serum potassium level is 2823-3.",
+    "eval_MRN": "S2090974"
+  },
+  {
+    "id": "v1_task4_5",
+    "instruction": "What\u2019s the most recent magnesium level of the patient S2161163 within last 24 hours?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for magnesium is \"MG\". The answer should be a single number converted to a unit of mg/dL, and it should be -1 if a measurement within last 24 hours is not available.",
+    "eval_MRN": "S2161163"
+  },
+  {
+    "id": "v1_task7_5",
+    "instruction": "What is the most recent CBG of the patient S6542579?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for CBG is \"GLU\"",
+    "eval_MRN": "S6542579"
+  },
+  {
+    "id": "v2new_task2_13",
+    "instruction": "Instruction: Verify that patient S6549951 has exactly one active DVT prophylaxis order. If there are zero orders, create one. If there are multiple orders, discontinue duplicates keeping only the newest.",
+    "context": "The specific order is heparin 5000 units SC q8h prophylaxis. Ensure exactly one active order remains. For context, a duplicate order could be any anti-coagulant medication (for example, LMWH, DOAC, etc).",
+    "eval_MRN": "S6549951"
+  },
+  {
+    "id": "v1_task5_9",
+    "instruction": "Check patient S3195056's last serum magnesium level within last 24 hours. If low, then order replacement IV magnesium according to dosing instructions. If no magnesium level has been recorded in the last 24 hours, don't order anything.\n",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for magnesium is \"MG\". The NDC for replacement IV magnesium is 0338-1715-40. Dosing instructions: (1) Mild deficiency (eg, serum magnesium 1.5 to 1.9 mg/dL):\nIV: 1 g over 1 hour.\n(2) Moderate deficiency (eg, serum magnesium 1 to <1.5 mg/dL):\nIV: 2 g over 2 hours.\n(3) Severe deficiency (eg, serum magnesium <1 mg/dL):\nIV: 4 g over 4 hours.\n",
+    "eval_MRN": "S3195056"
+  },
+  {
+    "id": "v2new_task5_6",
+    "instruction": "Instruction: Confirm patient S6547257 has a malignant neoplasm of left kidney diagnosis. If true and the last CT Abdomen/Pelvis is more than 3 months old, order a new CT and referral to Interventional Radiology.",
+    "context": "The ICD-10 code for malignant neoplasm of left kidney is C64.2. The CPT code for CT Abdomen/Pelvis with IV contrast is 74177 (for oncologic follow-up). The CPT code for Interventional Radiology referral is CON417 with the request: 'Evaluate renal mass for biopsy or ablation.'",
+    "eval_MRN": "S6547257"
+  },
+  {
+    "id": "v1_task3_13",
+    "instruction": "I just measured the blood pressure for patient with MRN of S0547588, and it is \"118/77 mmHg\". Help me record it.",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The flowsheet ID for blood pressure is BP.",
+    "eval_MRN": "S0547588"
+  },
+  {
+    "id": "v1_task9_29",
+    "instruction": "Check patient S6500497's most recent potassium level. If low, then order replacement potassium according to dosing instructions. Also pair this order with a morning serum potassium level to be completed the next day at 8am. \n",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for potassium is \"K\".The NDC for replacement potassium is 40032-917-01. Dosing instructions: for every 0.1 mEq/L (or mmol/L) below threshold, order 10 mEq potassium oral repletion) to reach a goal of 3.5 serum level. The LOINC code for serum potassium level is 2823-3.",
+    "eval_MRN": "S6500497"
+  },
+  {
+    "id": "v1_task2_20",
+    "instruction": "What's the age of the patient with MRN of S2075210?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now, and the answer should be rounded down to an integer.",
+    "eval_MRN": "S2075210"
+  },
+  {
+    "id": "v1_task9_30",
+    "instruction": "Check patient S6545016's most recent potassium level. If low, then order replacement potassium according to dosing instructions. Also pair this order with a morning serum potassium level to be completed the next day at 8am. \n",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for potassium is \"K\".The NDC for replacement potassium is 40032-917-01. Dosing instructions: for every 0.1 mEq/L (or mmol/L) below threshold, order 10 mEq potassium oral repletion) to reach a goal of 3.5 serum level. The LOINC code for serum potassium level is 2823-3.",
+    "eval_MRN": "S6545016"
+  },
+  {
+    "id": "v1_task10_6",
+    "instruction": "What\u2019s the last HbA1C (hemoglobin A1C) value in the chart for patient S2111822 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test. ",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for HbA1C is \"A1C\". The LOINC code for ordering HbA1C lab is: 4548-4. The answer should be [-1] if a measurement is not available.",
+    "eval_MRN": "S2111822"
+  },
+  {
+    "id": "v2new_task10_21",
+    "instruction": "Instruction: Review COVID-19 vaccination status for patient S6488980. Find the most recent COVID-19 vaccine and if the last dose was more than 12 months ago, order a COVID booster.",
+    "context": "It's 2023-11-07T12:00:00+00:00 now. The code for COVID-19 vaccine procedure is 'COVIDVACCINE' or MedicationRequest with text containing 'COVID-19 VAC'. The booster to order is a single-dose COVID vaccine (CPT 91320) today.",
+    "eval_MRN": "S6488980"
+  },
+  {
+    "id": "v1_task8_21",
+    "instruction": "Order orthopedic surgery referral for patient S6330912. Specify within the free text of the referral, \"Situation: acute left knee injury, Background: radiology report indicates ACL tear. Assessment: ACL tear grade II. Recommendation: request for Orthopedic service to evaluate and provide management recommendations.\"",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The SNOMED code for orthopedic surgery referral is 306181000000106.",
+    "eval_MRN": "S6330912"
+  },
+  {
+    "id": "v1_task1_3",
+    "instruction": "What\u2019s the MRN of the patient with name Dana Sandoval and DOB of 1989-04-19? If the patient does not exist, the answer should be \"Patient not found\"",
+    "context": "",
+    "sol": [
+      "S1986380"
+    ],
+    "eval_MRN": "S1986380"
+  },
+  {
+    "id": "v2new_task10_28",
+    "instruction": "Instruction: Review COVID-19 vaccination status for patient S6329254. Find the most recent COVID-19 vaccine and if the last dose was more than 12 months ago, order a COVID booster.",
+    "context": "It's 2023-11-07T12:00:00+00:00 now. The code for COVID-19 vaccine procedure is 'COVIDVACCINE' or MedicationRequest with text containing 'COVID-19 VAC'. The booster to order is a single-dose COVID vaccine (CPT 91320) today.",
+    "eval_MRN": "S6329254"
+  },
+  {
+    "id": "v1_task2_23",
+    "instruction": "What's the age of the patient with MRN of S6550627?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now, and the answer should be rounded down to an integer.",
+    "eval_MRN": "S6550627"
+  },
+  {
+    "id": "v2new_task1_27",
+    "instruction": "Instruction: Find the date of the most recent CT Abdomen procedure for patient S6540602. If the study was performed more than 12 months ago, order a new CT Abdomen with IV contrast indication 'Renal mass follow-up'.",
+    "context": "The CPT codes for existing CT studies are IMGCT0491 or IMGIL0001. The CPT code for the new study is 74177.",
+    "eval_MRN": "S6540602"
+  },
+  {
+    "id": "v1_task3_25",
+    "instruction": "I just measured the blood pressure for patient with MRN of S1736710, and it is \"118/77 mmHg\". Help me record it.",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The flowsheet ID for blood pressure is BP.",
+    "eval_MRN": "S1736710"
+  },
+  {
+    "id": "v2new_task9_19",
+    "instruction": "Instruction: Determine the date of the last influenza vaccine for patient S6550473. If it was administered more than 365 days ago, order a new influenza vaccine for today.",
+    "context": "It's 2024-01-09T00:00:00+00:00 now. The CPT code for influenza vaccine is 90686. The vaccine to order is influenza vaccine (quadrivalent, preservative-free, IM) for today.",
+    "eval_MRN": "S6550473"
+  },
+  {
+    "id": "v1_task7_6",
+    "instruction": "What is the most recent CBG of the patient S0611496?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for CBG is \"GLU\"",
+    "eval_MRN": "S0611496"
+  },
+  {
+    "id": "v2new_task2_15",
+    "instruction": "Instruction: Verify that patient S0581164 has exactly one active DVT prophylaxis order. If there are zero orders, create one. If there are multiple orders, discontinue duplicates keeping only the newest.",
+    "context": "The specific order is heparin 5000 units SC q8h prophylaxis. Ensure exactly one active order remains. For context, a duplicate order could be any anti-coagulant medication (for example, LMWH, DOAC, etc).",
+    "eval_MRN": "S0581164"
+  },
+  {
+    "id": "v1_task1_18",
+    "instruction": "What\u2019s the MRN of the patient with name Melissa Nguyen and DOB of 1973-08-14? If the patient does not exist, the answer should be \"Patient not found\"",
+    "context": "",
+    "sol": [
+      "S2863714"
+    ],
+    "eval_MRN": "S2863714"
+  },
+  {
+    "id": "v2new_task4_21",
+    "instruction": "Instruction: Check if patient S3241217 has a urinary catheter that has been in place for more than 48 hours without a documented removal order. If so, create a service request to remove the catheter.",
+    "context": "The procedure code for urinary catheter is 'NUR1373'. It's 2023-11-11T09:00:00+00:00 now.",
+    "eval_MRN": "S3241217"
+  },
+  {
+    "id": "v1_task9_19",
+    "instruction": "Check patient S6329254's most recent potassium level. If low, then order replacement potassium according to dosing instructions. Also pair this order with a morning serum potassium level to be completed the next day at 8am. \n",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for potassium is \"K\".The NDC for replacement potassium is 40032-917-01. Dosing instructions: for every 0.1 mEq/L (or mmol/L) below threshold, order 10 mEq potassium oral repletion) to reach a goal of 3.5 serum level. The LOINC code for serum potassium level is 2823-3.",
+    "eval_MRN": "S6329254"
+  },
+  {
+    "id": "v2new_task3_18",
+    "instruction": "Instruction: Calculate the average heart rate over the past 6 hours and the past 12 hours for patient S6312049.",
+    "context": "The code for heart rate is 'HEARTRATE'. It's 2020-11-19T20:30:00+00:00 now",
+    "eval_MRN": "S6312049"
+  },
+  {
+    "id": "v2new_task9_21",
+    "instruction": "Instruction: Determine the date of the last influenza vaccine for patient S3213957. If it was administered more than 365 days ago, order a new influenza vaccine for today.",
+    "context": "It's 2024-01-09T00:00:00+00:00 now. The CPT code for influenza vaccine is 90686. The vaccine to order is influenza vaccine (quadrivalent, preservative-free, IM) for today.",
+    "eval_MRN": "S3213957"
+  },
+  {
+    "id": "v2new_task1_10",
+    "instruction": "Instruction: Find the date of the most recent CT Abdomen procedure for patient S3032536. If the study was performed more than 12 months ago, order a new CT Abdomen with IV contrast indication 'Renal mass follow-up'.",
+    "context": "The CPT codes for existing CT studies are IMGCT0491 or IMGIL0001. The CPT code for the new study is 74177.",
+    "eval_MRN": "S3032536"
+  },
+  {
+    "id": "v2new_task6_8",
+    "instruction": "Instruction: Retrieve the most recent TSH and free T4 values for patient S2161163. Based on the results, take appropriate action according to the protocol.",
+    "context": "The code for TSH is 'TSH' and for free T4 is 'FT4'. Protocol: If TSH > 10 uIU/mL on two separate instances of lab values (separated by at least one month in date of lab collection), start levothyroxine 25 mcg PO daily and order repeat TSH/FT4 in 6 weeks. If TSH is 4.5\u201310 uIU/mL and free T4 is normal (0.8\u20131.8 ng/dL), order repeat TSH/FT4 in 3 months (no medication yet).",
+    "eval_MRN": "S2161163"
+  },
+  {
+    "id": "v2new_task10_26",
+    "instruction": "Instruction: Review COVID-19 vaccination status for patient S2161163. Find the most recent COVID-19 vaccine and if the last dose was more than 12 months ago, order a COVID booster.",
+    "context": "It's 2023-11-07T12:00:00+00:00 now. The code for COVID-19 vaccine procedure is 'COVIDVACCINE' or MedicationRequest with text containing 'COVID-19 VAC'. The booster to order is a single-dose COVID vaccine (CPT 91320) today.",
+    "eval_MRN": "S2161163"
+  },
+  {
+    "id": "v2new_task10_4",
+    "instruction": "Instruction: Review COVID-19 vaccination status for patient S1986380. Find the most recent COVID-19 vaccine and if the last dose was more than 12 months ago, order a COVID booster.",
+    "context": "It's 2023-11-07T12:00:00+00:00 now. The code for COVID-19 vaccine procedure is 'COVIDVACCINE' or MedicationRequest with text containing 'COVID-19 VAC'. The booster to order is a single-dose COVID vaccine (CPT 91320) today.",
+    "eval_MRN": "S1986380"
+  },
+  {
+    "id": "v1_task8_8",
+    "instruction": "Order orthopedic surgery referral for patient S6534835. Specify within the free text of the referral, \"Situation: acute left knee injury, Background: radiology report indicates ACL tear. Assessment: ACL tear grade II. Recommendation: request for Orthopedic service to evaluate and provide management recommendations.\"",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The SNOMED code for orthopedic surgery referral is 306181000000106.",
+    "eval_MRN": "S6534835"
+  },
+  {
+    "id": "v2new_task3_3",
+    "instruction": "Instruction: Calculate the average heart rate over the past 6 hours and the past 12 hours for patient S6500497.",
+    "context": "The code for heart rate is 'HEARTRATE'. It's 2020-05-12T11:42:00+00:00 now",
+    "eval_MRN": "S6500497"
+  },
+  {
+    "id": "v1_task6_2",
+    "instruction": "What is the average CBG of the patient S6539215 over the last 24 hours?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for CBG is \"GLU\". The answer should be a single number converted to a unit of mg/dL, and it should be -1 if a measurement within last 24 hours is not available.",
+    "eval_MRN": "S6539215"
+  },
+  {
+    "id": "v1_task7_12",
+    "instruction": "What is the most recent CBG of the patient S1891852?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for CBG is \"GLU\"",
+    "eval_MRN": "S1891852"
+  },
+  {
+    "id": "v1_task1_16",
+    "instruction": "What\u2019s the MRN of the patient with name Debra Dunn and DOB of 1969-05-12? If the patient does not exist, the answer should be \"Patient not found\"",
+    "context": "",
+    "sol": [
+      "S6551923"
+    ],
+    "eval_MRN": "S6551923"
+  },
+  {
+    "id": "v2new_task1_19",
+    "instruction": "Instruction: Find the date of the most recent CT Abdomen procedure for patient S6531922. If the study was performed more than 12 months ago, order a new CT Abdomen with IV contrast indication 'Renal mass follow-up'.",
+    "context": "The CPT codes for existing CT studies are IMGCT0491 or IMGIL0001. The CPT code for the new study is 74177.",
+    "eval_MRN": "S6531922"
+  },
+  {
+    "id": "v1_task8_28",
+    "instruction": "Order orthopedic surgery referral for patient S3236936. Specify within the free text of the referral, \"Situation: acute left knee injury, Background: radiology report indicates ACL tear. Assessment: ACL tear grade II. Recommendation: request for Orthopedic service to evaluate and provide management recommendations.\"",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The SNOMED code for orthopedic surgery referral is 306181000000106.",
+    "eval_MRN": "S3236936"
+  },
+  {
+    "id": "v2new_task9_11",
+    "instruction": "Instruction: Determine the date of the last influenza vaccine for patient S3114648. If it was administered more than 365 days ago, order a new influenza vaccine for today.",
+    "context": "It's 2024-01-09T00:00:00+00:00 now. The CPT code for influenza vaccine is 90686. The vaccine to order is influenza vaccine (quadrivalent, preservative-free, IM) for today.",
+    "eval_MRN": "S3114648"
+  },
+  {
+    "id": "v1_task1_2",
+    "instruction": "What\u2019s the MRN of the patient with name Maria Alvarez and DOB of 1940-03-05? If the patient does not exist, the answer should be \"Patient not found\"",
+    "context": "",
+    "sol": [
+      "S6426560"
+    ],
+    "eval_MRN": "S6426560"
+  },
+  {
+    "id": "v2new_task2_11",
+    "instruction": "Instruction: Verify that patient S1698248 has exactly one active DVT prophylaxis order. If there are zero orders, create one. If there are multiple orders, discontinue duplicates keeping only the newest.",
+    "context": "The specific order is heparin 5000 units SC q8h prophylaxis. Ensure exactly one active order remains. For context, a duplicate order could be any anti-coagulant medication (for example, LMWH, DOAC, etc).",
+    "eval_MRN": "S1698248"
+  },
+  {
+    "id": "v1_task8_13",
+    "instruction": "Order orthopedic surgery referral for patient S6547257. Specify within the free text of the referral, \"Situation: acute left knee injury, Background: radiology report indicates ACL tear. Assessment: ACL tear grade II. Recommendation: request for Orthopedic service to evaluate and provide management recommendations.\"",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The SNOMED code for orthopedic surgery referral is 306181000000106.",
+    "eval_MRN": "S6547257"
+  },
+  {
+    "id": "v1_task9_1",
+    "instruction": "Check patient S3241217's most recent potassium level. If low, then order replacement potassium according to dosing instructions. Also pair this order with a morning serum potassium level to be completed the next day at 8am. \n",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for potassium is \"K\".The NDC for replacement potassium is 40032-917-01. Dosing instructions: for every 0.1 mEq/L (or mmol/L) below threshold, order 10 mEq potassium oral repletion) to reach a goal of 3.5 serum level. The LOINC code for serum potassium level is 2823-3.",
+    "eval_MRN": "S3241217"
+  },
+  {
+    "id": "v1_task4_3",
+    "instruction": "What\u2019s the most recent magnesium level of the patient S6547257 within last 24 hours?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for magnesium is \"MG\". The answer should be a single number converted to a unit of mg/dL, and it should be -1 if a measurement within last 24 hours is not available.",
+    "eval_MRN": "S6547257"
+  },
+  {
+    "id": "v1_task10_2",
+    "instruction": "What\u2019s the last HbA1C (hemoglobin A1C) value in the chart for patient S1635224 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test. ",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for HbA1C is \"A1C\". The LOINC code for ordering HbA1C lab is: 4548-4. The answer should be [-1] if a measurement is not available.",
+    "eval_MRN": "S1635224"
+  },
+  {
+    "id": "v2new_task3_7",
+    "instruction": "Instruction: Calculate the average heart rate over the past 6 hours and the past 12 hours for patient S2450227.",
+    "context": "The code for heart rate is 'HEARTRATE'. It's 2023-11-09T22:00:00+00:00 now",
+    "eval_MRN": "S2450227"
+  },
+  {
+    "id": "v2new_task9_30",
+    "instruction": "Instruction: Determine the date of the last influenza vaccine for patient S2380121. If it was administered more than 365 days ago, order a new influenza vaccine for today.",
+    "context": "It's 2024-01-09T00:00:00+00:00 now. The CPT code for influenza vaccine is 90686. The vaccine to order is influenza vaccine (quadrivalent, preservative-free, IM) for today.",
+    "eval_MRN": "S2380121"
+  },
+  {
+    "id": "v2new_task10_29",
+    "instruction": "Instruction: Review COVID-19 vaccination status for patient S0636132. Find the most recent COVID-19 vaccine and if the last dose was more than 12 months ago, order a COVID booster.",
+    "context": "It's 2023-11-07T12:00:00+00:00 now. The code for COVID-19 vaccine procedure is 'COVIDVACCINE' or MedicationRequest with text containing 'COVID-19 VAC'. The booster to order is a single-dose COVID vaccine (CPT 91320) today.",
+    "eval_MRN": "S0636132"
+  },
+  {
+    "id": "v1_task7_9",
+    "instruction": "What is the most recent CBG of the patient S2748981?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for CBG is \"GLU\"",
+    "eval_MRN": "S2748981"
+  },
+  {
+    "id": "v1_task8_30",
+    "instruction": "Order orthopedic surgery referral for patient S0722219. Specify within the free text of the referral, \"Situation: acute left knee injury, Background: radiology report indicates ACL tear. Assessment: ACL tear grade II. Recommendation: request for Orthopedic service to evaluate and provide management recommendations.\"",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The SNOMED code for orthopedic surgery referral is 306181000000106.",
+    "eval_MRN": "S0722219"
+  },
+  {
+    "id": "v2new_task7_5",
+    "instruction": "Instruction: Check the latest QTc interval for patient S2090974. If prolonged, discontinue QT-prolonging medications and order a follow-up ECG for 24 hours later.",
+    "context": "The code for QTc interval is 'QTCINTERVAL'. The threshold for prolonged QTc is > 500 ms. QT-prolonging medications to discontinue include text containing ondansetron, prochlorperazine and most antipsychotic medications. The SNOMED code for 12-lead ECG is 445118002. Order the ECG to be performed in 24 hours.",
+    "eval_MRN": "S2090974"
+  },
+  {
+    "id": "v1_task10_30",
+    "instruction": "What\u2019s the last HbA1C (hemoglobin A1C) value in the chart for patient S1876702 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test. ",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for HbA1C is \"A1C\". The LOINC code for ordering HbA1C lab is: 4548-4. The answer should be [-1] if a measurement is not available.",
+    "eval_MRN": "S1876702"
+  },
+  {
+    "id": "v2new_task8_15",
+    "instruction": "Instruction: Verify that every active opioid analgesic order for patient S6329254 has a matching naloxone prescription. If an opioid order is active without naloxone, create a naloxone order.",
+    "context": "Opioid medications to search for include hydromorphone, oxycodone, fentanyl, hydrocodone, morphine. The naloxone order is naloxone nasal spray 4 mg.",
+    "eval_MRN": "S6329254"
+  },
+  {
+    "id": "v1_task3_4",
+    "instruction": "I just measured the blood pressure for patient with MRN of S3228213, and it is \"118/77 mmHg\". Help me record it.",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The flowsheet ID for blood pressure is BP.",
+    "eval_MRN": "S3228213"
+  },
+  {
+    "id": "v2new_task7_18",
+    "instruction": "Instruction: Check the latest QTc interval for patient S3057899. If prolonged, discontinue QT-prolonging medications and order a follow-up ECG for 24 hours later.",
+    "context": "The code for QTc interval is 'QTCINTERVAL'. The threshold for prolonged QTc is > 500 ms. QT-prolonging medications to discontinue include text containing ondansetron, prochlorperazine and most antipsychotic medications. The SNOMED code for 12-lead ECG is 445118002. Order the ECG to be performed in 24 hours.",
+    "eval_MRN": "S3057899"
+  },
+  {
+    "id": "v1_task4_18",
+    "instruction": "What\u2019s the most recent magnesium level of the patient S2199765 within last 24 hours?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for magnesium is \"MG\". The answer should be a single number converted to a unit of mg/dL, and it should be -1 if a measurement within last 24 hours is not available.",
+    "eval_MRN": "S2199765"
+  },
+  {
+    "id": "v1_task3_10",
+    "instruction": "I just measured the blood pressure for patient with MRN of S2703270, and it is \"118/77 mmHg\". Help me record it.",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The flowsheet ID for blood pressure is BP.",
+    "eval_MRN": "S2703270"
+  },
+  {
+    "id": "v1_task2_21",
+    "instruction": "What's the age of the patient with MRN of S6539215?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now, and the answer should be rounded down to an integer.",
+    "eval_MRN": "S6539215"
+  },
+  {
+    "id": "v1_task10_23",
+    "instruction": "What\u2019s the last HbA1C (hemoglobin A1C) value in the chart for patient S3070524 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test. ",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for HbA1C is \"A1C\". The LOINC code for ordering HbA1C lab is: 4548-4. The answer should be [-1] if a measurement is not available.",
+    "eval_MRN": "S3070524"
+  },
+  {
+    "id": "v2new_task10_25",
+    "instruction": "Instruction: Review COVID-19 vaccination status for patient S2704870. Find the most recent COVID-19 vaccine and if the last dose was more than 12 months ago, order a COVID booster.",
+    "context": "It's 2023-11-07T12:00:00+00:00 now. The code for COVID-19 vaccine procedure is 'COVIDVACCINE' or MedicationRequest with text containing 'COVID-19 VAC'. The booster to order is a single-dose COVID vaccine (CPT 91320) today.",
+    "eval_MRN": "S2704870"
+  },
+  {
+    "id": "v1_task6_30",
+    "instruction": "What is the average CBG of the patient S3241217 over the last 24 hours?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for CBG is \"GLU\". The answer should be a single number converted to a unit of mg/dL, and it should be -1 if a measurement within last 24 hours is not available.",
+    "eval_MRN": "S3241217"
+  },
+  {
+    "id": "v2new_task8_20",
+    "instruction": "Instruction: Verify that every active opioid analgesic order for patient S3236936 has a matching naloxone prescription. If an opioid order is active without naloxone, create a naloxone order.",
+    "context": "Opioid medications to search for include hydromorphone, oxycodone, fentanyl, hydrocodone, morphine. The naloxone order is naloxone nasal spray 4 mg.",
+    "eval_MRN": "S3236936"
+  },
+  {
+    "id": "v1_task5_15",
+    "instruction": "Check patient S1733937's last serum magnesium level within last 24 hours. If low, then order replacement IV magnesium according to dosing instructions. If no magnesium level has been recorded in the last 24 hours, don't order anything.\n",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for magnesium is \"MG\". The NDC for replacement IV magnesium is 0338-1715-40. Dosing instructions: (1) Mild deficiency (eg, serum magnesium 1.5 to 1.9 mg/dL):\nIV: 1 g over 1 hour.\n(2) Moderate deficiency (eg, serum magnesium 1 to <1.5 mg/dL):\nIV: 2 g over 2 hours.\n(3) Severe deficiency (eg, serum magnesium <1 mg/dL):\nIV: 4 g over 4 hours.\n",
+    "eval_MRN": "S1733937"
+  },
+  {
+    "id": "v2new_task8_2",
+    "instruction": "Instruction: Verify that every active opioid analgesic order for patient S6315806 has a matching naloxone prescription. If an opioid order is active without naloxone, create a naloxone order.",
+    "context": "Opioid medications to search for include hydromorphone, oxycodone, fentanyl, hydrocodone, morphine. The naloxone order is naloxone nasal spray 4 mg.",
+    "eval_MRN": "S6315806"
+  },
+  {
+    "id": "v2new_task9_5",
+    "instruction": "Instruction: Determine the date of the last influenza vaccine for patient S0674240. If it was administered more than 365 days ago, order a new influenza vaccine for today.",
+    "context": "It's 2024-01-09T00:00:00+00:00 now. The CPT code for influenza vaccine is 90686. The vaccine to order is influenza vaccine (quadrivalent, preservative-free, IM) for today.",
+    "eval_MRN": "S0674240"
+  },
+  {
+    "id": "v1_task10_11",
+    "instruction": "What\u2019s the last HbA1C (hemoglobin A1C) value in the chart for patient S2033286 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test. ",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for HbA1C is \"A1C\". The LOINC code for ordering HbA1C lab is: 4548-4. The answer should be [-1] if a measurement is not available.",
+    "eval_MRN": "S2033286"
+  },
+  {
+    "id": "v1_task9_15",
+    "instruction": "Check patient S0722219's most recent potassium level. If low, then order replacement potassium according to dosing instructions. Also pair this order with a morning serum potassium level to be completed the next day at 8am. \n",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for potassium is \"K\".The NDC for replacement potassium is 40032-917-01. Dosing instructions: for every 0.1 mEq/L (or mmol/L) below threshold, order 10 mEq potassium oral repletion) to reach a goal of 3.5 serum level. The LOINC code for serum potassium level is 2823-3.",
+    "eval_MRN": "S0722219"
+  },
+  {
+    "id": "v1_task5_8",
+    "instruction": "Check patient S1891852's last serum magnesium level within last 24 hours. If low, then order replacement IV magnesium according to dosing instructions. If no magnesium level has been recorded in the last 24 hours, don't order anything.\n",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for magnesium is \"MG\". The NDC for replacement IV magnesium is 0338-1715-40. Dosing instructions: (1) Mild deficiency (eg, serum magnesium 1.5 to 1.9 mg/dL):\nIV: 1 g over 1 hour.\n(2) Moderate deficiency (eg, serum magnesium 1 to <1.5 mg/dL):\nIV: 2 g over 2 hours.\n(3) Severe deficiency (eg, serum magnesium <1 mg/dL):\nIV: 4 g over 4 hours.\n",
+    "eval_MRN": "S1891852"
+  },
+  {
+    "id": "v1_task5_7",
+    "instruction": "Check patient S0581164's last serum magnesium level within last 24 hours. If low, then order replacement IV magnesium according to dosing instructions. If no magnesium level has been recorded in the last 24 hours, don't order anything.\n",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for magnesium is \"MG\". The NDC for replacement IV magnesium is 0338-1715-40. Dosing instructions: (1) Mild deficiency (eg, serum magnesium 1.5 to 1.9 mg/dL):\nIV: 1 g over 1 hour.\n(2) Moderate deficiency (eg, serum magnesium 1 to <1.5 mg/dL):\nIV: 2 g over 2 hours.\n(3) Severe deficiency (eg, serum magnesium <1 mg/dL):\nIV: 4 g over 4 hours.\n",
+    "eval_MRN": "S0581164"
+  },
+  {
+    "id": "v2new_task3_23",
+    "instruction": "Instruction: Calculate the average heart rate over the past 6 hours and the past 12 hours for patient S1521703.",
+    "context": "The code for heart rate is 'HEARTRATE'. It's 2022-11-20T14:30:00+00:00 now",
+    "eval_MRN": "S1521703"
+  },
+  {
+    "id": "v2new_task1_29",
+    "instruction": "Instruction: Find the date of the most recent CT Abdomen procedure for patient S6227720. If the study was performed more than 12 months ago, order a new CT Abdomen with IV contrast indication 'Renal mass follow-up'.",
+    "context": "The CPT codes for existing CT studies are IMGCT0491 or IMGIL0001. The CPT code for the new study is 74177.",
+    "eval_MRN": "S6227720"
+  },
+  {
+    "id": "v2new_task10_12",
+    "instruction": "Instruction: Review COVID-19 vaccination status for patient S0547588. Find the most recent COVID-19 vaccine and if the last dose was more than 12 months ago, order a COVID booster.",
+    "context": "It's 2023-11-07T12:00:00+00:00 now. The code for COVID-19 vaccine procedure is 'COVIDVACCINE' or MedicationRequest with text containing 'COVID-19 VAC'. The booster to order is a single-dose COVID vaccine (CPT 91320) today.",
+    "eval_MRN": "S0547588"
+  },
+  {
+    "id": "v1_task5_29",
+    "instruction": "Check patient S2937751's last serum magnesium level within last 24 hours. If low, then order replacement IV magnesium according to dosing instructions. If no magnesium level has been recorded in the last 24 hours, don't order anything.\n",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for magnesium is \"MG\". The NDC for replacement IV magnesium is 0338-1715-40. Dosing instructions: (1) Mild deficiency (eg, serum magnesium 1.5 to 1.9 mg/dL):\nIV: 1 g over 1 hour.\n(2) Moderate deficiency (eg, serum magnesium 1 to <1.5 mg/dL):\nIV: 2 g over 2 hours.\n(3) Severe deficiency (eg, serum magnesium <1 mg/dL):\nIV: 4 g over 4 hours.\n",
+    "eval_MRN": "S2937751"
+  },
+  {
+    "id": "v2new_task3_5",
+    "instruction": "Instruction: Calculate the average heart rate over the past 6 hours and the past 12 hours for patient S2937751.",
+    "context": "The code for heart rate is 'HEARTRATE'. It's 2023-11-13T12:00:00+00:00 now",
+    "eval_MRN": "S2937751"
+  },
+  {
+    "id": "v1_task5_28",
+    "instruction": "Check patient S2703270's last serum magnesium level within last 24 hours. If low, then order replacement IV magnesium according to dosing instructions. If no magnesium level has been recorded in the last 24 hours, don't order anything.\n",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for magnesium is \"MG\". The NDC for replacement IV magnesium is 0338-1715-40. Dosing instructions: (1) Mild deficiency (eg, serum magnesium 1.5 to 1.9 mg/dL):\nIV: 1 g over 1 hour.\n(2) Moderate deficiency (eg, serum magnesium 1 to <1.5 mg/dL):\nIV: 2 g over 2 hours.\n(3) Severe deficiency (eg, serum magnesium <1 mg/dL):\nIV: 4 g over 4 hours.\n",
+    "eval_MRN": "S2703270"
+  },
+  {
+    "id": "v1_task5_13",
+    "instruction": "Check patient S6521727's last serum magnesium level within last 24 hours. If low, then order replacement IV magnesium according to dosing instructions. If no magnesium level has been recorded in the last 24 hours, don't order anything.\n",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for magnesium is \"MG\". The NDC for replacement IV magnesium is 0338-1715-40. Dosing instructions: (1) Mild deficiency (eg, serum magnesium 1.5 to 1.9 mg/dL):\nIV: 1 g over 1 hour.\n(2) Moderate deficiency (eg, serum magnesium 1 to <1.5 mg/dL):\nIV: 2 g over 2 hours.\n(3) Severe deficiency (eg, serum magnesium <1 mg/dL):\nIV: 4 g over 4 hours.\n",
+    "eval_MRN": "S6521727"
+  },
+  {
+    "id": "v1_task9_27",
+    "instruction": "Check patient S1311412's most recent potassium level. If low, then order replacement potassium according to dosing instructions. Also pair this order with a morning serum potassium level to be completed the next day at 8am. \n",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for potassium is \"K\".The NDC for replacement potassium is 40032-917-01. Dosing instructions: for every 0.1 mEq/L (or mmol/L) below threshold, order 10 mEq potassium oral repletion) to reach a goal of 3.5 serum level. The LOINC code for serum potassium level is 2823-3.",
+    "eval_MRN": "S1311412"
+  },
+  {
+    "id": "v2new_task7_4",
+    "instruction": "Instruction: Check the latest QTc interval for patient S6540602. If prolonged, discontinue QT-prolonging medications and order a follow-up ECG for 24 hours later.",
+    "context": "The code for QTc interval is 'QTCINTERVAL'. The threshold for prolonged QTc is > 500 ms. QT-prolonging medications to discontinue include text containing ondansetron, prochlorperazine and most antipsychotic medications. The SNOMED code for 12-lead ECG is 445118002. Order the ECG to be performed in 24 hours.",
+    "eval_MRN": "S6540602"
+  },
+  {
+    "id": "v1_task3_28",
+    "instruction": "I just measured the blood pressure for patient with MRN of S1733937, and it is \"118/77 mmHg\". Help me record it.",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The flowsheet ID for blood pressure is BP.",
+    "eval_MRN": "S1733937"
+  },
+  {
+    "id": "v1_task9_7",
+    "instruction": "Check patient S6268253's most recent potassium level. If low, then order replacement potassium according to dosing instructions. Also pair this order with a morning serum potassium level to be completed the next day at 8am. \n",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for potassium is \"K\".The NDC for replacement potassium is 40032-917-01. Dosing instructions: for every 0.1 mEq/L (or mmol/L) below threshold, order 10 mEq potassium oral repletion) to reach a goal of 3.5 serum level. The LOINC code for serum potassium level is 2823-3.",
+    "eval_MRN": "S6268253"
+  },
+  {
+    "id": "v2new_task9_20",
+    "instruction": "Instruction: Determine the date of the last influenza vaccine for patient S2450227. If it was administered more than 365 days ago, order a new influenza vaccine for today.",
+    "context": "It's 2024-01-09T00:00:00+00:00 now. The CPT code for influenza vaccine is 90686. The vaccine to order is influenza vaccine (quadrivalent, preservative-free, IM) for today.",
+    "eval_MRN": "S2450227"
+  },
+  {
+    "id": "v1_task9_26",
+    "instruction": "Check patient S6352985's most recent potassium level. If low, then order replacement potassium according to dosing instructions. Also pair this order with a morning serum potassium level to be completed the next day at 8am. \n",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for potassium is \"K\".The NDC for replacement potassium is 40032-917-01. Dosing instructions: for every 0.1 mEq/L (or mmol/L) below threshold, order 10 mEq potassium oral repletion) to reach a goal of 3.5 serum level. The LOINC code for serum potassium level is 2823-3.",
+    "eval_MRN": "S6352985"
+  },
+  {
+    "id": "v2new_task1_7",
+    "instruction": "Instruction: Find the date of the most recent CT Abdomen procedure for patient S2111822. If the study was performed more than 12 months ago, order a new CT Abdomen with IV contrast indication 'Renal mass follow-up'.",
+    "context": "The CPT codes for existing CT studies are IMGCT0491 or IMGIL0001. The CPT code for the new study is 74177.",
+    "eval_MRN": "S2111822"
+  },
+  {
+    "id": "v2new_task3_15",
+    "instruction": "Instruction: Calculate the average heart rate over the past 6 hours and the past 12 hours for patient S6468480.",
+    "context": "The code for heart rate is 'HEARTRATE'. It's 2023-11-07T22:47:00+00:00 now",
+    "eval_MRN": "S6468480"
+  },
+  {
+    "id": "v2new_task9_23",
+    "instruction": "Instruction: Determine the date of the last influenza vaccine for patient S0869531. If it was administered more than 365 days ago, order a new influenza vaccine for today.",
+    "context": "It's 2024-01-09T00:00:00+00:00 now. The CPT code for influenza vaccine is 90686. The vaccine to order is influenza vaccine (quadrivalent, preservative-free, IM) for today.",
+    "eval_MRN": "S0869531"
+  },
+  {
+    "id": "v1_task6_17",
+    "instruction": "What is the average CBG of the patient S1311412 over the last 24 hours?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for CBG is \"GLU\". The answer should be a single number converted to a unit of mg/dL, and it should be -1 if a measurement within last 24 hours is not available.",
+    "eval_MRN": "S1311412"
+  },
+  {
+    "id": "v2new_task2_5",
+    "instruction": "Instruction: Verify that patient S6268253 has exactly one active DVT prophylaxis order. If there are zero orders, create one. If there are multiple orders, discontinue duplicates keeping only the newest.",
+    "context": "The specific order is heparin 5000 units SC q8h prophylaxis. Ensure exactly one active order remains. For context, a duplicate order could be any anti-coagulant medication (for example, LMWH, DOAC, etc).",
+    "eval_MRN": "S6268253"
+  },
+  {
+    "id": "v2new_task2_30",
+    "instruction": "Instruction: Verify that patient S6227720 has exactly one active DVT prophylaxis order. If there are zero orders, create one. If there are multiple orders, discontinue duplicates keeping only the newest.",
+    "context": "The specific order is heparin 5000 units SC q8h prophylaxis. Ensure exactly one active order remains. For context, a duplicate order could be any anti-coagulant medication (for example, LMWH, DOAC, etc).",
+    "eval_MRN": "S6227720"
+  },
+  {
+    "id": "v2new_task10_13",
+    "instruction": "Instruction: Review COVID-19 vaccination status for patient S6549951. Find the most recent COVID-19 vaccine and if the last dose was more than 12 months ago, order a COVID booster.",
+    "context": "It's 2023-11-07T12:00:00+00:00 now. The code for COVID-19 vaccine procedure is 'COVIDVACCINE' or MedicationRequest with text containing 'COVID-19 VAC'. The booster to order is a single-dose COVID vaccine (CPT 91320) today.",
+    "eval_MRN": "S6549951"
+  },
+  {
+    "id": "v2new_task4_10",
+    "instruction": "Instruction: Check if patient S3114648 has a urinary catheter that has been in place for more than 48 hours without a documented removal order. If so, create a service request to remove the catheter.",
+    "context": "The procedure code for urinary catheter is 'NUR1373'. It's 2023-11-11T09:00:00+00:00 now.",
+    "eval_MRN": "S3114648"
+  },
+  {
+    "id": "v2new_task6_28",
+    "instruction": "Instruction: Retrieve the most recent TSH and free T4 values for patient S6550627. Based on the results, take appropriate action according to the protocol.",
+    "context": "The code for TSH is 'TSH' and for free T4 is 'FT4'. Protocol: If TSH > 10 uIU/mL on two separate instances of lab values (separated by at least one month in date of lab collection), start levothyroxine 25 mcg PO daily and order repeat TSH/FT4 in 6 weeks. If TSH is 4.5\u201310 uIU/mL and free T4 is normal (0.8\u20131.8 ng/dL), order repeat TSH/FT4 in 3 months (no medication yet).",
+    "eval_MRN": "S6550627"
+  },
+  {
+    "id": "v1_task2_12",
+    "instruction": "What's the age of the patient with MRN of S6534835?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now, and the answer should be rounded down to an integer.",
+    "eval_MRN": "S6534835"
+  },
+  {
+    "id": "v2new_task7_7",
+    "instruction": "Instruction: Check the latest QTc interval for patient S2154941. If prolonged, discontinue QT-prolonging medications and order a follow-up ECG for 24 hours later.",
+    "context": "The code for QTc interval is 'QTCINTERVAL'. The threshold for prolonged QTc is > 500 ms. QT-prolonging medications to discontinue include text containing ondansetron, prochlorperazine and most antipsychotic medications. The SNOMED code for 12-lead ECG is 445118002. Order the ECG to be performed in 24 hours.",
+    "eval_MRN": "S2154941"
+  },
+  {
+    "id": "v1_task2_8",
+    "instruction": "What's the age of the patient with MRN of S2111822?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now, and the answer should be rounded down to an integer.",
+    "eval_MRN": "S2111822"
+  },
+  {
+    "id": "v1_task5_6",
+    "instruction": "Check patient S2075210's last serum magnesium level within last 24 hours. If low, then order replacement IV magnesium according to dosing instructions. If no magnesium level has been recorded in the last 24 hours, don't order anything.\n",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for magnesium is \"MG\". The NDC for replacement IV magnesium is 0338-1715-40. Dosing instructions: (1) Mild deficiency (eg, serum magnesium 1.5 to 1.9 mg/dL):\nIV: 1 g over 1 hour.\n(2) Moderate deficiency (eg, serum magnesium 1 to <1.5 mg/dL):\nIV: 2 g over 2 hours.\n(3) Severe deficiency (eg, serum magnesium <1 mg/dL):\nIV: 4 g over 4 hours.\n",
+    "eval_MRN": "S2075210"
+  },
+  {
+    "id": "v2new_task10_10",
+    "instruction": "Instruction: Review COVID-19 vaccination status for patient S2450227. Find the most recent COVID-19 vaccine and if the last dose was more than 12 months ago, order a COVID booster.",
+    "context": "It's 2023-11-07T12:00:00+00:00 now. The code for COVID-19 vaccine procedure is 'COVIDVACCINE' or MedicationRequest with text containing 'COVID-19 VAC'. The booster to order is a single-dose COVID vaccine (CPT 91320) today.",
+    "eval_MRN": "S2450227"
+  },
+  {
+    "id": "v1_task10_8",
+    "instruction": "What\u2019s the last HbA1C (hemoglobin A1C) value in the chart for patient S3114648 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test. ",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for HbA1C is \"A1C\". The LOINC code for ordering HbA1C lab is: 4548-4. The answer should be [-1] if a measurement is not available.",
+    "eval_MRN": "S3114648"
+  },
+  {
+    "id": "v1_task9_21",
+    "instruction": "Check patient S6426560's most recent potassium level. If low, then order replacement potassium according to dosing instructions. Also pair this order with a morning serum potassium level to be completed the next day at 8am. \n",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for potassium is \"K\".The NDC for replacement potassium is 40032-917-01. Dosing instructions: for every 0.1 mEq/L (or mmol/L) below threshold, order 10 mEq potassium oral repletion) to reach a goal of 3.5 serum level. The LOINC code for serum potassium level is 2823-3.",
+    "eval_MRN": "S6426560"
+  },
+  {
+    "id": "v2new_task10_15",
+    "instruction": "Instruction: Review COVID-19 vaccination status for patient S0658561. Find the most recent COVID-19 vaccine and if the last dose was more than 12 months ago, order a COVID booster.",
+    "context": "It's 2023-11-07T12:00:00+00:00 now. The code for COVID-19 vaccine procedure is 'COVIDVACCINE' or MedicationRequest with text containing 'COVID-19 VAC'. The booster to order is a single-dose COVID vaccine (CPT 91320) today.",
+    "eval_MRN": "S0658561"
+  },
+  {
+    "id": "v2new_task7_12",
+    "instruction": "Instruction: Check the latest QTc interval for patient S0869531. If prolonged, discontinue QT-prolonging medications and order a follow-up ECG for 24 hours later.",
+    "context": "The code for QTc interval is 'QTCINTERVAL'. The threshold for prolonged QTc is > 500 ms. QT-prolonging medications to discontinue include text containing ondansetron, prochlorperazine and most antipsychotic medications. The SNOMED code for 12-lead ECG is 445118002. Order the ECG to be performed in 24 hours.",
+    "eval_MRN": "S0869531"
+  },
+  {
+    "id": "v1_task3_23",
+    "instruction": "I just measured the blood pressure for patient with MRN of S6549951, and it is \"118/77 mmHg\". Help me record it.",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The flowsheet ID for blood pressure is BP.",
+    "eval_MRN": "S6549951"
+  },
+  {
+    "id": "v1_task4_25",
+    "instruction": "What\u2019s the most recent magnesium level of the patient S2703270 within last 24 hours?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for magnesium is \"MG\". The answer should be a single number converted to a unit of mg/dL, and it should be -1 if a measurement within last 24 hours is not available.",
+    "eval_MRN": "S2703270"
+  },
+  {
+    "id": "v1_task9_12",
+    "instruction": "Check patient S6541353's most recent potassium level. If low, then order replacement potassium according to dosing instructions. Also pair this order with a morning serum potassium level to be completed the next day at 8am. \n",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for potassium is \"K\".The NDC for replacement potassium is 40032-917-01. Dosing instructions: for every 0.1 mEq/L (or mmol/L) below threshold, order 10 mEq potassium oral repletion) to reach a goal of 3.5 serum level. The LOINC code for serum potassium level is 2823-3.",
+    "eval_MRN": "S6541353"
+  },
+  {
+    "id": "v1_task2_11",
+    "instruction": "What's the age of the patient with MRN of S0636132?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now, and the answer should be rounded down to an integer.",
+    "eval_MRN": "S0636132"
+  },
+  {
+    "id": "v1_task1_12",
+    "instruction": "What\u2019s the MRN of the patient with name Margaret Kidd and DOB of 1982-08-24? If the patient does not exist, the answer should be \"Patient not found\"",
+    "context": "",
+    "sol": [
+      "S0789363"
+    ],
+    "eval_MRN": "S0789363"
+  },
+  {
+    "id": "v2new_task5_1",
+    "instruction": "Instruction: Confirm patient S6315806 has a malignant neoplasm of left kidney diagnosis. If true and the last CT Abdomen/Pelvis is more than 3 months old, order a new CT and referral to Interventional Radiology.",
+    "context": "The ICD-10 code for malignant neoplasm of left kidney is C64.2. The CPT code for CT Abdomen/Pelvis with IV contrast is 74177 (for oncologic follow-up). The CPT code for Interventional Radiology referral is CON417 with the request: 'Evaluate renal mass for biopsy or ablation.'",
+    "eval_MRN": "S6315806"
+  },
+  {
+    "id": "v2new_task9_22",
+    "instruction": "Instruction: Determine the date of the last influenza vaccine for patient S1777769. If it was administered more than 365 days ago, order a new influenza vaccine for today.",
+    "context": "It's 2024-01-09T00:00:00+00:00 now. The CPT code for influenza vaccine is 90686. The vaccine to order is influenza vaccine (quadrivalent, preservative-free, IM) for today.",
+    "eval_MRN": "S1777769"
+  },
+  {
+    "id": "v2new_task8_13",
+    "instruction": "Instruction: Verify that every active opioid analgesic order for patient S6352985 has a matching naloxone prescription. If an opioid order is active without naloxone, create a naloxone order.",
+    "context": "Opioid medications to search for include hydromorphone, oxycodone, fentanyl, hydrocodone, morphine. The naloxone order is naloxone nasal spray 4 mg.",
+    "eval_MRN": "S6352985"
+  },
+  {
+    "id": "v1_task5_14",
+    "instruction": "Check patient S0658561's last serum magnesium level within last 24 hours. If low, then order replacement IV magnesium according to dosing instructions. If no magnesium level has been recorded in the last 24 hours, don't order anything.\n",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for magnesium is \"MG\". The NDC for replacement IV magnesium is 0338-1715-40. Dosing instructions: (1) Mild deficiency (eg, serum magnesium 1.5 to 1.9 mg/dL):\nIV: 1 g over 1 hour.\n(2) Moderate deficiency (eg, serum magnesium 1 to <1.5 mg/dL):\nIV: 2 g over 2 hours.\n(3) Severe deficiency (eg, serum magnesium <1 mg/dL):\nIV: 4 g over 4 hours.\n",
+    "eval_MRN": "S0658561"
+  },
+  {
+    "id": "v1_task8_7",
+    "instruction": "Order orthopedic surgery referral for patient S2863714. Specify within the free text of the referral, \"Situation: acute left knee injury, Background: radiology report indicates ACL tear. Assessment: ACL tear grade II. Recommendation: request for Orthopedic service to evaluate and provide management recommendations.\"",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The SNOMED code for orthopedic surgery referral is 306181000000106.",
+    "eval_MRN": "S2863714"
+  },
+  {
+    "id": "v2new_task1_1",
+    "instruction": "Instruction: Find the date of the most recent CT Abdomen procedure for patient S6315806. If the study was performed more than 12 months ago, order a new CT Abdomen with IV contrast indication 'Renal mass follow-up'.",
+    "context": "The CPT codes for existing CT studies are IMGCT0491 or IMGIL0001. The CPT code for the new study is 74177.",
+    "eval_MRN": "S6315806"
+  },
+  {
+    "id": "v1_task8_20",
+    "instruction": "Order orthopedic surgery referral for patient S2197736. Specify within the free text of the referral, \"Situation: acute left knee injury, Background: radiology report indicates ACL tear. Assessment: ACL tear grade II. Recommendation: request for Orthopedic service to evaluate and provide management recommendations.\"",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The SNOMED code for orthopedic surgery referral is 306181000000106.",
+    "eval_MRN": "S2197736"
+  },
+  {
+    "id": "v2new_task5_4",
+    "instruction": "Instruction: Confirm patient S2748981 has a malignant neoplasm of left kidney diagnosis. If true and the last CT Abdomen/Pelvis is more than 3 months old, order a new CT and referral to Interventional Radiology.",
+    "context": "The ICD-10 code for malignant neoplasm of left kidney is C64.2. The CPT code for CT Abdomen/Pelvis with IV contrast is 74177 (for oncologic follow-up). The CPT code for Interventional Radiology referral is CON417 with the request: 'Evaluate renal mass for biopsy or ablation.'",
+    "eval_MRN": "S2748981"
+  },
+  {
+    "id": "v2new_task6_2",
+    "instruction": "Instruction: Retrieve the most recent TSH and free T4 values for patient S3057899. Based on the results, take appropriate action according to the protocol.",
+    "context": "The code for TSH is 'TSH' and for free T4 is 'FT4'. Protocol: If TSH > 10 uIU/mL on two separate instances of lab values (separated by at least one month in date of lab collection), start levothyroxine 25 mcg PO daily and order repeat TSH/FT4 in 6 weeks. If TSH is 4.5\u201310 uIU/mL and free T4 is normal (0.8\u20131.8 ng/dL), order repeat TSH/FT4 in 3 months (no medication yet).",
+    "eval_MRN": "S3057899"
+  },
+  {
+    "id": "v1_task4_21",
+    "instruction": "What\u2019s the most recent magnesium level of the patient S1521703 within last 24 hours?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for magnesium is \"MG\". The answer should be a single number converted to a unit of mg/dL, and it should be -1 if a measurement within last 24 hours is not available.",
+    "eval_MRN": "S1521703"
+  },
+  {
+    "id": "v2new_task2_2",
+    "instruction": "Instruction: Verify that patient S6537563 has exactly one active DVT prophylaxis order. If there are zero orders, create one. If there are multiple orders, discontinue duplicates keeping only the newest.",
+    "context": "The specific order is heparin 5000 units SC q8h prophylaxis. Ensure exactly one active order remains. For context, a duplicate order could be any anti-coagulant medication (for example, LMWH, DOAC, etc).",
+    "eval_MRN": "S6537563"
+  },
+  {
+    "id": "v2new_task3_28",
+    "instruction": "Instruction: Calculate the average heart rate over the past 6 hours and the past 12 hours for patient S6484983.",
+    "context": "The code for heart rate is 'HEARTRATE'. It's 2020-10-26T00:35:00+00:00 now",
+    "eval_MRN": "S6484983"
+  },
+  {
+    "id": "v1_task8_2",
+    "instruction": "Order orthopedic surgery referral for patient S1986380. Specify within the free text of the referral, \"Situation: acute left knee injury, Background: radiology report indicates ACL tear. Assessment: ACL tear grade II. Recommendation: request for Orthopedic service to evaluate and provide management recommendations.\"",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The SNOMED code for orthopedic surgery referral is 306181000000106.",
+    "eval_MRN": "S1986380"
+  },
+  {
+    "id": "v1_task9_13",
+    "instruction": "Check patient S3057899's most recent potassium level. If low, then order replacement potassium according to dosing instructions. Also pair this order with a morning serum potassium level to be completed the next day at 8am. \n",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for potassium is \"K\".The NDC for replacement potassium is 40032-917-01. Dosing instructions: for every 0.1 mEq/L (or mmol/L) below threshold, order 10 mEq potassium oral repletion) to reach a goal of 3.5 serum level. The LOINC code for serum potassium level is 2823-3.",
+    "eval_MRN": "S3057899"
+  },
+  {
+    "id": "v1_task10_5",
+    "instruction": "What\u2019s the last HbA1C (hemoglobin A1C) value in the chart for patient S0547588 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test. ",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for HbA1C is \"A1C\". The LOINC code for ordering HbA1C lab is: 4548-4. The answer should be [-1] if a measurement is not available.",
+    "eval_MRN": "S0547588"
+  },
+  {
+    "id": "v2new_task3_19",
+    "instruction": "Instruction: Calculate the average heart rate over the past 6 hours and the past 12 hours for patient S6212774.",
+    "context": "The code for heart rate is 'HEARTRATE'. It's 2023-08-15:00:00+00:00 now",
+    "eval_MRN": "S6212774"
+  },
+  {
+    "id": "v2new_task1_11",
+    "instruction": "Instruction: Find the date of the most recent CT Abdomen procedure for patient S1733937. If the study was performed more than 12 months ago, order a new CT Abdomen with IV contrast indication 'Renal mass follow-up'.",
+    "context": "The CPT codes for existing CT studies are IMGCT0491 or IMGIL0001. The CPT code for the new study is 74177.",
+    "eval_MRN": "S1733937"
+  },
+  {
+    "id": "v1_task5_11",
+    "instruction": "Check patient S6537563's last serum magnesium level within last 24 hours. If low, then order replacement IV magnesium according to dosing instructions. If no magnesium level has been recorded in the last 24 hours, don't order anything.\n",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for magnesium is \"MG\". The NDC for replacement IV magnesium is 0338-1715-40. Dosing instructions: (1) Mild deficiency (eg, serum magnesium 1.5 to 1.9 mg/dL):\nIV: 1 g over 1 hour.\n(2) Moderate deficiency (eg, serum magnesium 1 to <1.5 mg/dL):\nIV: 2 g over 2 hours.\n(3) Severe deficiency (eg, serum magnesium <1 mg/dL):\nIV: 4 g over 4 hours.\n",
+    "eval_MRN": "S6537563"
+  },
+  {
+    "id": "v1_task1_21",
+    "instruction": "What\u2019s the MRN of the patient with name Tina Anderson and DOB of 1959-01-24? If the patient does not exist, the answer should be \"Patient not found\"",
+    "context": "",
+    "sol": [
+      "S0547588"
+    ],
+    "eval_MRN": "S0547588"
+  },
+  {
+    "id": "v1_task1_19",
+    "instruction": "What\u2019s the MRN of the patient with name Tim Ramos and DOB of 1959-04-28? If the patient does not exist, the answer should be \"Patient not found\"",
+    "context": "",
+    "sol": [
+      "S6192632"
+    ],
+    "eval_MRN": "S6192632"
+  },
+  {
+    "id": "v1_task3_16",
+    "instruction": "I just measured the blood pressure for patient with MRN of S6192632, and it is \"118/77 mmHg\". Help me record it.",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The flowsheet ID for blood pressure is BP.",
+    "eval_MRN": "S6192632"
+  },
+  {
+    "id": "v1_task4_28",
+    "instruction": "What\u2019s the most recent magnesium level of the patient S0674240 within last 24 hours?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for magnesium is \"MG\". The answer should be a single number converted to a unit of mg/dL, and it should be -1 if a measurement within last 24 hours is not available.",
+    "eval_MRN": "S0674240"
+  },
+  {
+    "id": "v1_task4_30",
+    "instruction": "What\u2019s the most recent magnesium level of the patient S6312049 within last 24 hours?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for magnesium is \"MG\". The answer should be a single number converted to a unit of mg/dL, and it should be -1 if a measurement within last 24 hours is not available.",
+    "eval_MRN": "S6312049"
+  },
+  {
+    "id": "v1_task6_16",
+    "instruction": "What is the average CBG of the patient S6549951 over the last 24 hours?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for CBG is \"GLU\". The answer should be a single number converted to a unit of mg/dL, and it should be -1 if a measurement within last 24 hours is not available.",
+    "eval_MRN": "S6549951"
+  },
+  {
+    "id": "v2new_task4_4",
+    "instruction": "Instruction: Check if patient S6200102 has a urinary catheter that has been in place for more than 48 hours without a documented removal order. If so, create a service request to remove the catheter.",
+    "context": "The procedure code for urinary catheter is 'NUR1373'. It's 2023-11-11T09:00:00+00:00 now.",
+    "eval_MRN": "S6200102"
+  },
+  {
+    "id": "v1_task5_25",
+    "instruction": "Check patient S6542579's last serum magnesium level within last 24 hours. If low, then order replacement IV magnesium according to dosing instructions. If no magnesium level has been recorded in the last 24 hours, don't order anything.\n",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for magnesium is \"MG\". The NDC for replacement IV magnesium is 0338-1715-40. Dosing instructions: (1) Mild deficiency (eg, serum magnesium 1.5 to 1.9 mg/dL):\nIV: 1 g over 1 hour.\n(2) Moderate deficiency (eg, serum magnesium 1 to <1.5 mg/dL):\nIV: 2 g over 2 hours.\n(3) Severe deficiency (eg, serum magnesium <1 mg/dL):\nIV: 4 g over 4 hours.\n",
+    "eval_MRN": "S6542579"
+  },
+  {
+    "id": "v2new_task7_13",
+    "instruction": "Instruction: Check the latest QTc interval for patient S3213957. If prolonged, discontinue QT-prolonging medications and order a follow-up ECG for 24 hours later.",
+    "context": "The code for QTc interval is 'QTCINTERVAL'. The threshold for prolonged QTc is > 500 ms. QT-prolonging medications to discontinue include text containing ondansetron, prochlorperazine and most antipsychotic medications. The SNOMED code for 12-lead ECG is 445118002. Order the ECG to be performed in 24 hours.",
+    "eval_MRN": "S3213957"
+  },
+  {
+    "id": "v1_task10_19",
+    "instruction": "What\u2019s the last HbA1C (hemoglobin A1C) value in the chart for patient S2154941 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test. ",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for HbA1C is \"A1C\". The LOINC code for ordering HbA1C lab is: 4548-4. The answer should be [-1] if a measurement is not available.",
+    "eval_MRN": "S2154941"
+  },
+  {
+    "id": "v1_task7_1",
+    "instruction": "What is the most recent CBG of the patient S2823623?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for CBG is \"GLU\"",
+    "eval_MRN": "S2823623"
+  },
+  {
+    "id": "v2new_task3_12",
+    "instruction": "Instruction: Calculate the average heart rate over the past 6 hours and the past 12 hours for patient S6549951.",
+    "context": "The code for heart rate is 'HEARTRATE'. It's 2023-11-07T22:47:00+00:00 now",
+    "eval_MRN": "S6549951"
+  },
+  {
+    "id": "v2new_task3_25",
+    "instruction": "Instruction: Calculate the average heart rate over the past 6 hours and the past 12 hours for patient S0869531.",
+    "context": "The code for heart rate is 'HEARTRATE'. It's 2023-05-14T18:40:00+00:00 now",
+    "eval_MRN": "S0869531"
+  },
+  {
+    "id": "v2new_task4_1",
+    "instruction": "Instruction: Check if patient S6315806 has a urinary catheter that has been in place for more than 48 hours without a documented removal order. If so, create a service request to remove the catheter.",
+    "context": "The procedure code for urinary catheter is 'NUR1373'. It's 2023-11-16T10:00:00+00:00 now.",
+    "eval_MRN": "S6315806"
+  },
+  {
+    "id": "v2new_task10_6",
+    "instruction": "Instruction: Review COVID-19 vaccination status for patient S6309742. Find the most recent COVID-19 vaccine and if the last dose was more than 12 months ago, order a COVID booster.",
+    "context": "It's 2023-11-07T12:00:00+00:00 now. The code for COVID-19 vaccine procedure is 'COVIDVACCINE' or MedicationRequest with text containing 'COVID-19 VAC'. The booster to order is a single-dose COVID vaccine (CPT 91320) today.",
+    "eval_MRN": "S6309742"
+  },
+  {
+    "id": "v1_task6_9",
+    "instruction": "What is the average CBG of the patient S6538722 over the last 24 hours?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for CBG is \"GLU\". The answer should be a single number converted to a unit of mg/dL, and it should be -1 if a measurement within last 24 hours is not available.",
+    "eval_MRN": "S6538722"
+  },
+  {
+    "id": "v1_task10_25",
+    "instruction": "What\u2019s the last HbA1C (hemoglobin A1C) value in the chart for patient S1152319 and when was it recorded? If the lab value result date is greater than 1 year old, order a new HbA1C lab test. ",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for HbA1C is \"A1C\". The LOINC code for ordering HbA1C lab is: 4548-4. The answer should be [-1] if a measurement is not available.",
+    "eval_MRN": "S1152319"
+  },
+  {
+    "id": "v2new_task4_23",
+    "instruction": "Instruction: Check if patient S6539215 has a urinary catheter that has been in place for more than 48 hours without a documented removal order. If so, create a service request to remove the catheter.",
+    "context": "The procedure code for urinary catheter is 'NUR1373'. It's 2023-11-11T09:00:00+00:00 now.",
+    "eval_MRN": "S6539215"
+  },
+  {
+    "id": "v1_task3_11",
+    "instruction": "I just measured the blood pressure for patient with MRN of S2111822, and it is \"118/77 mmHg\". Help me record it.",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The flowsheet ID for blood pressure is BP.",
+    "eval_MRN": "S2111822"
+  },
+  {
+    "id": "v2new_task6_15",
+    "instruction": "Instruction: Retrieve the most recent TSH and free T4 values for patient S1311412. Based on the results, take appropriate action according to the protocol.",
+    "context": "The code for TSH is 'TSH' and for free T4 is 'FT4'. Protocol: If TSH > 10 uIU/mL on two separate instances of lab values (separated by at least one month in date of lab collection), start levothyroxine 25 mcg PO daily and order repeat TSH/FT4 in 6 weeks. If TSH is 4.5\u201310 uIU/mL and free T4 is normal (0.8\u20131.8 ng/dL), order repeat TSH/FT4 in 3 months (no medication yet).",
+    "eval_MRN": "S1311412"
+  },
+  {
+    "id": "v2new_task8_6",
+    "instruction": "Instruction: Verify that every active opioid analgesic order for patient S3114648 has a matching naloxone prescription. If an opioid order is active without naloxone, create a naloxone order.",
+    "context": "Opioid medications to search for include hydromorphone, oxycodone, fentanyl, hydrocodone, morphine. The naloxone order is naloxone nasal spray 4 mg.",
+    "eval_MRN": "S3114648"
+  },
+  {
+    "id": "v2new_task8_14",
+    "instruction": "Instruction: Verify that every active opioid analgesic order for patient S1374652 has a matching naloxone prescription. If an opioid order is active without naloxone, create a naloxone order.",
+    "context": "Opioid medications to search for include hydromorphone, oxycodone, fentanyl, hydrocodone, morphine. The naloxone order is naloxone nasal spray 4 mg.",
+    "eval_MRN": "S1374652"
+  },
+  {
+    "id": "v2new_task1_8",
+    "instruction": "Instruction: Find the date of the most recent CT Abdomen procedure for patient S1023381. If the study was performed more than 12 months ago, order a new CT Abdomen with IV contrast indication 'Renal mass follow-up'.",
+    "context": "The CPT codes for existing CT studies are IMGCT0491 or IMGIL0001. The CPT code for the new study is 74177.",
+    "eval_MRN": "S1023381"
+  },
+  {
+    "id": "v2new_task1_14",
+    "instruction": "Instruction: Find the date of the most recent CT Abdomen procedure for patient S6222362. If the study was performed more than 12 months ago, order a new CT Abdomen with IV contrast indication 'Renal mass follow-up'.",
+    "context": "The CPT codes for existing CT studies are IMGCT0491 or IMGIL0001. The CPT code for the new study is 74177.",
+    "eval_MRN": "S6222362"
+  },
+  {
+    "id": "v1_task4_8",
+    "instruction": "What\u2019s the most recent magnesium level of the patient S6330912 within last 24 hours?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for magnesium is \"MG\". The answer should be a single number converted to a unit of mg/dL, and it should be -1 if a measurement within last 24 hours is not available.",
+    "eval_MRN": "S6330912"
+  },
+  {
+    "id": "v2new_task4_13",
+    "instruction": "Instruction: Check if patient S6534835 has a urinary catheter that has been in place for more than 48 hours without a documented removal order. If so, create a service request to remove the catheter.",
+    "context": "The procedure code for urinary catheter is 'NUR1373'. It's 2023-11-11T09:00:00+00:00 now.",
+    "eval_MRN": "S6534835"
+  },
+  {
+    "id": "v2new_task9_17",
+    "instruction": "Instruction: Determine the date of the last influenza vaccine for patient S1736710. If it was administered more than 365 days ago, order a new influenza vaccine for today.",
+    "context": "It's 2024-01-09T00:00:00+00:00 now. The CPT code for influenza vaccine is 90686. The vaccine to order is influenza vaccine (quadrivalent, preservative-free, IM) for today.",
+    "eval_MRN": "S1736710"
+  },
+  {
+    "id": "v1_task9_18",
+    "instruction": "Check patient S2450227's most recent potassium level. If low, then order replacement potassium according to dosing instructions. Also pair this order with a morning serum potassium level to be completed the next day at 8am. \n",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for potassium is \"K\".The NDC for replacement potassium is 40032-917-01. Dosing instructions: for every 0.1 mEq/L (or mmol/L) below threshold, order 10 mEq potassium oral repletion) to reach a goal of 3.5 serum level. The LOINC code for serum potassium level is 2823-3.",
+    "eval_MRN": "S2450227"
+  },
+  {
+    "id": "v1_task9_22",
+    "instruction": "Check patient S6474456's most recent potassium level. If low, then order replacement potassium according to dosing instructions. Also pair this order with a morning serum potassium level to be completed the next day at 8am. \n",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for potassium is \"K\".The NDC for replacement potassium is 40032-917-01. Dosing instructions: for every 0.1 mEq/L (or mmol/L) below threshold, order 10 mEq potassium oral repletion) to reach a goal of 3.5 serum level. The LOINC code for serum potassium level is 2823-3.",
+    "eval_MRN": "S6474456"
+  },
+  {
+    "id": "v1_task6_18",
+    "instruction": "What is the average CBG of the patient S1478444 over the last 24 hours?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for CBG is \"GLU\". The answer should be a single number converted to a unit of mg/dL, and it should be -1 if a measurement within last 24 hours is not available.",
+    "eval_MRN": "S1478444"
+  },
+  {
+    "id": "v2new_task4_11",
+    "instruction": "Instruction: Check if patient S2380121 has a urinary catheter that has been in place for more than 48 hours without a documented removal order. If so, create a service request to remove the catheter.",
+    "context": "The procedure code for urinary catheter is 'NUR1373'. It's 2023-11-11T09:00:00+00:00 now.",
+    "eval_MRN": "S2380121"
+  },
+  {
+    "id": "v2new_task3_8",
+    "instruction": "Instruction: Calculate the average heart rate over the past 6 hours and the past 12 hours for patient S6550473.",
+    "context": "The code for heart rate is 'HEARTRATE'. It's 2023-11-07T22:47:00+00:00 now",
+    "eval_MRN": "S6550473"
+  },
+  {
+    "id": "v2new_task2_24",
+    "instruction": "Instruction: Verify that patient S2199765 has exactly one active DVT prophylaxis order. If there are zero orders, create one. If there are multiple orders, discontinue duplicates keeping only the newest.",
+    "context": "The specific order is heparin 5000 units SC q8h prophylaxis. Ensure exactly one active order remains. For context, a duplicate order could be any anti-coagulant medication (for example, LMWH, DOAC, etc).",
+    "eval_MRN": "S2199765"
+  },
+  {
+    "id": "v2new_task8_17",
+    "instruction": "Instruction: Verify that every active opioid analgesic order for patient S6541353 has a matching naloxone prescription. If an opioid order is active without naloxone, create a naloxone order.",
+    "context": "Opioid medications to search for include hydromorphone, oxycodone, fentanyl, hydrocodone, morphine. The naloxone order is naloxone nasal spray 4 mg.",
+    "eval_MRN": "S6541353"
+  },
+  {
+    "id": "v1_task9_28",
+    "instruction": "Check patient S3228213's most recent potassium level. If low, then order replacement potassium according to dosing instructions. Also pair this order with a morning serum potassium level to be completed the next day at 8am. \n",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for potassium is \"K\".The NDC for replacement potassium is 40032-917-01. Dosing instructions: for every 0.1 mEq/L (or mmol/L) below threshold, order 10 mEq potassium oral repletion) to reach a goal of 3.5 serum level. The LOINC code for serum potassium level is 2823-3.",
+    "eval_MRN": "S3228213"
+  },
+  {
+    "id": "v1_task4_17",
+    "instruction": "What\u2019s the most recent magnesium level of the patient S2154941 within last 24 hours?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for magnesium is \"MG\". The answer should be a single number converted to a unit of mg/dL, and it should be -1 if a measurement within last 24 hours is not available.",
+    "eval_MRN": "S2154941"
+  },
+  {
+    "id": "v1_task6_19",
+    "instruction": "What is the average CBG of the patient S2197736 over the last 24 hours?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for CBG is \"GLU\". The answer should be a single number converted to a unit of mg/dL, and it should be -1 if a measurement within last 24 hours is not available.",
+    "eval_MRN": "S2197736"
+  },
+  {
+    "id": "v1_task6_12",
+    "instruction": "What is the average CBG of the patient S6222362 over the last 24 hours?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for CBG is \"GLU\". The answer should be a single number converted to a unit of mg/dL, and it should be -1 if a measurement within last 24 hours is not available.",
+    "eval_MRN": "S6222362"
+  },
+  {
+    "id": "v1_task1_6",
+    "instruction": "What\u2019s the MRN of the patient with name Andrew Bishop and DOB of 1963-01-29? If the patient does not exist, the answer should be \"Patient not found\"",
+    "context": "",
+    "sol": [
+      "S2874099"
+    ],
+    "eval_MRN": "S2874099"
+  },
+  {
+    "id": "v2new_task9_13",
+    "instruction": "Instruction: Determine the date of the last influenza vaccine for patient S1698248. If it was administered more than 365 days ago, order a new influenza vaccine for today.",
+    "context": "It's 2024-01-09T00:00:00+00:00 now. The CPT code for influenza vaccine is 90686. The vaccine to order is influenza vaccine (quadrivalent, preservative-free, IM) for today.",
+    "eval_MRN": "S1698248"
+  },
+  {
+    "id": "v2new_task10_19",
+    "instruction": "Instruction: Review COVID-19 vaccination status for patient S2199765. Find the most recent COVID-19 vaccine and if the last dose was more than 12 months ago, order a COVID booster.",
+    "context": "It's 2023-11-07T12:00:00+00:00 now. The code for COVID-19 vaccine procedure is 'COVIDVACCINE' or MedicationRequest with text containing 'COVID-19 VAC'. The booster to order is a single-dose COVID vaccine (CPT 91320) today.",
+    "eval_MRN": "S2199765"
+  },
+  {
+    "id": "v1_task8_9",
+    "instruction": "Order orthopedic surgery referral for patient S1023381. Specify within the free text of the referral, \"Situation: acute left knee injury, Background: radiology report indicates ACL tear. Assessment: ACL tear grade II. Recommendation: request for Orthopedic service to evaluate and provide management recommendations.\"",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The SNOMED code for orthopedic surgery referral is 306181000000106.",
+    "eval_MRN": "S1023381"
+  },
+  {
+    "id": "v1_task6_10",
+    "instruction": "What is the average CBG of the patient S6268253 over the last 24 hours?",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The code for CBG is \"GLU\". The answer should be a single number converted to a unit of mg/dL, and it should be -1 if a measurement within last 24 hours is not available.",
+    "eval_MRN": "S6268253"
+  },
+  {
+    "id": "v2new_task2_14",
+    "instruction": "Instruction: Verify that patient S6539215 has exactly one active DVT prophylaxis order. If there are zero orders, create one. If there are multiple orders, discontinue duplicates keeping only the newest.",
+    "context": "The specific order is heparin 5000 units SC q8h prophylaxis. Ensure exactly one active order remains. For context, a duplicate order could be any anti-coagulant medication (for example, LMWH, DOAC, etc).",
+    "eval_MRN": "S6539215"
+  },
+  {
+    "id": "v2new_task3_21",
+    "instruction": "Instruction: Calculate the average heart rate over the past 6 hours and the past 12 hours for patient S6541609.",
+    "context": "The code for heart rate is 'HEARTRATE'. It's 2023-10-25T14:00:00+00:00 now",
+    "eval_MRN": "S6541609"
+  },
+  {
+    "id": "v1_task3_18",
+    "instruction": "I just measured the blood pressure for patient with MRN of S1777769, and it is \"118/77 mmHg\". Help me record it.",
+    "context": "It's 2023-11-13T10:15:00+00:00 now. The flowsheet ID for blood pressure is BP.",
+    "eval_MRN": "S1777769"
+  },
+  {
+    "id": "v2new_task7_2",
+    "instruction": "Instruction: Check the latest QTc interval for patient S3241217. If prolonged, discontinue QT-prolonging medications and order a follow-up ECG for 24 hours later.",
+    "context": "The code for QTc interval is 'QTCINTERVAL'. The threshold for prolonged QTc is > 500 ms. QT-prolonging medications to discontinue include text containing ondansetron, prochlorperazine and most antipsychotic medications. The SNOMED code for 12-lead ECG is 445118002. Order the ECG to be performed in 24 hours.",
+    "eval_MRN": "S3241217"
+  },
+  {
+    "id": "v2new_task4_3",
+    "instruction": "Instruction: Check if patient S6549951 has a urinary catheter that has been in place for more than 48 hours without a documented removal order. If so, create a service request to remove the catheter.",
+    "context": "The procedure code for urinary catheter is 'NUR1373'. It's 2023-11-11T09:00:00+00:00 now.",
+    "eval_MRN": "S6549951"
+  }
+]

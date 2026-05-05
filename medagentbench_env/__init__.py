@@ -6,11 +6,14 @@
 
 """MedAgentBench RL Environment."""
 
-from .client import MedAgentBenchEnv
-from .models import MedAgentBenchAction, MedAgentBenchObservation
-
-__all__ = [
-    "MedAgentBenchAction",
-    "MedAgentBenchObservation",
-    "MedAgentBenchEnv",
-]
+try:
+    from .client import MedAgentBenchEnv
+    from .models import MedAgentBenchAction, MedAgentBenchObservation
+    __all__ = [
+        "MedAgentBenchAction",
+        "MedAgentBenchObservation",
+        "MedAgentBenchEnv",
+    ]
+except ImportError:
+    # openenv not installed — training-only mode (no client/server needed)
+    pass

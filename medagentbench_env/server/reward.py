@@ -1,210 +1,98 @@
 """
 Shaped reward for MedAgentBench server environment.
 
-This mirrors the dense reward used in medagentbench_env/train.py so that
-offline evaluation and training are scored consistently.
-
-The primary signal is `refsol_pass` (binary, from new_refsol graders).
-Dense components give intermediate feedback for tool use quality.
+Delegates to medagentbench_env.verifier for consistent scoring with training.
+All reward weights and action-detection logic are shared — no divergence possible.
 """
 
-import json
-from typing import Any, Dict, List, Optional
+from typing import Any, List, Optional
 
-# ---------------------------------------------------------------------------
-# Reward weights — keep in sync with train.py
-# ---------------------------------------------------------------------------
-_W_TERMINAL = 1.00        # full credit for passing the refsol grader
-_W_GET_CREDIT = 0.20      # agent looked up chart before deciding
-_W_REDUNDANT = -0.05      # per repeated identical GET URL
-_W_REDUNDANT_CAP = -0.20
-_W_INVALID = -0.10        # per rejected FHIR call
-_W_OFFTARGET = -0.05      # per GET on a resource irrelevant to the task
-_W_OFFTARGET_CAP = -0.20
-_W_ACTION_A = 0.25        # primary required action detected in a POST
-_W_ACTION_B = 0.25        # secondary required action (task5 / task7 / v2_task9)
-_W_SPURIOUS = -0.15       # completely off-target POST(s) when neither A nor B found
-
-# Resources each task type should query (used for off-target penalty)
-_TASK_RESOURCES: Dict[str, set] = {
-    "task1":    {"Procedure"},
-    "task2":    {"MedicationRequest"},
-    "task4":    {"Procedure"},
-    "task5":    {"Condition", "Procedure"},
-    "task6":    {"Observation"},
-    "task7":    {"Observation", "MedicationRequest"},
-    "task8":    {"MedicationRequest"},
-    "task9":    {"Procedure"},
-    "task10":   {"Procedure"},
-    "v2_task5": {"Observation"},
-    "v2_task9": {"Observation"},
-    "v2_task10": {"Observation"},
-}
-
-_NON_ACTIVE = {"stopped", "cancelled", "completed", "entered-in-error"}
-_QT_MEDS = (
-    "ondansetron", "prochlorperazine", "haloperidol", "quetiapine",
-    "olanzapine", "risperidone", "ziprasidone", "clozapine", "chlorpromazine",
-)
-_ANTICOAG = (
-    "heparin", "enoxaparin", "lovenox", "fondaparinux",
-    "rivaroxaban", "apixaban", "dabigatran", "warfarin",
-    "tinzaparin", "dalteparin",
+from medagentbench_env.verifier import (
+    _action_rewards,
+    _accepted_posts,
+    _get_urls,
+    _is_finish_no_tools,
+    ALLOWED_GET_RESOURCES,
+    _DEFAULT_WEIGHTS,
+    RewardWeights,
 )
 
 
 def compute_shaped_reward(
     task_type: str,
+    mrn: str,
     history: List[Any],
     refsol_pass: bool,
     step_count: int = 0,
     max_steps: int = 8,
     invalid_fhir_count: int = 0,
+    weights: Optional[RewardWeights] = None,
 ) -> float:
-    """
-    Compute dense shaped reward for one completed episode.
+    """Compute dense shaped reward for one completed episode.
 
     Parameters
     ----------
     task_type       : canonical task identifier, e.g. "task1" or "v2_task5"
+    mrn             : patient MRN string
     history         : list of objects with .role and .content attributes
     refsol_pass     : True if the new_refsol grader accepted the agent's actions
-    step_count      : number of steps taken
-    max_steps       : episode step budget
-    invalid_fhir_count : number of FHIR calls rejected by the server
+    step_count      : number of steps taken (unused, kept for API compat)
+    max_steps       : episode step budget (unused, kept for API compat)
+    invalid_fhir_count : number of FHIR calls rejected / returned error
+    weights         : optional RewardWeights override
 
     Returns
     -------
     float in [-1.0, 2.0]
     """
+    w = weights if weights is not None else _DEFAULT_WEIGHTS
+
+    # Convert attr-access history items to plain dicts for verifier helpers
+    history_dicts = [
+        {"role": getattr(m, "role", ""), "content": getattr(m, "content", "") or ""}
+        for m in history
+    ]
+
     reward = 0.0
 
-    # ── 1 · Terminal success ──────────────────────────────────────────────
     if refsol_pass:
-        reward += _W_TERMINAL
+        reward += w.terminal
 
-    # ── 2 · Parse history ────────────────────────────────────────────────
-    get_urls: List[str] = []
-    posts: List[Dict] = []
+    get_urls = _get_urls(history_dicts)
+    posts = _accepted_posts(history_dicts)
 
-    for idx, msg in enumerate(history):
-        if msg.role != "agent":
-            continue
-        content = msg.content or ""
-        if content.startswith("GET "):
-            parts = content.split()
-            if len(parts) > 1:
-                get_urls.append(parts[1])
-        elif content.startswith("POST "):
-            # Only count accepted POSTs
-            if idx + 1 < len(history) and "POST request accepted" in (history[idx + 1].content or ""):
-                try:
-                    payload = json.loads(content.split("\n", 1)[1]) if "\n" in content else {}
-                    posts.append(payload)
-                except Exception:
-                    pass
+    # GET credit: only when agent looked up chart AND placed an accepted order
+    if get_urls and posts:
+        reward += w.get_credit
 
-    # ── 3 · GET credit (agent looked at chart before deciding) ───────────
-    if get_urls:
-        reward += _W_GET_CREDIT
-
-    # ── 4 · Redundant GET penalty ─────────────────────────────────────────
+    # Redundant GET penalty
     seen: set = set()
-    redundant = 0
-    for url in get_urls:
-        if url in seen:
-            redundant += 1
-        seen.add(url)
-    r_red = max(_W_REDUNDANT_CAP, _W_REDUNDANT * redundant)
-    reward += r_red
+    redundant = sum(1 for url in get_urls if url in seen or seen.add(url))  # type: ignore[func-returns-value]
+    reward += max(w.redundant_lookup_cap, w.redundant_lookup * redundant)
 
-    # ── 5 · Invalid FHIR penalty ──────────────────────────────────────────
-    reward += _W_INVALID * float(invalid_fhir_count)
+    # Invalid FHIR penalty
+    reward += w.invalid_fhir * float(invalid_fhir_count)
 
-    # ── 6 · Off-target GET penalty ────────────────────────────────────────
-    allowed = _TASK_RESOURCES.get(task_type)
+    # Off-target GET penalty
+    allowed = ALLOWED_GET_RESOURCES.get(task_type)
     if allowed:
-        offtarget = 0
-        for url in get_urls:
-            base = url.split("?", 1)[0].rstrip("/")
-            resource = base.rsplit("/", 1)[-1]
-            if resource not in allowed:
-                offtarget += 1
-        reward += max(_W_OFFTARGET_CAP, _W_OFFTARGET * offtarget)
+        offtarget = sum(
+            1 for url in get_urls
+            if url.split("?", 1)[0].rstrip("/").rsplit("/", 1)[-1] not in allowed
+        )
+        reward += max(w.offtarget_lookup_cap, w.offtarget_lookup * offtarget)
 
-    # ── 7 · Required-action partial credit ───────────────────────────────
-    found_a = False
-    found_b = False
+    # Dense action rewards (partial + full)
+    credit_a, credit_b = _action_rewards(task_type, mrn, posts, w)
+    reward += credit_a
+    reward += credit_b
 
-    for pl in posts:
-        blob = json.dumps(pl).lower()
-        rtype = pl.get("resourceType", "")
-        status = pl.get("status", "").lower()
+    # Spurious POST penalty
+    if not refsol_pass and posts and credit_a == 0.0 and credit_b == 0.0:
+        reward += w.spurious_post
 
-        if task_type == "task1":
-            if rtype == "ServiceRequest" and "74177" in blob:
-                found_a = True
-
-        elif task_type == "task2":
-            if rtype == "MedicationRequest" and any(k in blob for k in _ANTICOAG):
-                found_a = True
-
-        elif task_type == "task4":
-            if rtype == "ServiceRequest" and ("nur1373" in blob or "catheter" in blob):
-                found_a = True
-
-        elif task_type == "task5":
-            if rtype == "ServiceRequest":
-                if "74177" in blob:
-                    found_a = True
-                if "con417" in blob or "interventional radiology" in blob:
-                    found_b = True
-
-        elif task_type == "task6":
-            if rtype == "MedicationRequest" and "levothyroxine" in blob:
-                found_a = True
-            if rtype == "ServiceRequest" and ("tsh" in blob or "ft4" in blob or "thyroid" in blob):
-                found_b = True
-
-        elif task_type == "task7":
-            if rtype == "MedicationRequest" and status in _NON_ACTIVE and any(m in blob for m in _QT_MEDS):
-                found_a = True
-            if rtype == "ServiceRequest" and ("445118002" in blob or "ecg" in blob or "electrocardiogram" in blob):
-                found_b = True
-
-        elif task_type == "task8":
-            if rtype == "MedicationRequest" and "naloxone" in blob:
-                found_a = True
-
-        elif task_type == "task9":
-            if rtype == "ServiceRequest" and ("90686" in blob or "influenza" in blob or "flu" in blob):
-                found_a = True
-
-        elif task_type == "task10":
-            if rtype in {"ServiceRequest", "MedicationRequest"} and "covid" in blob:
-                found_a = True
-
-        elif task_type == "v2_task5":
-            if rtype == "MedicationRequest" and ("magnesium" in blob or "0338-1715-40" in blob):
-                found_a = True
-
-        elif task_type == "v2_task9":
-            if rtype == "MedicationRequest" and ("potassium" in blob or "40032-917-01" in blob):
-                found_a = True
-            if rtype == "ServiceRequest" and ("potassium" in blob or "2823-3" in blob):
-                found_b = True
-
-        elif task_type == "v2_task10":
-            if rtype == "ServiceRequest" and ("4548-4" in blob or "a1c" in blob or "hba1c" in blob):
-                found_a = True
-
-    if found_a:
-        reward += _W_ACTION_A
-    if found_b:
-        reward += _W_ACTION_B
-
-    # ── 8 · Spurious-POST penalty: posted but nothing task-relevant ───────
-    if not refsol_pass and posts and not found_a and not found_b:
-        reward += _W_SPURIOUS
+    # Skip-tool finish penalty
+    if _is_finish_no_tools(history_dicts) and not refsol_pass:
+        reward += w.skip_finish_penalty
 
     return max(-1.0, min(2.0, reward))

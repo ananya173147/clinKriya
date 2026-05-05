@@ -59,6 +59,12 @@ _DEFAULT_HF_TOKEN = ""  # set HF_TOKEN env var instead
 # ---------------------------------------------------------------------------
 
 _MOCK_FHIR: Optional[MockFHIR] = None
+
+# Set by MedAgentTrainEnv._evaluate() before calling the grader so the patched
+# send_get_request can consult the current episode's overlay (cache mutations).
+# Cleared after the grader returns. Reads cross-thread are safe-by-construction
+# because GRPO calls _evaluate sequentially per rollout.
+_CURRENT_GRADING_ENV: "Optional[MedAgentTrainEnv]" = None
 _SYSTEM_PROMPT: str = ""
 _TASKS: List[Dict] = []
 _TASK_INDEX: int = 0
@@ -66,9 +72,11 @@ _TASKS_BY_ID: Dict[str, Dict] = {}
 _TASKS_BY_INSTRUCTION: Dict[str, Dict] = {}
 _SELECTED_TASK_TYPES: Optional[set] = None
 _NEW_REFSOL = None
+_V1_REFSOL = None
+_TASKS_FILE: Optional[Path] = None  # overrides default new_patient_tasks.json when set
 
 # Safeguard defaults — overridden by CLI args in main()
-_MAX_TOOL_RESPONSE_CHARS = 4000
+_MAX_TOOL_RESPONSE_CHARS = 16000
 _MAX_TOOL_RESPONSE_ENTRIES = 24
 _MAX_HISTORY_MESSAGES = 64  # includes the initial system item
 _MAX_PROMPT_LENGTH = 8192
@@ -103,6 +111,17 @@ def _get_mock_fhir() -> MockFHIR:
                 f"FHIR cache not found at {_CACHE_PATH}. "
                 "Build it first: python -m medagentbench_env.server.fhir_cache --build"
             )
+        # Auto-merge synthetic-patient additions if present (build_synth.py output).
+        # This is opt-in by file presence, so production users without the synth
+        # data file are unaffected.
+        synth_path = _DATA_DIR / "synth_cache_additions.json"
+        if synth_path.exists():
+            import json as _json
+            with open(synth_path) as _sf:
+                synth_entries = _json.load(_sf)
+            _MOCK_FHIR._cache.update(synth_entries)
+            # Reset name+DOB index since new Patient entries were added
+            _MOCK_FHIR._patient_name_index = None
     return _MOCK_FHIR
 
 
@@ -138,17 +157,80 @@ def _get_new_refsol():
     try:
         new_refsol = importlib.import_module("medagentbenchevals.new_refsol")
         mock = _get_mock_fhir()
-        new_refsol.send_get_request = (
-            lambda url, params=None, headers=None, _m=mock: {
-                "status_code": 200,
-                "data": json.dumps(_m.get(url).get("data", {})),
-            }
-        )
+        # The grader's send_get_request first checks the current episode's
+        # overlay (set by _CURRENT_GRADING_ENV), so cache mutations made by
+        # tools like fhir_medication_request_update during the episode are
+        # visible to the canonical grader at episode end.
+        # NOTE: graders intentionally read from MockFHIR baseline (NOT the
+        # episode overlay). The grader's notion of "active anticoagulants" is
+        # the pre-action baseline; the agent's discontinue actions are checked
+        # via extract_posts on the agent's POST history. If the grader saw the
+        # overlay, the baseline would shrink as the agent stops orders, and
+        # the grader would mistakenly think "no action was needed" → reject.
+        def _send(url, params=None, headers=None, _m=mock):
+            return {"status_code": 200, "data": json.dumps(_m.get(url).get("data", {}))}
+        new_refsol.send_get_request = _send
         _NEW_REFSOL = new_refsol
         print("Loaded new_refsol graders (single source of truth).")
     except ImportError as e:
         print(f"Warning: could not load medagentbenchevals.new_refsol ({e}); falling back to inline grader.")
     return _NEW_REFSOL
+
+
+def _get_v1_refsol():
+    """Load canonical v1 refsol.py (MedAgentBench v1 graders) with MockFHIR patching.
+
+    v1 graders expect raw-HTTP agent history ("POST {url}\\n{payload}", "GET {url}",
+    "POST request accepted" markers) — the env already emits this format, so no
+    history translation is required.
+
+    We load refsol.py and its utils.py directly via importlib.util rather than
+    going through the v1 package system, because the v1 package __init__.py pulls
+    in heavy Task/Session machinery unrelated to grading.
+    """
+    global _V1_REFSOL
+    if _V1_REFSOL is not None:
+        return _V1_REFSOL
+    import importlib.util
+    base = (
+        Path(__file__).resolve().parent.parent
+        / "medagentbenchv2" / "medagentbench_v2" / "src"
+        / "MedAgentBench" / "src" / "server" / "tasks" / "medagentbench"
+    )
+    try:
+        # Create parent package shim so `from .utils import *` resolves.
+        pkg_name = "_v1_medagentbench_refsol_pkg"
+        pkg = type(sys)("__shim__")
+        pkg.__path__ = [str(base)]
+        sys.modules[pkg_name] = pkg
+        # Load utils.py first
+        utils_spec = importlib.util.spec_from_file_location(
+            f"{pkg_name}.utils", base / "utils.py"
+        )
+        utils_mod = importlib.util.module_from_spec(utils_spec)
+        sys.modules[f"{pkg_name}.utils"] = utils_mod
+        utils_spec.loader.exec_module(utils_mod)
+        # Load refsol.py with the shim as its package
+        refsol_spec = importlib.util.spec_from_file_location(
+            f"{pkg_name}.refsol", base / "refsol.py"
+        )
+        v1_refsol = importlib.util.module_from_spec(refsol_spec)
+        sys.modules[f"{pkg_name}.refsol"] = v1_refsol
+        refsol_spec.loader.exec_module(v1_refsol)
+        mock = _get_mock_fhir()
+        _patched = (
+            lambda url, params=None, headers=None, _m=mock: {
+                "status_code": 200,
+                "data": json.dumps(_m.get(url).get("data", {})),
+            }
+        )
+        v1_refsol.send_get_request = _patched
+        utils_mod.send_get_request = _patched
+        _V1_REFSOL = v1_refsol
+        print("Loaded v1 refsol graders (canonical MedAgentBench v1).")
+    except Exception as e:
+        print(f"Warning: could not load v1 refsol ({type(e).__name__}: {e}).")
+    return _V1_REFSOL
 
 
 def _norm_text(s: str) -> str:
@@ -206,11 +288,19 @@ def _resolve_task_from_reset_kwargs(kwargs: Dict[str, Any]) -> Optional[Dict]:
 # RL-worthy task types
 # ---------------------------------------------------------------------------
 
-# Excludes task3 (always-action HR average) which provides no decision signal.
+# Excludes v1_task3 (always-action HR average) which provides no decision signal.
+# Includes both bare-prefix (legacy test_data_v2.json) and corpus-prefixed
+# (clinkriya_train/test.json) IDs so either dataset works as --tasks-file.
 _RL_TASK_TYPES = {
+    # Legacy bare names
     "task1", "task2", "task4", "task5", "task6",
     "task7", "task8", "task9", "task10",
     "v2_task5", "v2_task9", "v2_task10",
+    # clinKriya corpus-prefixed names (v1_ for v1 tasks, v2new_ for v2-new)
+    "v1_task1", "v1_task2", "v1_task4", "v1_task5", "v1_task6",
+    "v1_task7", "v1_task8", "v1_task9", "v1_task10",
+    "v2new_task1", "v2new_task2", "v2new_task3", "v2new_task4", "v2new_task5",
+    "v2new_task6", "v2new_task7", "v2new_task8", "v2new_task9", "v2new_task10",
 }
 
 
@@ -218,24 +308,28 @@ def _get_tasks() -> List[Dict]:
     """Load all RL-worthy tasks from new_patient_tasks.json and test_data_v2.json."""
     global _TASKS, _TASKS_BY_ID, _TASKS_BY_INSTRUCTION
     if not _TASKS:
-        with open(_DATA_DIR / "new_patient_tasks.json") as f:
+        tasks_file = _TASKS_FILE if _TASKS_FILE is not None else (_DATA_DIR / "new_patient_tasks.json")
+        with open(tasks_file) as f:
             all_tasks: List[Dict] = json.load(f)
 
-        v2_path = (
-            Path(__file__).resolve().parent.parent
-            / "medagentbenchv2" / "medagentbench_v2" / "src"
-            / "MedAgentBench" / "data" / "medagentbench" / "test_data_v2.json"
-        )
-        if v2_path.exists():
-            with open(v2_path) as f:
-                v2_raw: List[Dict] = json.load(f)
-            _V2_RL = {"task5", "task9", "task10"}
-            for t in v2_raw:
-                ttype = "_".join(t["id"].split("_")[:-1])
-                if ttype in _V2_RL:
-                    prefixed = dict(t)
-                    prefixed["id"] = f"v2_{t['id']}"
-                    all_tasks.append(prefixed)
+        # Only append raw v2 tasks when using the default file; custom task files
+        # (e.g. train_tasks.json) already include v2 entries with v2_ prefixes.
+        if _TASKS_FILE is None:
+            v2_path = (
+                Path(__file__).resolve().parent.parent
+                / "medagentbenchv2" / "medagentbench_v2" / "src"
+                / "MedAgentBench" / "data" / "medagentbench" / "test_data_v2.json"
+            )
+            if v2_path.exists():
+                with open(v2_path) as f:
+                    v2_raw: List[Dict] = json.load(f)
+                _V2_RL = {"task5", "task9", "task10"}
+                for t in v2_raw:
+                    ttype = "_".join(t["id"].split("_")[:-1])
+                    if ttype in _V2_RL:
+                        prefixed = dict(t)
+                        prefixed["id"] = f"v2_{t['id']}"
+                        all_tasks.append(prefixed)
 
         allowed_types = _SELECTED_TASK_TYPES if _SELECTED_TASK_TYPES is not None else _RL_TASK_TYPES
         _TASKS = [
@@ -303,6 +397,11 @@ class MedAgentTrainEnv:
         self.reward: float = 0.0
         self.done: bool = False
         self._invalid_fhir_count: int = 0
+        # Episode-local cache overlay — mutations made by tools like
+        # fhir_medication_request_update live here, NOT in MockFHIR.
+        # Keyed by normalized URL → response dict matching MockFHIR.get() shape.
+        # Cleared on reset() so mutations never leak across episodes/rollouts.
+        self._episode_overlay: Dict[str, Any] = {}
 
     # ------------------------------------------------------------------
     # Episode lifecycle
@@ -326,6 +425,7 @@ class MedAgentTrainEnv:
         self.reward = 0.0
         self.done = False
         self._invalid_fhir_count = 0
+        self._episode_overlay = {}  # discard prior episode's mutations
 
         context_str = f"\nContext: {self._task['context']}" if self._task.get("context") else ""
         instruction = f"{self._task['instruction']}{context_str}"
@@ -497,11 +597,12 @@ class MedAgentTrainEnv:
         Args:
             resourceType: Must be 'Observation'.
             category: FHIR category coding list.
-            code: FHIR code element with text/coding.
+            code: FHIR code with coding list, e.g.
+                {'coding': [{'code': '8867-4', 'system': 'http://loinc.org'}]}.
             effectiveDateTime: ISO datetime of the measurement.
             status: Observation status (default 'final').
             valueString: The vital sign value as a string.
-            subject: Patient reference dict, e.g. {'reference': 'Patient/MRN'}.
+            subject: Patient reference — exactly {'reference': 'Patient/<MRN>'}.
 
         Returns:
             Confirmation message.
@@ -533,18 +634,22 @@ class MedAgentTrainEnv:
         note: Optional[Any] = None,
         occurrenceDateTime: str = "",
     ) -> str:
-        """Create a service request (referral, order) in the FHIR EHR.
+        """Create a service request (lab order, imaging order, or referral) in the FHIR EHR.
 
         Args:
             resourceType: Must be 'ServiceRequest'.
-            code: FHIR code element with coding list.
+            code: FHIR code with coding list. For CPT codes use
+                {'coding': [{'code': '74177', 'system': 'http://www.ama-assn.org/go/cpt'}]}.
+                For LOINC codes use
+                {'coding': [{'code': '4548-4', 'system': 'http://loinc.org'}]}.
             authoredOn: ISO datetime the order was written.
-            status: Request status (default 'active').
+            status: Request status — 'active' for a new order (default 'active').
             intent: Request intent (default 'order').
             priority: Priority (default 'stat').
-            subject: Patient reference dict.
-            note: Clinical notes as string, dict, or list.
-            occurrenceDateTime: When the service should occur.
+            subject: Patient reference — exactly {'reference': 'Patient/<MRN>'}.
+            note: Clinical indication or reason as a list of dicts, e.g.
+                [{'text': 'Renal mass follow-up'}]. Used for the order indication.
+            occurrenceDateTime: When the service should occur (ISO datetime).
 
         Returns:
             Confirmation message.
@@ -580,17 +685,21 @@ class MedAgentTrainEnv:
         dosageInstruction: Optional[List] = None,
         note: Optional[Any] = None,
     ) -> str:
-        """Create a medication order in the FHIR EHR.
+        """Create or discontinue a medication order in the FHIR EHR.
 
         Args:
             resourceType: Must be 'MedicationRequest'.
-            medicationCodeableConcept: Medication coding.
-            subject: Patient reference dict.
-            status: Request status (default 'active').
+            medicationCodeableConcept: Medication identity including full name, dose, route and
+                frequency as free text, e.g. {'text': 'heparin 5000 units SC q8h'} or
+                {'text': 'ondansetron 4 mg IV'}. Include the numeric dose — e.g. '5000 units',
+                not just the drug name.
+            subject: Patient reference — exactly {'reference': 'Patient/<MRN>'}.
+            status: 'active' to create a new order; 'stopped' to discontinue an existing one
+                (default 'active').
             intent: Request intent (default 'order').
             authoredOn: ISO datetime the order was written.
-            dosageInstruction: List of dosage instruction dicts.
-            note: Clinical notes.
+            dosageInstruction: List of dosage instruction dicts (optional).
+            note: Clinical notes as a list of dicts, e.g. [{'text': 'DVT prophylaxis'}].
 
         Returns:
             Confirmation message.
@@ -614,6 +723,91 @@ class MedAgentTrainEnv:
             payload["note"] = note
         return self._do_post("MedicationRequest", payload)
 
+    def fhir_medication_request_update(self, id: str, status: str) -> str:
+        """Update an existing MedicationRequest's status (e.g. 'stopped',
+        'cancelled', 'completed'). Used to discontinue active orders.
+
+        The mutation is recorded in the episode-local cache overlay and is
+        VISIBLE for subsequent GETs in the same episode AND to the canonical
+        grader at episode end. The mutation is automatically discarded on the
+        next env.reset(), so no state leaks across rollouts.
+
+        Args:
+            id: The id of the existing MedicationRequest to update (from a
+                prior fhir_medication_request_search response's entry[i].resource.id).
+            status: The new status — typically 'stopped', 'cancelled', or 'completed'.
+        Returns:
+            Confirmation message.
+        """
+        if self.done:
+            return "Episode already finished."
+        if not self._task or not self._task.get("eval_MRN"):
+            return "Error: no current patient context."
+        mrn = self._task["eval_MRN"]
+        # Apply mutation to both the active-filtered and unfiltered MedicationRequest
+        # cache keys for this patient. The active-filtered key MUST drop the
+        # entry if the new status is non-active (so the grader's status=active
+        # query no longer finds it). The unfiltered key keeps the entry but
+        # with the new status field.
+        fhir_base = _FHIR_API_BASE.rstrip("/")
+        active_url = f"{fhir_base}/MedicationRequest?_count=5000&_format=json&patient={mrn}&status=active"
+        unfilt_url = f"{fhir_base}/MedicationRequest?_count=5000&_format=json&patient={mrn}"
+        non_active = {"stopped", "cancelled", "completed", "entered-in-error"}
+        for url in (active_url, unfilt_url):
+            key = _mod._normalize_url(url)
+            # Read current state — overlay takes precedence over cache
+            current = self._episode_overlay.get(key) or self._mock.get(url)
+            data = current.get("data", {}) if isinstance(current, dict) else {}
+            if isinstance(data, str):
+                try: data = json.loads(data)
+                except Exception: data = {}
+            entries = list(data.get("entry", []) or [])
+            new_entries: List[Dict[str, Any]] = []
+            mutated = False
+            for entry in entries:
+                res = entry.get("resource", {}) or {}
+                if res.get("id") == id:
+                    mutated = True
+                    if "status=active" in url and status.lower() in non_active:
+                        # Drop from active-filtered Bundle
+                        continue
+                    # Mutate status in place (deep copy to avoid touching MockFHIR)
+                    import copy
+                    new_res = copy.deepcopy(res)
+                    new_res["status"] = status
+                    new_entry = dict(entry)
+                    new_entry["resource"] = new_res
+                    new_entries.append(new_entry)
+                else:
+                    new_entries.append(entry)
+            new_data = dict(data)
+            new_data["entry"] = new_entries
+            new_data["total"] = len(new_entries)
+            self._episode_overlay[key] = {"status_code": 200, "data": new_data}
+
+        msg = f"MedicationRequest {id} status updated to '{status}'."
+        if not mutated:
+            msg = f"Warning: MedicationRequest {id} not found for patient {mrn}; no update applied."
+        self._step_count += 1
+        # Emit POST-formatted history so the canonical graders (which parse the
+        # agent's history for POST blocks via extract_posts) see this as a
+        # status-change submission. The mutation is also recorded as a "post"
+        # in self._post_requests so verifier-side action shaping fires.
+        update_payload = {
+            "resourceType": "MedicationRequest",
+            "id": id,
+            "status": status,
+            "intent": "order",
+            "subject": {"reference": f"Patient/{mrn}"},
+        }
+        post_line = f"POST {_FHIR_API_BASE.rstrip('/')}/MedicationRequest\n{json.dumps(update_payload)}"
+        self._append_history("agent", post_line)
+        self._post_requests.append(update_payload)
+        self._append_history("user",
+            "POST request accepted and executed successfully. Please call finish "
+            "if you have got answers for all the questions and finished all the requested tasks")
+        return msg
+
     # ------------------------------------------------------------------
     # Utility tools
     # ------------------------------------------------------------------
@@ -636,6 +830,25 @@ class MedAgentTrainEnv:
         except Exception as e:
             return f"Calculator error: {e}"
 
+    @staticmethod
+    def _coerce_numeric(v):
+        """Normalize string numerals → int/float so grader's strict `== ` check passes.
+        Qwen3-8B has a strong JSON-stringify prior despite explicit "numbers not
+        strings" instructions. This coercion matches what any production inference
+        wrapper would do before sending to a grader. -1 stays -1, "-1" → -1."""
+        if isinstance(v, str):
+            s = v.strip()
+            try:
+                i = int(s)
+                return i
+            except ValueError:
+                pass
+            try:
+                return float(s)
+            except ValueError:
+                return v
+        return v
+
     def finish(self, value: List[Any]) -> str:
         """Signal task completion and provide the final answer.
 
@@ -647,7 +860,34 @@ class MedAgentTrainEnv:
         """
         if self.done:
             return "Episode already finished."
-        self._agent_answer = value if isinstance(value, list) else [value]
+        # Robust unwrapping: tolerate string-wrapped JSON forms the model emits
+        # under tool-call confusion. e.g. value="[-1]" → [-1]; value="[]" → [].
+        if isinstance(value, str):
+            s = value.strip()
+            if (s.startswith("[") and s.endswith("]")) or (s.startswith("{") and s.endswith("}")):
+                try:
+                    parsed = json.loads(s)
+                    if isinstance(parsed, list):
+                        value = parsed
+                except Exception:
+                    pass
+        raw = value if isinstance(value, list) else [value]
+        # Also unwrap inner string-wrapped list elements: ["[-1]"] → [-1].
+        unwrapped = []
+        for v in raw:
+            if isinstance(v, str):
+                s = v.strip()
+                if (s.startswith("[") and s.endswith("]")):
+                    try:
+                        parsed = json.loads(s)
+                        if isinstance(parsed, list):
+                            unwrapped.extend(parsed)
+                            continue
+                    except Exception:
+                        pass
+            unwrapped.append(v)
+        raw = unwrapped
+        self._agent_answer = [self._coerce_numeric(v) for v in raw]
         raw = f"FINISH({json.dumps(self._agent_answer)})"
         self._append_history("agent", raw)
         self._append_history("user", "Task completed.")
@@ -661,6 +901,18 @@ class MedAgentTrainEnv:
     # Internal helpers
     # ------------------------------------------------------------------
 
+    def _get_with_overlay(self, url: str) -> Dict[str, Any]:
+        """Look up url in the episode overlay first, else delegate to MockFHIR.
+        Overlay keys are normalized via the same _normalize_url logic.
+        We use the already-loaded _mod (server.fhir_cache) to avoid triggering
+        the medagentbench_env.server package __init__ (which pulls openenv)."""
+        key = _mod._normalize_url(url)
+        if key in self._episode_overlay:
+            return self._episode_overlay[key]
+        if url in self._episode_overlay:
+            return self._episode_overlay[url]
+        return self._mock.get(url)
+
     def _do_get(self, resource: str, params: Dict[str, str]) -> str:
         self._step_count += 1
         fhir_base = _FHIR_API_BASE.rstrip("/")
@@ -668,7 +920,7 @@ class MedAgentTrainEnv:
         url = f"{fhir_base}/{resource}?{param_str}&_format=json" if param_str else f"{fhir_base}/{resource}?_format=json"
         self._append_history("agent", f"GET {url}")
 
-        result = self._mock.get(url)
+        result = self._get_with_overlay(url)
         if "data" in result:
             data = result["data"]
             if isinstance(data, dict) and isinstance(data.get("entry"), list):
@@ -740,10 +992,20 @@ class MedAgentTrainEnv:
         if self._task is None:
             return 0.0
         history = [{"role": m.role, "content": m.content} for m in self._history]
-        return _verifier_evaluate(
-            history,
-            self._task,
-            _FHIR_API_BASE,
-            invalid_fhir_count=self._invalid_fhir_count,
-            new_refsol=_get_new_refsol(),
-        )
+        # Make this episode's overlay visible to the grader's send_get_request
+        # (see _get_new_refsol). Always restore on exit, even on exceptions.
+        global _CURRENT_GRADING_ENV
+        prev = _CURRENT_GRADING_ENV
+        _CURRENT_GRADING_ENV = self
+        try:
+            return _verifier_evaluate(
+                history,
+                self._task,
+                _FHIR_API_BASE,
+                invalid_fhir_count=self._invalid_fhir_count,
+                new_refsol=_get_new_refsol(),
+                v1_refsol=_get_v1_refsol(),
+                agent_answer=self._agent_answer,
+            )
+        finally:
+            _CURRENT_GRADING_ENV = prev
